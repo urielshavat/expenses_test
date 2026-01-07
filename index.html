@@ -17,61 +17,87 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700&display=swap');
         body { font-family: 'Assistant', sans-serif; background-color: #f3f4f6; -webkit-tap-highlight-color: transparent; position: relative; min-height: 100vh; overflow-x: hidden; }
-        .balance-container { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .balance-container:active { transform: scale(0.98); opacity: 0.9; }
         .card { background: #ffffff; border-radius: 1rem; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1); }
         .input-field { border: 1px solid #e2e8f0; background-color: #f9fafb; transition: all 0.2s; }
         .input-field:focus { border-color: #3b82f6; background-color: #ffffff; outline: none; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade-in { animation: fadeIn 0.2s ease-out forwards; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .sticky-header { position: sticky; top: 0; z-index: 10; background-color: rgba(243, 244, 246, 0.95); backdrop-filter: blur(4px); }
         .chart-container { position: relative; height: 160px; width: 100%; }
         .budget-input { background: transparent; border-bottom: 1px dashed #e2e8f0; text-align: left; width: 65px; padding: 1px 4px; }
-        .budget-input:focus { outline: none; border-bottom-color: #3b82f6; border-bottom-style: solid; }
         .name-input { background: transparent; border: none; width: 100%; font-weight: 600; color: #334155; padding: 1px 0; }
-        .name-input:focus { outline: none; color: #3b82f6; border-bottom: 1px solid #3b82f6; }
         .btn-sync { background: #eff6ff; color: #2563eb; font-size: 0.7rem; font-weight: 700; padding: 0.4rem 0.8rem; border-radius: 9999px; display: flex; align-items: center; gap: 0.4rem; transition: all 0.2s; }
-        .btn-sync:active { transform: scale(0.95); }
         .ltr-num { direction: ltr; display: inline-block; }
         .compact-tx { padding: 0.4rem 0.75rem !important; margin-bottom: 0.25rem !important; overflow: hidden; position: relative; }
-        
         .tx-inner { display: flex; align-items: center; width: 100%; transition: transform 0.3s ease; }
-        .tx-actions-panel { position: absolute; left: 0; top: 0; bottom: 0; width: 140px; background: #ffffff; display: flex; align-items: center; justify-content: space-around; transform: translateX(-100%); transition: transform 0.3s ease; padding-left: 8px; }
-        .row-active .tx-inner { transform: translateX(140px); }
+        .tx-actions-panel { position: absolute; left: 0; top: 0; bottom: 0; width: 175px; background: #ffffff; display: flex; align-items: center; justify-content: space-around; transform: translateX(-100%); transition: transform 0.3s ease; padding-left: 8px; }
+        .row-active .tx-inner { transform: translateX(175px); }
         .row-active .tx-actions-panel { transform: translateX(0); }
-        
         .action-btn { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: background 0.2s; }
-        .action-btn:active { transform: scale(0.9); }
-        .btn-edit { color: #3b82f6; background: #eff6ff; }
-        .btn-tag { color: #8b5cf6; background: #f5f3ff; }
-        .btn-delete { color: #ef4444; background: #fef2f2; }
-        .btn-close-actions { color: #94a3b8; background: #f1f5f9; }
-
-        .update-bar { position: sticky; bottom: 1rem; left: 0; right: 0; display: flex; justify-content: center; pointer-events: none; z-index: 40; }
-        .update-btn { pointer-events: auto; background-color: #2563eb; color: white; font-weight: 800; padding: 0.75rem 2rem; border-radius: 9999px; box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.4); animation: slideUp 0.3s ease-out; display: flex; align-items: center; gap: 0.5rem; transition: all 0.2s; }
-        .update-btn:active { transform: scale(0.95); }
-        @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        button:disabled { background-color: #94a3b8 !important; cursor: not-allowed; opacity: 0.7; }
-        
         .tag-badge { font-size: 8px; font-weight: bold; background: #ede9fe; color: #7c3aed; padding: 1px 6px; border-radius: 4px; display: inline-flex; align-items: center; margin-right: 6px; }
         .progress-bar { height: 6px; border-radius: 3px; background: #f1f5f9; overflow: hidden; position: relative; }
         .progress-fill { height: 100%; transition: width 0.5s ease-out; }
-        
         .nav-btn { color: #94a3b8; transition: all 0.2s; position: relative; padding: 0.75rem; border-radius: 0.75rem; }
         .nav-btn.active { color: #2563eb; background-color: #eff6ff; }
         .nav-btn.active::after { content: ''; position: absolute; bottom: 0.25rem; left: 25%; right: 25%; height: 2px; background: #2563eb; border-radius: 9999px; }
-        
         .cat-expand-btn { transition: transform 0.2s; cursor: pointer; color: #94a3b8; padding: 4px; margin-right: 2px; }
         .cat-expand-btn.expanded { transform: rotate(180deg); color: #2563eb; }
-
         .btn-toggle-annual { border: 1px solid #e2e8f0; font-size: 0.7rem; color: #64748b; padding: 0.3rem 0.6rem; border-radius: 9999px; transition: all 0.2s; background: white; }
         .btn-toggle-annual.active { background: #f1f5f9; color: #0f172a; border-color: #cbd5e1; font-weight: bold; }
+        .loading-disabled { pointer-events: none; opacity: 0.6; }
+
+        .toggle-switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #2563eb; }
+        input:checked + .slider:before { transform: translateX(20px); }
+        
+        .section-header-btn { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; }
+        .zero-item { transition: all 0.2s ease; }
+        .show-zero-btn { width: 100%; padding: 0.5rem; margin-top: 0.5rem; text-align: center; font-size: 0.75rem; font-weight: 600; color: #94a3b8; background: #f8fafc; border: 1px dashed #e2e8f0; border-radius: 0.75rem; transition: all 0.2s; }
+        .show-zero-btn:hover { background: #f1f5f9; color: #64748b; border-color: #cbd5e1; }
+
+        /* Floating Update Bar */
+        .batch-update-container {
+            position: fixed;
+            bottom: 80px; /* Above the nav bar */
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            padding: 0 1rem;
+            z-index: 40;
+            pointer-events: none;
+        }
+        .batch-update-btn {
+            background-color: #2563eb;
+            color: white;
+            font-weight: bold;
+            font-size: 0.875rem;
+            padding: 0.75rem 2rem;
+            border-radius: 9999px;
+            box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.4);
+            pointer-events: auto;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform: translateY(100px);
+            opacity: 0;
+        }
+        .batch-update-btn.visible {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .btn-add-cat { width: 24px; height: 24px; border-radius: 6px; background: #eff6ff; color: #2563eb; display: flex; align-items: center; justify-content: center; font-size: 10px; transition: all 0.2s; }
+        .btn-add-cat:hover { background: #dbeafe; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center p-4">
-    <div class="w-full max-w-md bg-transparent flex flex-col min-h-screen">
+    <div class="w-full max-w-md bg-transparent flex flex-col min-h-screen" id="appRoot">
         <div class="flex justify-between items-center mb-6 bg-white/40 backdrop-blur rounded-2xl p-1 shadow-sm border border-white/50">
             <div class="flex items-center gap-1 flex-1 justify-around">
                 <button id="navHome" onclick="window.setNav('main')" class="nav-btn active">
@@ -112,7 +138,7 @@
                         </div>
                         <p class="text-[9px] text-slate-400 font-semibold">תקציב יומי: ₪ <span id="dailyBudgetValue" class="ltr-num">0</span></p>
                     </div>
-                    <button onclick="window.fetchTransactionsOnly()" id="balanceRefreshBtn" class="bg-blue-600 text-white w-10 h-10 rounded-xl shadow-sm hover:bg-blue-700 transition-colors flex items-center justify-center">
+                    <button onclick="window.fetchTransactionsOnly()" id="balanceRefreshBtn" class="bg-blue-600 text-white w-10 h-10 rounded-xl shadow-sm hover:bg-blue-700 flex items-center justify-center">
                         <i id="refreshIcon" class="fa-solid fa-arrows-rotate text-sm"></i>
                     </button>
                 </div>
@@ -155,7 +181,7 @@
                         <h3 class="text-slate-500 text-[10px] font-bold uppercase tracking-widest">סיכום חודשי</h3>
                         <p class="text-[9px] text-slate-400 font-semibold" id="startDateDisplay">תאריך התחלה: --</p>
                     </div>
-                    <button onclick="window.fetchBudgetData(true)" class="btn-sync">
+                    <button id="budgetSyncBtn" onclick="window.fetchBudgetData(true)" class="btn-sync">
                         <i id="budgetRefreshIcon" class="fa-solid fa-arrows-rotate"></i>סנכרן
                     </button>
                 </div>
@@ -186,32 +212,78 @@
                 </div>
             </div>
             <div class="mb-4">
-                <h3 class="text-slate-800 font-bold text-xs mb-2 flex items-center gap-1.5"><i class="fa-solid fa-circle-arrow-up text-green-500"></i>הכנסות</h3>
+                <div class="flex justify-between items-center py-2">
+                    <h3 class="text-slate-800 font-bold text-xs flex items-center gap-1.5"><i class="fa-solid fa-circle-arrow-up text-green-500"></i>הכנסות</h3>
+                    <button onclick="window.initNewCategory(0)" class="btn-add-cat"><i class="fa-solid fa-plus"></i></button>
+                </div>
                 <div id="incomeList" class="space-y-1.5"></div>
+                <button id="showZeroIncomeBtn" onclick="window.toggleZeroItems('income')" class="show-zero-btn hidden">הצג סעיפים ללא תקציב</button>
             </div>
             <div class="mb-4">
-                <h3 class="text-slate-800 font-bold text-xs mb-2 flex items-center gap-1.5"><i class="fa-solid fa-circle-arrow-down text-blue-500"></i>הוצאות קבועות</h3>
+                <div class="flex justify-between items-center py-2">
+                    <h3 class="text-slate-800 font-bold text-xs flex items-center gap-1.5"><i class="fa-solid fa-circle-arrow-down text-blue-500"></i>הוצאות קבועות</h3>
+                    <button onclick="window.initNewCategory(2)" class="btn-add-cat"><i class="fa-solid fa-plus"></i></button>
+                </div>
                 <div id="fixedList" class="space-y-1.5"></div>
+                <button id="showZeroFixedBtn" onclick="window.toggleZeroItems('fixed')" class="show-zero-btn hidden">הצג סעיפים ללא תקציב</button>
             </div>
-            <div class="mb-8">
-                <h3 class="text-slate-800 font-bold text-xs mb-2 flex items-center gap-1.5"><i class="fa-solid fa-calendar text-amber-500"></i>הוצאות שנתיות</h3>
+            <div class="mb-8 pb-16">
+                <div class="flex justify-between items-center py-2">
+                    <h3 class="text-slate-800 font-bold text-xs flex items-center gap-1.5"><i class="fa-solid fa-calendar text-amber-500"></i>הוצאות שנתיות</h3>
+                    <button onclick="window.initNewCategory(4)" class="btn-add-cat"><i class="fa-solid fa-plus"></i></button>
+                </div>
                 <div id="annualList" class="space-y-1.5"></div>
+                <button id="showZeroAnnualBtn" onclick="window.toggleZeroItems('annual')" class="show-zero-btn hidden">הצג סעיפים ללא תקציב</button>
             </div>
-            <div id="batchUpdateContainer" class="update-bar hidden">
-                <button id="batchUpdateBtn" onclick="window.saveAllBudgetChanges()" class="update-btn">עדכן תקציב <i id="batchBtnIcon" class="fa-solid fa-cloud-arrow-up"></i></button>
+        </div>
+
+        <!-- Floating Update Bar -->
+        <div class="batch-update-container">
+            <button id="batchUpdateBtn" onclick="window.saveAllBudgetChanges()" class="batch-update-btn">
+                עדכן תקציב
+            </button>
+        </div>
+    </div>
+
+    <!-- New Category Overlay -->
+    <div id="newCategoryOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
+            <h3 class="text-lg font-bold text-slate-900 mb-6 text-center">הוספת קטגוריה חדשה</h3>
+            <div class="space-y-4">
+                <input type="text" id="newCategoryName" placeholder="שם הקטגוריה..." class="input-field w-full px-4 py-3 rounded-xl text-slate-800">
+                <div class="flex gap-2 pt-2">
+                    <button id="confirmAddCatBtn" onclick="window.submitNewCategory()" class="flex-1 bg-blue-600 text-white font-bold py-3 rounded-xl">הוסף</button>
+                    <button onclick="window.closeNewCategoryModal()" class="flex-1 bg-slate-100 text-slate-700 py-3 rounded-xl">ביטול</button>
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- Modals & Overlays -->
     <div id="settingsOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity">
         <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-bold text-slate-900">הגדרות סנכרון</h2>
+                <h2 class="text-xl font-bold text-slate-900">הגדרות</h2>
                 <button onclick="window.toggleSettings()" class="text-slate-400"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <div class="space-y-4">
-                <input type="text" id="sheetKeyInput" placeholder="Mck-LpZ123..." class="input-field w-full px-4 py-3 rounded-xl font-mono text-sm">
-                <button onclick="window.saveSettings()" class="w-full bg-slate-900 text-white font-bold py-3.5 rounded-xl text-xs">שמור והתחבר</button>
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-2">מפתח סנכרון</label>
+                    <input type="text" id="sheetKeyInput" placeholder="Mck-LpZ123..." class="input-field w-full px-4 py-3 rounded-xl font-mono text-sm">
+                </div>
+                
+                <div class="pt-4 border-t border-slate-100">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="font-bold text-slate-700 text-sm">מצב תצוגה מוגן (Privacy)</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="privacyToggle" onchange="window.togglePrivacyMode()">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <p class="text-[10px] text-slate-400">מציג מספרים מנורמלים לפי הכנסה של 20,000 ש"ח לצורך הצגת האפליקציה לאחרים.</p>
+                </div>
+
+                <button id="saveSettingsBtn" onclick="window.saveSettings()" class="w-full bg-slate-900 text-white font-bold py-3.5 rounded-xl text-xs mt-4">שמור הגדרות</button>
             </div>
         </div>
     </div>
@@ -219,9 +291,9 @@
     <div id="tagOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity">
         <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl max-h-[80vh] flex flex-col">
             <h3 class="text-lg font-bold text-slate-900 mb-4 text-center">שיוך לקטגוריה שנתית</h3>
-            <div id="categoryList" class="space-y-2 overflow-y-auto pr-1 no-scrollbar flex-1"></div>
+            <div id="categoryList" class="space-y-2 overflow-y-auto pr-1 flex-1"></div>
             <div class="flex gap-2 pt-4">
-                <button onclick="window.clearTag()" class="flex-1 bg-slate-100 text-slate-600 py-3 rounded-xl font-bold">ללא שיוך</button>
+                <button id="clearTagBtn" onclick="window.clearTag()" class="flex-1 bg-slate-100 text-slate-600 py-3 rounded-xl font-bold">ללא שיוך</button>
                 <button onclick="window.closeTagModal()" class="flex-1 bg-slate-200 text-slate-700 py-3 rounded-xl">ביטול</button>
             </div>
         </div>
@@ -234,7 +306,7 @@
                 <input type="number" id="editRowAmount" step="any" inputmode="decimal" class="input-field w-full px-4 py-3 rounded-xl font-bold">
                 <input type="text" id="editRowName" class="input-field w-full px-4 py-3 rounded-xl">
                 <div class="flex gap-2 pt-2">
-                    <button onclick="window.saveRowEdit()" class="flex-1 bg-blue-600 text-white font-bold py-3 rounded-xl">שמור</button>
+                    <button id="saveEditBtn" onclick="window.saveRowEdit()" class="flex-1 bg-blue-600 text-white font-bold py-3 rounded-xl">שמור</button>
                     <button onclick="window.closeEditRowModal()" class="flex-1 bg-slate-100 text-slate-700 py-3 rounded-xl">ביטול</button>
                 </div>
             </div>
@@ -252,6 +324,17 @@
         </div>
     </div>
 
+    <div id="closeCatOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
+            <h3 id="closeCatTitle" class="text-lg font-bold text-slate-900 mb-3 text-center">סגירת קטגוריה</h3>
+            <p id="closeCatText" class="text-sm text-slate-600 mb-6 text-center px-2"></p>
+            <div class="flex gap-2">
+                <button id="closeCatConfirmBtn" class="flex-1 bg-blue-600 text-white font-bold py-3 rounded-xl">אשר סגירה</button>
+                <button onclick="window.closeCatModalClose()" class="flex-1 bg-slate-100 text-slate-700 py-3 rounded-xl">ביטול</button>
+            </div>
+        </div>
+    </div>
+
     <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-5 py-2.5 rounded-full text-xs font-semibold shadow-2xl flex items-center gap-2.5 opacity-0 pointer-events-none transition-all duration-300 z-[100] w-[85%] max-w-xs">
         <i id="toastIcon" class="fa-solid fa-circle-info"></i>
         <span id="toastMessage" class="flex-1"></span>
@@ -263,13 +346,26 @@
         function sanitizeScriptId(id) { const m = id.match(/\/macros\/s\/([^/]+)\/exec/); return (m ? m[1] : id).trim(); }
         function getSafeId(name) { return 'cat_' + name.replace(/[^a-z0-9א-ת]/gi, '_'); }
 
-        async function fetchGAS(url, options = {}) {
+        async function fetchGAS(url, options = {}, retries = 3) {
+            const backoffDelays = [500, 1200, 2500];
+            const currentRetry = 3 - retries;
             try {
-                const res = await fetch(url, { ...options, mode: 'cors', redirect: 'follow', cache: 'no-cache' });
-                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 45000); 
+                const fetchOptions = { ...options, mode: 'cors', redirect: 'follow', cache: 'no-cache', signal: controller.signal };
+                const res = await fetch(url, fetchOptions);
+                clearTimeout(timeoutId);
+                if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
                 return res;
             } catch (e) {
-                showToast('שגיאת חיבור לסקריפט', 'triangle-exclamation');
+                const isRetryable = e.name === 'AbortError' || e.message.includes('Failed to fetch') || e.message.includes('NetworkError');
+                if (retries > 0 && isRetryable) {
+                    const delay = backoffDelays[currentRetry] || 3000;
+                    await new Promise(r => setTimeout(r, delay));
+                    return fetchGAS(url, options, retries - 1);
+                }
+                console.error('GAS Request failed after retries:', url, e);
+                window.showToast('חיבור לשרת נכשל. בדוק אינטרנט או מפתח.', 'triangle-exclamation');
                 throw e;
             }
         }
@@ -282,105 +378,178 @@
             currentView: 'main', 
             isLoading: false, 
             pendingActionRow: null, 
+            pendingAddType: 0,
             expandedAnnualCategories: new Set(),
             dirtyBudgetItems: {}, 
             currentOffset: 0, 
             isEnd: false, 
             isPaginating: false,
             isDirty: true,
-            showAnnualInMain: false
+            showAnnualInMain: false,
+            isPrivacyMode: localStorage.getItem('isPrivacyMode') === 'true',
+            showZeroSections: { income: false, fixed: false, annual: false }
         };
 
         let expensesChart = null;
-        const balanceDisplay = document.getElementById('balanceValue');
-        const expenseForm = document.getElementById('expenseForm');
-        const transactionList = document.getElementById('transactionList');
-        const sheetKeyInput = document.getElementById('sheetKeyInput');
-        const submitBtn = document.getElementById('submitBtn');
-        const refreshIcon = document.getElementById('refreshIcon');
-        const loadMoreBtn = document.getElementById('loadMoreBtn');
 
-        function init() {
-            render();
-            if (!state.sheetKey) setTimeout(toggleSettings, 800); else fetchData().catch(() => {});
-            
-            document.addEventListener('click', (e) => {
-                if (!e.target.closest('.compact-tx')) {
-                    document.querySelectorAll('.compact-tx').forEach(el => el.classList.remove('row-active'));
-                }
-            });
-
-            expenseForm.addEventListener('submit', handleAddExpense);
+        function getNormalizationFactor() {
+            const totalIncome = state.budget.incomes.reduce((s, i) => s + safeParseFloat(i.value), 0);
+            if (totalIncome <= 0) return 1;
+            return 20000 / totalIncome;
         }
 
-        async function fetchData() {
-            if (!state.sheetKey) return toggleSettings();
+        function formatDisplayAmount(amount) {
+            if (!state.isPrivacyMode) return amount;
+            return amount * getNormalizationFactor();
+        }
+
+        function denormalizeAmount(displayAmount) {
+            if (!state.isPrivacyMode) return displayAmount;
+            const factor = getNormalizationFactor();
+            return displayAmount / factor;
+        }
+
+        window.togglePrivacyMode = function() {
+            state.isPrivacyMode = !state.isPrivacyMode;
+            localStorage.setItem('isPrivacyMode', state.isPrivacyMode);
+            if (state.currentView === 'budget') renderBudget();
+            else if (state.currentView === 'annual') renderAnnualView();
+            else render();
+        };
+
+        window.fetchData = async function() {
+            if (!state.sheetKey) return window.toggleSettings();
             setLoading(true);
             state.currentOffset = 0;
             try { 
-                await fetchBudgetData(); 
-                await fetchTransactions(false); 
+                await window.fetchBudgetData(); 
+                await window.fetchTransactions(false); 
                 state.isDirty = false;
             } finally { setLoading(false); }
-        }
+        };
 
-        async function fetchAnnualData(force = false) {
+        window.fetchTransactions = async function(append) {
+            if (!state.sheetKey) return;
+            try {
+                const params = new URLSearchParams({ action: 'transactions', offset: state.currentOffset.toString() });
+                const res = await fetchGAS(`https://script.google.com/macros/s/${state.sheetKey}/exec?${params.toString()}`);
+                const data = await res.json();
+                state.transactions = append ? state.transactions.concat(data.transactions) : data.transactions;
+                state.isEnd = data.isEnd; state.balance = safeParseFloat(data.balance);
+                localStorage.setItem('expense_history', JSON.stringify(state.transactions));
+                localStorage.setItem('cached_balance', state.balance.toString());
+                render();
+            } catch (e) { console.error(e); }
+        };
+
+        window.fetchBudgetData = async function(isManual = false) {
+            if (!state.sheetKey) return;
+            const icon = document.getElementById('budgetRefreshIcon');
+            if (isManual && icon) icon.classList.add('animate-spin');
+            try {
+                const params = new URLSearchParams({ action: 'getBudget' });
+                const res = await fetchGAS(`https://script.google.com/macros/s/${state.sheetKey}/exec?${params.toString()}`);
+                const data = await res.json();
+                
+                state.dirtyBudgetItems = {}; 
+                const updateBtn = document.getElementById('batchUpdateBtn');
+                if (updateBtn) updateBtn.classList.remove('visible');
+
+                renderBudget(data);
+                if (isManual) window.showToast('תקציב סונכרן', 'check');
+            } catch (e) { console.error(e); } finally {
+                if (isManual && icon) icon.classList.remove('animate-spin');
+            }
+        };
+
+        window.setNav = function(view) {
+            if (state.currentView === view) return;
+            state.currentView = view;
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            if (view === 'main') document.getElementById('navHome').classList.add('active');
+            else if (view === 'budget') document.getElementById('navBudget').classList.add('active');
+            else if (view === 'annual') document.getElementById('navAnnual').classList.add('active');
+            updateNavigationUI();
+            if (view === 'annual') window.fetchAnnualData();
+            else if (view === 'budget') {
+                if (state.isDirty || state.budget.incomes.length === 0) window.fetchBudgetData();
+                else renderBudget();
+            } else render();
+        };
+
+        window.toggleSettings = function() { 
+            const o = document.getElementById('settingsOverlay'); 
+            if (!o) return;
+            if (o.classList.contains('hidden')) { 
+                const skInp = document.getElementById('sheetKeyInput');
+                if (skInp) skInp.value = state.sheetKey; 
+                const pt = document.getElementById('privacyToggle');
+                if (pt) pt.checked = state.isPrivacyMode;
+                o.classList.remove('hidden'); 
+                setTimeout(() => o.classList.add('opacity-100'), 10); 
+            } else { 
+                o.classList.remove('opacity-100'); 
+                setTimeout(() => o.classList.add('hidden'), 300); 
+            } 
+        };
+
+        window.saveSettings = function() { 
+            const skInp = document.getElementById('sheetKeyInput');
+            if (!skInp) return;
+            const k = sanitizeScriptId(skInp.value); 
+            state.sheetKey = k; 
+            localStorage.setItem('google_sheet_key', k); 
+            window.toggleSettings(); 
+            window.fetchData(); 
+        };
+
+        window.showToast = function(m, i) { 
+            const t = document.getElementById('toast'); 
+            const tm = document.getElementById('toastMessage');
+            const ti = document.getElementById('toastIcon');
+            if (!t || !tm || !ti) return;
+            tm.innerText = m; 
+            ti.className = 'fa-solid fa-circle-' + i; 
+            t.classList.add('opacity-100'); 
+            setTimeout(() => t.classList.remove('opacity-100'), 3000); 
+        };
+
+        window.toggleShowAnnualMain = function() {
+            state.showAnnualInMain = !state.showAnnualInMain;
+            const btn = document.getElementById('toggleAnnualBtn');
+            if (btn) {
+                btn.classList.toggle('active', state.showAnnualInMain);
+                btn.innerText = state.showAnnualInMain ? 'הסתר הוצאות שנתיות' : 'הצג הוצאות שנתיות';
+            }
+            render();
+        };
+
+        window.fetchAnnualData = async function(force = false) {
             if (!state.sheetKey) return;
             if (!force && !state.isDirty && state.budget.annual.length > 0) {
                 renderAnnualView();
                 return;
             }
-            
             const icon = document.getElementById('annualRefreshIcon');
             if (icon) icon.classList.add('animate-spin');
             try {
-                await fetchTransactions(false);
-                await fetchBudgetData();
+                await window.fetchTransactions(false);
+                await window.fetchBudgetData();
                 state.isDirty = false;
                 renderAnnualView();
             } finally { if (icon) icon.classList.remove('animate-spin'); }
-        }
+        };
 
-        async function fetchTransactionsOnly() {
-            if (!state.sheetKey) return toggleSettings();
-            setLoading(true);
-            state.currentOffset = 0;
-            try { await fetchTransactions(false); } finally { setLoading(false); }
-        }
-
-        async function loadMoreTransactions() {
+        window.fetchTransactionsOnly = function() { window.fetchTransactions(false); };
+        window.loadMoreTransactions = async function() {
             if (state.isLoading || state.isEnd || state.isPaginating) return;
             state.isPaginating = true;
             const lmIcon = document.getElementById('loadMoreIcon');
             if (lmIcon) lmIcon.classList.remove('hidden');
             state.currentOffset += 30;
-            try { await fetchTransactions(true); } finally { 
+            try { await window.fetchTransactions(true); } finally { 
                 state.isPaginating = false; 
                 if (lmIcon) lmIcon.classList.add('hidden'); 
-            }
-        }
-
-        window.setNav = (view) => {
-            if (state.currentView === view) return;
-            state.currentView = view;
-            
-            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-            if (view === 'main') document.getElementById('navHome').classList.add('active');
-            else if (view === 'budget') document.getElementById('navBudget').classList.add('active');
-            else if (view === 'annual') document.getElementById('navAnnual').classList.add('active');
-            
-            updateNavigationUI();
-            
-            if (view === 'annual') {
-                fetchAnnualData();
-            } else if (view === 'budget') {
-                if (state.isDirty || state.budget.incomes.length === 0) {
-                    fetchBudgetData();
-                } else {
-                    renderBudget();
-                }
-            } else {
-                render();
             }
         };
 
@@ -391,64 +560,26 @@
             if (mv) mv.classList.toggle('hidden', state.currentView !== 'main');
             if (bv) bv.classList.toggle('hidden', state.currentView !== 'budget');
             if (av) av.classList.toggle('hidden', state.currentView !== 'annual');
-            
-            const titles = { main: 'הוצאות שוטפות', budget: 'ניהול תקציב', annual: 'הוצאות שנתיות' };
             const pt = document.getElementById('pageTitle');
+            const titles = { main: 'הוצאות שוטפות', budget: 'ניהול תקציב', annual: 'הוצאות שנתיות' };
             if (pt) pt.innerText = titles[state.currentView];
-            
             const syncBtn = document.getElementById('annualSyncBtnTop');
             if (syncBtn) syncBtn.classList.toggle('hidden', state.currentView !== 'annual');
-
             const toggleBtn = document.getElementById('toggleAnnualBtn');
             if (toggleBtn) toggleBtn.classList.toggle('hidden', state.currentView !== 'main');
-        }
-
-        async function fetchBudgetData(isManual = false) {
-            if (!state.sheetKey) return;
-            const icon = document.getElementById('budgetRefreshIcon');
-            if (isManual && icon) icon.classList.add('animate-spin');
             
-            const url = `https://script.google.com/macros/s/${state.sheetKey}/exec?action=getBudget`;
-            try {
-                const res = await fetchGAS(url);
-                const data = await res.json();
-                renderBudget(data);
-                if (isManual) showToast('תקציב סונכרן', 'check');
-            } catch (e) {
-            } finally {
-                if (isManual && icon) icon.classList.remove('animate-spin');
+            const updateBtn = document.getElementById('batchUpdateBtn');
+            if (state.currentView !== 'budget' || Object.keys(state.dirtyBudgetItems).length === 0) {
+                if (updateBtn) updateBtn.classList.remove('visible');
+            } else {
+                if (updateBtn) updateBtn.classList.add('visible');
             }
         }
-        
-        // Expose to window
-        window.fetchBudgetData = fetchBudgetData;
 
-        function handleBudgetInput(cell, val) { 
-            state.dirtyBudgetItems[cell] = val; 
-            document.getElementById('batchUpdateContainer').classList.remove('hidden'); 
-        }
-        
-        function checkG4Change() { 
-            const g4Btn = document.getElementById('g4UpdateBtn');
-            const g4Inp = document.getElementById('g4Input');
-            if (g4Btn && g4Inp) {
-                g4Btn.disabled = safeParseFloat(g4Inp.value) === safeParseFloat(state.budget.g4); 
-            }
-        }
-        
-        async function saveAllBudgetChanges() {
-            if (!state.sheetKey) return;
-            const updates = Object.entries(state.dirtyBudgetItems).map(([cell, value]) => ({ cell, value }));
-            try {
-                const url = `https://script.google.com/macros/s/${state.sheetKey}/exec?action=updateMultiple&data=${encodeURIComponent(JSON.stringify(updates))}`;
-                const res = await fetchGAS(url);
-                state.isDirty = true;
-                renderBudget(await res.json());
-                state.dirtyBudgetItems = {};
-                document.getElementById('batchUpdateContainer').classList.add('hidden');
-                showToast('תקציב עודכן', 'check');
-            } catch (e) {}
-        }
+        window.toggleZeroItems = function(section) {
+            state.showZeroSections[section] = !state.showZeroSections[section];
+            renderBudget();
+        };
 
         function renderBudget(data) {
             if (data) state.budget = { incomes: data.income || [], fixed: data.fixedMonthly || [], annual: data.annual || [], g4: data.currentMonthlyBudget || 0, startDate: data.startDate || '' };
@@ -457,99 +588,138 @@
             const fix = b.fixed.reduce((s, i) => s + safeParseFloat(i.value), 0);
             const annM = b.annual.reduce((s, i) => s + safeParseFloat(i.value), 0) / 12;
             
-            const incomeEl = document.getElementById('summaryTotalIncome');
-            const fixedEl = document.getElementById('summaryTotalFixed');
-            const annEl = document.getElementById('summaryTotalAnnualMonthly');
-            const remEl = document.getElementById('summaryRemaining');
-            const g4El = document.getElementById('g4Input');
-            const sdEl = document.getElementById('startDateDisplay');
-
-            if(incomeEl) incomeEl.innerText = Math.round(inc).toLocaleString();
-            if(fixedEl) fixedEl.innerText = Math.round(fix).toLocaleString();
-            if(annEl) annEl.innerText = Math.round(annM).toLocaleString();
-            if(remEl) remEl.innerText = Math.round(inc - fix - annM).toLocaleString();
-            if(g4El) g4El.value = b.g4;
-            if(sdEl) sdEl.innerText = 'תאריך התחלה: ' + b.startDate;
+            const ids = { income: 'summaryTotalIncome', fixed: 'summaryTotalFixed', annual: 'summaryTotalAnnualMonthly', remaining: 'summaryRemaining', g4: 'g4Input', start: 'startDateDisplay' };
+            const els = Object.fromEntries(Object.entries(ids).map(([k,v]) => [k, document.getElementById(v)]));
             
-            ['incomeList', 'fixedList', 'annualList'].forEach(id => {
-                const list = id === 'incomeList' ? b.incomes : (id === 'fixedList' ? b.fixed : b.annual);
-                const container = document.getElementById(id); if(!container) return;
+            if(els.income) els.income.innerText = Math.round(formatDisplayAmount(inc)).toLocaleString();
+            if(els.fixed) els.fixed.innerText = Math.round(formatDisplayAmount(fix)).toLocaleString();
+            if(els.annual) els.annual.innerText = Math.round(formatDisplayAmount(annM)).toLocaleString();
+            if(els.remaining) els.remaining.innerText = Math.round(formatDisplayAmount(inc - fix - annM)).toLocaleString();
+            
+            if(els.g4) els.g4.value = Math.round(formatDisplayAmount(safeParseFloat(b.g4)));
+            if(els.start) els.start.innerText = 'תאריך התחלה: ' + b.startDate;
+            
+            ['income', 'fixed', 'annual'].forEach(type => {
+                const list = type === 'income' ? b.incomes : (type === 'fixed' ? b.fixed : b.annual);
+                const container = document.getElementById(type + 'List');
+                const btn = document.getElementById(`showZero${type.charAt(0).toUpperCase() + type.slice(1)}Btn`);
+                if(!container) return;
+                
                 container.innerHTML = '';
+                let hasZeroItems = false;
+                const isShowingZeros = state.showZeroSections[type];
+
                 list.forEach(item => {
-                    const div = document.createElement('div'); div.className = 'bg-white px-3 py-2 rounded-xl flex justify-between items-center shadow-sm gap-2';
-                    const cellRef = item.cell.replace(/[0-9]/g, c => parseInt(c)-1);
-                    div.innerHTML = `<input type="text" class="name-input text-xs" value="${item.name||''}" oninput="window.handleBudgetInput('${cellRef}', this.value)">
-                        <input type="number" class="budget-input text-xs font-bold ltr" value="${item.value||0}" oninput="window.handleBudgetInput('${item.cell}', this.value)">`;
-                    container.appendChild(div);
+                    const val = safeParseFloat(item.value);
+                    const isZero = val === 0;
+                    if (isZero) hasZeroItems = true;
+
+                    if (!isZero || isShowingZeros) {
+                        const div = document.createElement('div');
+                        div.className = `bg-white px-3 py-2 rounded-xl flex justify-between items-center shadow-sm gap-2 animate-fade-in ${isZero ? 'opacity-60 border-dashed border border-slate-200' : ''}`;
+                        const cellRef = item.cell.replace(/[0-9]/g, c => (parseInt(c)-1).toString());
+                        const displayVal = Math.round(formatDisplayAmount(val));
+                        
+                        div.innerHTML = `
+                            <input type="text" class="name-input text-xs" value="${item.name||''}" oninput="window.handleBudgetInput('${cellRef}', this.value)">
+                            <div class="flex items-center">
+                                <span class="text-[10px] text-slate-300 ml-1">₪</span>
+                                <input type="number" class="budget-input text-xs font-bold ltr ${state.isPrivacyMode ? 'text-blue-600' : 'text-slate-800'}" value="${displayVal}" oninput="window.handleBudgetInput('${item.cell}', this.value)">
+                            </div>`;
+                        container.appendChild(div);
+                    }
                 });
+
+                if (btn) {
+                    btn.classList.toggle('hidden', !hasZeroItems);
+                    btn.innerText = isShowingZeros ? 'הסתר סעיפים ריקים' : 'הצג סעיפים ריקים';
+                }
             });
+
+            const updateBtn = document.getElementById('batchUpdateBtn');
+            if (updateBtn) {
+                if (state.currentView === 'budget' && Object.keys(state.dirtyBudgetItems).length > 0) {
+                    updateBtn.classList.add('visible');
+                } else {
+                    updateBtn.classList.remove('visible');
+                }
+            }
+
             if(state.currentView === 'annual') renderAnnualView();
         }
 
-        async function updateG4Budget() {
-            const val = document.getElementById('g4Input').value;
-            try {
-                const res = await fetchGAS(`https://script.google.com/macros/s/${state.sheetKey}/exec?action=updateBudgetItem&cell=G4&value=${val}`);
-                state.isDirty = true;
-                renderBudget(await res.json());
-                showToast('תקציב עודכן', 'check');
-                const g4Btn = document.getElementById('g4UpdateBtn');
-                if (g4Btn) g4Btn.disabled = true;
-            } catch (e) {}
-        }
-
-        window.toggleShowAnnualMain = () => {
-            state.showAnnualInMain = !state.showAnnualInMain;
-            const btn = document.getElementById('toggleAnnualBtn');
-            if (btn) {
-                btn.classList.toggle('active', state.showAnnualInMain);
-                btn.innerText = state.showAnnualInMain ? 'הסתר הוצאות שנתיות' : 'הצג הוצאות שנתיות';
+        window.initNewCategory = (type) => {
+            state.pendingAddType = type;
+            const o = document.getElementById('newCategoryOverlay');
+            if (o) {
+                o.classList.remove('hidden');
+                setTimeout(() => o.classList.add('opacity-100'), 10);
             }
-            render();
         };
 
-        function render(customData) {
-            if (customData) {
-                if (customData.balance !== undefined) state.balance = safeParseFloat(customData.balance);
-                if (customData.transactions) state.transactions = customData.transactions;
-                state.isEnd = !!customData.isEnd;
+        window.closeNewCategoryModal = () => {
+            const o = document.getElementById('newCategoryOverlay');
+            if (o) {
+                o.classList.remove('opacity-100');
+                setTimeout(() => o.classList.add('hidden'), 300);
             }
+        };
+
+        window.submitNewCategory = async function() {
+            const nameInp = document.getElementById('newCategoryName');
+            if (!nameInp || !nameInp.value) return;
+            setLoading(true, true);
+            window.closeNewCategoryModal();
+            try {
+                const res = await fetchGAS(`https://script.google.com/macros/s/${state.sheetKey}/exec?${new URLSearchParams({ 
+                    action: 'addNewCategory', 
+                    name: nameInp.value, 
+                    typeRow: state.pendingAddType.toString() 
+                })}`);
+                const data = await res.json();
+                state.isDirty = true;
+                nameInp.value = '';
+                renderBudget(data);
+                window.showToast('קטגוריה נוספה', 'check');
+            } finally { setLoading(false, true); }
+        };
+
+        function render() {
             if(state.currentView === 'annual') return renderAnnualView();
             if(state.currentView !== 'main') return;
-            
-            if (balanceDisplay) balanceDisplay.innerText = Math.round(state.balance).toLocaleString();
+            const balEl = document.getElementById('balanceValue');
             const dailyEl = document.getElementById('dailyBudgetValue');
-            if (dailyEl) dailyEl.innerText = Math.round(safeParseFloat(state.budget.g4)/30).toLocaleString();
+            if (balEl) balEl.innerText = Math.round(formatDisplayAmount(state.balance)).toLocaleString();
+            if (dailyEl) dailyEl.innerText = Math.round(formatDisplayAmount(safeParseFloat(state.budget.g4)/30)).toLocaleString();
             
             const grouped = {};
             state.transactions.forEach(tx => {
-                // Filter tagged transactions if showAnnualInMain is false
                 if (!state.showAnnualInMain && tx.tag) return;
-                
                 grouped[tx.date] = grouped[tx.date] || { items: [], total: 0 }; 
                 grouped[tx.date].items.push(tx); 
                 grouped[tx.date].total += safeParseFloat(tx.amount); 
             });
             
-            if (transactionList) {
-                transactionList.innerHTML = '';
+            const listEl = document.getElementById('transactionList');
+            if (listEl) {
+                listEl.innerHTML = '';
                 Object.keys(grouped).sort((a,b) => parseLocalDate(b) - parseLocalDate(a)).forEach(date => {
                     const g = grouped[date];
                     const h = document.createElement('div'); h.className = 'sticky-header py-1 px-1 text-[9px] font-bold text-slate-400 flex justify-between tracking-wider';
-                    h.innerHTML = `<span>${date}</span><span>₪${Math.round(g.total).toLocaleString()}</span>`;
-                    transactionList.appendChild(h);
-                    g.items.forEach(tx => transactionList.appendChild(createTransactionEl(tx)));
+                    h.innerHTML = `<span>${date}</span><span>₪${Math.round(formatDisplayAmount(g.total)).toLocaleString()}</span>`;
+                    listEl.appendChild(h);
+                    g.items.forEach(tx => listEl.appendChild(createTransactionEl(tx)));
                 });
             }
-            
-            if (loadMoreBtn) loadMoreBtn.classList.toggle('hidden', state.isEnd || state.transactions.length === 0);
+            const lmBtn = document.getElementById('loadMoreBtn');
+            if (lmBtn) lmBtn.classList.toggle('hidden', state.isEnd || state.transactions.length === 0);
             updateChart(grouped);
         }
 
         function createTransactionEl(tx, hideDate = true, hideTag = false) {
             const d = document.createElement('div'); d.className = 'bg-white compact-tx rounded-xl shadow-sm animate-fade-in';
             const escapedName = tx.name.replace(/'/g, "\\'");
-            
+            const displayAmt = Math.round(formatDisplayAmount(safeParseFloat(tx.amount)));
             d.innerHTML = `
                 <div class="tx-actions-panel">
                     <button onclick="window.initEditRowByData(${tx.row}, '${escapedName}', ${tx.amount})" class="action-btn btn-edit"><i class="fa-solid fa-pen"></i></button>
@@ -557,7 +727,7 @@
                     <button onclick="window.handleDeleteByRow(${tx.row})" class="action-btn btn-delete"><i class="fa-solid fa-trash"></i></button>
                     <button onclick="window.closeRowActions(event)" class="action-btn btn-close-actions"><i class="fa-solid fa-xmark"></i></button>
                 </div>
-                <div class="tx-inner">
+                <div id="tx-content-${tx.row}" class="tx-inner">
                     <div class="flex-1 flex flex-col">
                         <div class="flex items-center">
                             <span class="font-bold text-slate-800 text-xs">${tx.name}</span>
@@ -566,41 +736,12 @@
                         ${!hideDate ? `<span class="text-[8px] text-slate-400 font-bold">${tx.date}</span>` : ''}
                     </div>
                     <div class="flex items-center gap-2">
-                        <div class="text-red-500 font-bold text-xs ltr-num">₪${Math.round(safeParseFloat(tx.amount)).toLocaleString()}</div>
+                        <div class="text-red-500 font-bold text-xs ltr-num">₪${displayAmt.toLocaleString()}</div>
                         <button onclick="window.toggleRowActions(event)" class="action-trigger-btn p-1.5"><i class="fa-solid fa-ellipsis-vertical text-[10px] text-slate-300"></i></button>
                     </div>
                 </div>`;
             return d;
         }
-
-        window.toggleRowActions = (e) => {
-            e.stopPropagation();
-            const row = e.currentTarget.closest('.compact-tx');
-            document.querySelectorAll('.compact-tx').forEach(el => {
-                if(el !== row) el.classList.remove('row-active');
-            });
-            row.classList.toggle('row-active');
-        };
-
-        window.closeRowActions = (e) => {
-            e.stopPropagation();
-            const row = e.currentTarget.closest('.compact-tx');
-            row.classList.remove('row-active');
-        };
-
-        window.initEditRowByData = (row, name, amount) => {
-            state.pendingActionRow = { row, name, amount };
-            window.initEditRow();
-        };
-
-        window.initTagModalByRow = (row) => {
-            state.pendingActionRow = { row };
-            window.initTagModal();
-        };
-
-        window.handleDeleteByRow = (row) => {
-            window.handleDelete(row);
-        };
 
         function renderAnnualView() {
             const container = document.getElementById('annualCategoriesContainer');
@@ -618,302 +759,278 @@
                 const remaining = totalBudget - spent;
                 const percent = Math.min(100, (spent / totalBudget) * 100);
                 const isExpanded = state.expandedAnnualCategories.has(cat.name);
-                const hasTransactions = taggedTxs.length > 0;
                 const safeId = getSafeId(cat.name);
-                
+                const nameCellRef = cat.cell.replace(/[0-9]+/, match => (parseInt(match) - 1).toString());
+                const escapedCatName = cat.name.replace(/'/g, "\\'");
+                const displaySpent = formatDisplayAmount(spent);
+                const displayTotal = formatDisplayAmount(totalBudget);
+                const displayRemaining = formatDisplayAmount(remaining);
                 const card = document.createElement('div');
                 card.className = 'card transition-all';
-                const escapedCatName = cat.name.replace(/'/g, "\\'");
-                
-                let contentHtml = '';
-                contentHtml += '<div class="p-4">';
-                contentHtml += '<div class="flex justify-between items-start mb-2">';
-                contentHtml += '<div class="flex-1">';
-                contentHtml += '<div class="flex items-center">';
-                contentHtml += '<h4 class="font-bold text-slate-800 text-sm">' + cat.name + '</h4>';
-                if (hasTransactions) {
-                    contentHtml += '<button onclick="window.toggleAnnualCategory(\'' + escapedCatName + '\')" class="cat-expand-btn ' + (isExpanded ? 'expanded' : '') + '">';
-                    contentHtml += '<i class="fa-solid fa-chevron-down text-[10px]"></i>';
-                    contentHtml += '</button>';
-                }
-                contentHtml += '</div>';
-                contentHtml += '<div class="text-[10px] font-bold text-slate-400">';
-                contentHtml += '₪<span class="ltr-num">' + spent.toLocaleString() + '</span> מתוך ₪<span class="ltr-num">' + totalBudget.toLocaleString() + '</span>';
-                contentHtml += '</div>';
-                contentHtml += '</div>';
-                contentHtml += '<div class="text-left">';
-                contentHtml += '<span class="text-xs font-bold ' + (remaining < 0 ? 'text-red-500' : 'text-blue-600') + ' ltr-num">';
-                contentHtml += '₪' + Math.round(remaining).toLocaleString();
-                contentHtml += '</span>';
-                contentHtml += '<p class="text-[8px] text-slate-300 font-bold uppercase">נותר</p>';
-                contentHtml += '</div>';
-                contentHtml += '</div>';
-                contentHtml += '<div class="progress-bar">';
-                contentHtml += '<div class="progress-fill ' + (percent >= 100 ? 'bg-red-500' : 'bg-blue-500') + '" style="width: ' + percent + '%"></div>';
-                contentHtml += '</div>';
-                contentHtml += '</div>';
-                contentHtml += `<div id="annual-details-${safeId}" class="bg-slate-50 border-t border-slate-100 p-2 space-y-1 ${isExpanded ? '' : 'hidden'}">`;
-                contentHtml += '</div>';
-                
-                card.innerHTML = contentHtml;
-                
+                card.innerHTML = `
+                    <div class="p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2">
+                                    <h4 class="font-bold text-slate-800 text-sm">${cat.name}</h4>
+                                    ${Math.abs(remaining) > 0.1 ? `
+                                    <button onclick="window.initCloseCategory('${escapedCatName}', ${spent}, ${totalBudget}, '${nameCellRef}')" class="btn-close-cat" title="סגור קטגוריה">
+                                        <i class="fa-solid fa-lock"></i>
+                                    </button>` : ''}
+                                    ${taggedTxs.length > 0 ? `
+                                    <button onclick="window.toggleAnnualCategory('${escapedCatName}')" class="cat-expand-btn ${isExpanded ? 'expanded' : ''}">
+                                        <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                                    </button>` : ''}
+                                </div>
+                                <div class="text-[10px] font-bold text-slate-400">
+                                    ₪<span class="ltr-num">${Math.round(displaySpent).toLocaleString()}</span> מתוך ₪<span class="ltr-num">${Math.round(displayTotal).toLocaleString()}</span>
+                                </div>
+                            </div>
+                            <div class="text-left">
+                                <span class="text-xs font-bold ${remaining < 0 ? 'text-red-500' : 'text-blue-600'} ltr-num">₪${Math.round(displayRemaining).toLocaleString()}</span>
+                                <p class="text-[8px] text-slate-300 font-bold uppercase">נותר</p>
+                            </div>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill ${spent > totalBudget ? 'bg-red-500' : 'bg-blue-500'}" style="width: ${percent}%"></div>
+                        </div>
+                    </div>
+                    <div id="annual-details-${safeId}" class="bg-slate-50 border-t border-slate-100 p-2 space-y-1 ${isExpanded ? '' : 'hidden'}"></div>
+                `;
                 if (isExpanded) {
-                    const detailList = card.querySelector('#annual-details-' + safeId);
-                    taggedTxs.forEach(tx => {
-                        const txEl = createTransactionEl(tx, false, true);
-                        if (detailList) detailList.appendChild(txEl);
-                    });
+                    const detailList = card.querySelector(`#annual-details-${safeId}`);
+                    taggedTxs.forEach(tx => detailList.appendChild(createTransactionEl(tx, false, true)));
                 }
-                
                 container.appendChild(card);
             });
         }
 
-        window.toggleAnnualCategory = (name) => {
-            if(state.expandedAnnualCategories.has(name)) state.expandedAnnualCategories.delete(name);
-            else state.expandedAnnualCategories.add(name);
-            renderAnnualView();
-        };
-
-        window.initEditRow = () => { 
-            const editNameInp = document.getElementById('editRowName');
-            const editAmtInp = document.getElementById('editRowAmount');
-            if (editNameInp && editAmtInp && state.pendingActionRow) {
-                editNameInp.value = state.pendingActionRow.name; 
-                editAmtInp.value = state.pendingActionRow.amount; 
-            }
-            const o = document.getElementById('editRowOverlay'); 
-            if (o) {
-                o.classList.remove('hidden'); 
-                setTimeout(function() { o.classList.add('opacity-100'); }, 10); 
-            }
-        };
-        
-        window.closeEditRowModal = function() { 
-            const o = document.getElementById('editRowOverlay'); 
-            if (o) {
-                o.classList.remove('opacity-100'); 
-                setTimeout(function() { o.classList.add('hidden'); }, 300); 
-            }
-        };
-        
-        window.saveRowEdit = async function() {
-            setLoading(true, true); 
-            window.closeEditRowModal();
-            const editNameInp = document.getElementById('editRowName');
-            const editAmtInp = document.getElementById('editRowAmount');
-            if (!editNameInp || !editAmtInp || !state.pendingActionRow) return;
-            try {
-                const url = "https://script.google.com/macros/s/" + state.sheetKey + "/exec?action=updateRow&row=" + state.pendingActionRow.row + "&name=" + encodeURIComponent(editNameInp.value) + "&amount=" + editAmtInp.value + "&offset=" + state.currentOffset;
-                const res = await fetchGAS(url);
-                state.isDirty = true;
-                const data = await res.json();
-                render(data); 
-                showToast('הוצאה עודכנה', 'check');
-                if (state.currentView === 'annual') renderAnnualView();
-            } catch (e) {} finally { setLoading(false, true); }
-        };
-
-        window.initTagModal = function() {
-            const list = document.getElementById('categoryList'); if(!list) return;
-            list.innerHTML = '';
-            const activeAnnuals = state.budget.annual.filter(a => safeParseFloat(a.value) > 0);
-            if(activeAnnuals.length === 0) {
-                list.innerHTML = '<p class="text-center text-slate-400 text-xs py-4">לא נמצאו קטגוריות שנתיות פעילות</p>';
-            } else {
-                activeAnnuals.forEach(cat => {
-                    const btn = document.createElement('button');
-                    btn.className = 'w-full text-right p-4 bg-slate-50 hover:bg-slate-100 rounded-xl font-bold text-slate-700 text-sm transition-colors border border-slate-100';
-                    btn.innerText = cat.name;
-                    const nameCellRef = cat.cell.replace(/[0-9]+/, match => parseInt(match) - 1);
-                    btn.onclick = function() { window.applyTag(nameCellRef); };
-                    list.appendChild(btn);
-                });
-            }
-            const o = document.getElementById('tagOverlay'); 
-            if (o) {
-                o.classList.remove('hidden'); 
-                setTimeout(function() { o.classList.add('opacity-100'); }, 10); 
-            }
-        };
-
-        window.closeTagModal = function() { 
-            const o = document.getElementById('tagOverlay'); 
-            if (o) {
-                o.classList.remove('opacity-100'); 
-                setTimeout(function() { o.classList.add('hidden'); }, 300); 
-            }
-        };
-        
-        window.applyTag = async function(cellRef) {
-            setLoading(true, true); 
-            window.closeTagModal();
-            if (!state.pendingActionRow) return;
-            try {
-                const formula = '=' + cellRef;
-                const url = "https://script.google.com/macros/s/" + state.sheetKey + "/exec?action=updateRow&row=" + state.pendingActionRow.row + "&formula=" + encodeURIComponent(formula) + "&offset=" + state.currentOffset;
-                const res = await fetchGAS(url);
-                state.isDirty = true;
-                const data = await res.json();
-                render(data); 
-                showToast('שויך בהצלחה', 'check');
-                if (state.currentView === 'annual') renderAnnualView();
-            } catch (e) {} finally { setLoading(false, true); }
-        };
-
-        window.clearTag = async function() {
-            setLoading(true, true); 
-            window.closeTagModal();
-            if (!state.pendingActionRow) return;
-            try {
-                const url = "https://script.google.com/macros/s/" + state.sheetKey + "/exec?action=updateRow&row=" + state.pendingActionRow.row + "&formula=&offset=" + state.currentOffset;
-                const res = await fetchGAS(url);
-                state.isDirty = true;
-                const data = await res.json();
-                render(data); 
-                showToast('השיוך הוסר', 'check');
-                if (state.currentView === 'annual') renderAnnualView();
-            } catch (e) {} finally { setLoading(false, true); }
-        };
-
-        window.handleDeleteRequest = function() { 
-            if (state.pendingActionRow) window.handleDelete(state.pendingActionRow.row); 
-        };
-        
-        function updateChart(grouped) {
-            const ctxEl = document.getElementById('expensesChart'); if (!ctxEl) return;
-            const ctx = ctxEl.getContext('2d'); if (!ctx) return;
-            const days = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ש']; const last7 = [];
-            const untaggedGrouped = {};
-            state.transactions.forEach(tx => {
-                // Also exclude tagged from chart if they are hidden
-                if (!state.showAnnualInMain && tx.tag) return;
-                
-                untaggedGrouped[tx.date] = untaggedGrouped[tx.date] || 0;
-                untaggedGrouped[tx.date] += safeParseFloat(tx.amount);
-            });
-
-            for (let i = 6; i >= 0; i--) { 
-                const d = new Date(); 
-                d.setDate(d.getDate() - i); 
-                const ds = d.toLocaleDateString('en-GB'); 
-                last7.push({ 
-                    label: days[d.getDay()], 
-                    total: untaggedGrouped[ds] ? Math.round(untaggedGrouped[ds]) : 0 
-                }); 
-            }
-            if (expensesChart) expensesChart.destroy();
-            expensesChart = new Chart(ctx, { type: 'bar', data: { labels: last7.map(d => d.label), datasets: [{ data: last7.map(d => d.total), backgroundColor: '#3b82f6', borderRadius: 4, barThickness: 16 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: false }, scales: { y: { beginAtZero: true }, x: { grid: { display: false } } } } });
-        }
-        
-        async function fetchTransactions(append) {
-            if (!state.sheetKey) return;
-            try {
-                const res = await fetchGAS("https://script.google.com/macros/s/" + state.sheetKey + "/exec?action=transactions&offset=" + state.currentOffset);
-                const data = await res.json();
-                state.transactions = append ? state.transactions.concat(data.transactions) : data.transactions;
-                state.isEnd = data.isEnd; state.balance = safeParseFloat(data.balance);
-                localStorage.setItem('expense_history', JSON.stringify(state.transactions)); localStorage.setItem('cached_balance', state.balance);
-                render();
-            } catch (e) {}
-        }
-        
-        async function handleAddExpense(e) {
-            e.preventDefault(); if (!state.sheetKey) return toggleSettings();
+        window.handleAddExpense = async function(e) {
+            e.preventDefault(); if (!state.sheetKey) return window.toggleSettings();
             const amtInp = document.getElementById('amountInput');
             const nameInp = document.getElementById('nameInput');
             if (!amtInp || !nameInp) return;
             const a = amtInp.value, n = nameInp.value;
             setLoading(true); const now = new Date();
             try {
-                const url = "https://script.google.com/macros/s/" + state.sheetKey + "/exec?action=addAndFetch&amount=" + a + "&name=" + encodeURIComponent(n) + "&time=" + now.toLocaleTimeString('he-IL') + "&date=" + now.toLocaleDateString('en-GB');
-                const res = await fetchGAS(url);
-                state.isDirty = true;
-                const data = await res.json();
-                render(data); expenseForm.reset(); showToast('הוצאה נרשמה', 'check');
-            } catch (err) {} finally { setLoading(false); }
-        }
-        
-        window.handleDelete = function(r) { 
-            state.pendingActionRow = { row: r }; 
-            const o = document.getElementById('confirmOverlay'); 
-            if (o) {
-                o.classList.remove('hidden'); 
-                setTimeout(function() { o.classList.add('opacity-100'); }, 10); 
-            }
+                const params = new URLSearchParams({ action: 'add', amount: a, name: n, time: now.toLocaleTimeString('he-IL'), date: now.toLocaleDateString('en-GB') });
+                await fetchGAS(`https://script.google.com/macros/s/${state.sheetKey}/exec?${params.toString()}`);
+                state.isDirty = true; await window.fetchData(); 
+                expenseForm.reset(); window.showToast('הוצאה נרשמה', 'check');
+            } finally { setLoading(false); }
         };
-        
-        window.closeConfirm = function() { 
-            const o = document.getElementById('confirmOverlay'); 
-            if (o) {
-                o.classList.remove('opacity-100'); 
-                setTimeout(function() { o.classList.add('hidden'); }, 300); 
-            }
-        };
-        
-        window.confirmDeleteAction = async function() {
-            window.closeConfirm(); 
+
+        window.executeCloseCategory = async function(name, diff, cellRef) {
+            window.closeCatModalClose();
             setLoading(true, true);
+            const now = new Date(), dateStr = now.toLocaleDateString('en-GB'), timeStr = now.toLocaleTimeString('he-IL');
+            const baseUrl = `https://script.google.com/macros/s/${state.sheetKey}/exec`;
+            try {
+                let catTitle = diff > 0 ? 'השלמה לתקציב' : 'ביטול חריגה';
+                let dailyTitle = diff > 0 ? `הכנסה מיתרה ב${name}` : `הוצאה עקב חריגה ב${name}`;
+                let catAmt = diff, dailyAmt = diff > 0 ? -diff : Math.abs(diff);
+                await fetchGAS(`${baseUrl}?${new URLSearchParams({ action: 'add', amount: catAmt.toString(), name: catTitle, time: timeStr, date: dateStr, tag: name })}`);
+                await new Promise(r => setTimeout(r, 1200));
+                await fetchGAS(`${baseUrl}?${new URLSearchParams({ action: 'add', amount: dailyAmt.toString(), name: dailyTitle, time: timeStr, date: dateStr, tag: '' })}`);
+                state.isDirty = true; await window.fetchTransactions(false); await window.fetchBudgetData();
+                window.showToast(`הקטגוריה ${name} נסגרה ואוזנה`, 'check');
+            } finally { setLoading(false, true); }
+        };
+
+        window.initEditRowByData = (row, name, amount) => {
+            state.pendingActionRow = { row, name, amount };
+            const editNameInp = document.getElementById('editRowName');
+            const editAmtInp = document.getElementById('editRowAmount');
+            if (editNameInp && editAmtInp) { editNameInp.value = name; editAmtInp.value = amount.toString(); }
+            const o = document.getElementById('editRowOverlay');
+            if (o) { o.classList.remove('hidden'); setTimeout(() => o.classList.add('opacity-100'), 10); }
+        };
+
+        window.saveRowEdit = async function() {
+            setLoading(true, true); window.closeEditRowModal();
+            const editNameInp = document.getElementById('editRowName'), editAmtInp = document.getElementById('editRowAmount');
+            if (!editNameInp || !editAmtInp || !state.pendingActionRow) return;
+            try {
+                const params = new URLSearchParams({ action: 'updateRow', row: state.pendingActionRow.row.toString(), name: editNameInp.value, amount: editAmtInp.value, offset: state.currentOffset.toString() });
+                await fetchGAS(`https://script.google.com/macros/s/${state.sheetKey}/exec?${params.toString()}`);
+                state.isDirty = true; await window.fetchData(); window.showToast('הוצאה עודכנה', 'check');
+            } finally { setLoading(false, true); }
+        };
+
+        window.confirmDeleteAction = async function() {
+            window.closeConfirm(); setLoading(true, true);
             if (!state.pendingActionRow) return;
             try {
-                const url = "https://script.google.com/macros/s/" + state.sheetKey + "/exec?action=delete&row=" + state.pendingActionRow.row + "&offset=" + state.currentOffset;
-                const res = await fetchGAS(url);
-                state.isDirty = true;
-                const data = await res.json();
-                render(data); 
-                showToast('הוצאה נמחקה', 'check');
-                if (state.currentView === 'annual') renderAnnualView();
-            } catch (e) {} finally { setLoading(false, true); }
+                const params = new URLSearchParams({ action: 'delete', row: state.pendingActionRow.row.toString(), offset: state.currentOffset.toString() });
+                await fetchGAS(`https://script.google.com/macros/s/${state.sheetKey}/exec?${params.toString()}`);
+                state.isDirty = true; await window.fetchData(); window.showToast('הוצאה נמחקה', 'check');
+            } finally { setLoading(false, true); }
         };
-        
-        function setLoading(v, useSyncIcon = false) { 
-            state.isLoading = v; 
-            if (submitBtn) submitBtn.disabled = v; 
-            if (refreshIcon) refreshIcon.classList.toggle('animate-spin', v); 
-            
-            if (useSyncIcon) {
-                const annSync = document.getElementById('annualRefreshIcon');
-                if (annSync) annSync.classList.toggle('animate-spin', v);
-                const budgetSync = document.getElementById('budgetRefreshIcon');
-                if (budgetSync) budgetSync.classList.toggle('animate-spin', v);
+
+        window.closeEditRowModal = () => { const o = document.getElementById('editRowOverlay'); if (o) { o.classList.remove('opacity-100'); setTimeout(() => o.classList.add('hidden'), 300); } };
+        window.initTagModalByRow = (row) => { state.pendingActionRow = { row }; window.initTagModal(); };
+        window.handleDeleteByRow = (row) => { state.pendingActionRow = { row }; const o = document.getElementById('confirmOverlay'); if (o) { o.classList.remove('hidden'); setTimeout(() => o.classList.add('opacity-100'), 10); } };
+        window.closeConfirm = () => { const o = document.getElementById('confirmOverlay'); if (o) { o.classList.remove('opacity-100'); setTimeout(() => o.classList.add('hidden'), 300); } };
+        window.closeRowActions = (e) => { if (e) e.stopPropagation(); const row = document.querySelector('.compact-tx.row-active'); if (row) row.classList.remove('row-active'); };
+        window.toggleRowActions = (e) => { e.stopPropagation(); const row = e.currentTarget.closest('.compact-tx'); document.querySelectorAll('.compact-tx').forEach(el => { if(el !== row) el.classList.remove('row-active'); }); row.classList.toggle('row-active'); };
+        window.toggleAnnualCategory = (name) => { if(state.expandedAnnualCategories.has(name)) state.expandedAnnualCategories.delete(name); else state.expandedAnnualCategories.add(name); renderAnnualView(); };
+        window.initCloseCategory = (name, spent, planned, cellRef) => {
+            const diff = planned - spent, overlay = document.getElementById('closeCatOverlay'), textEl = document.getElementById('closeCatText'), titleEl = document.getElementById('closeCatTitle'), confirmBtn = document.getElementById('closeCatConfirmBtn');
+            if (!overlay || !textEl || !titleEl || !confirmBtn) return;
+            const displayDiff = formatDisplayAmount(Math.abs(diff));
+            titleEl.innerText = `סגירת קטגוריית ${name}`;
+            textEl.innerText = diff > 0 ? `נותרה יתרה של ${Math.round(displayDiff).toLocaleString()} ש"ח. האם להעביר את היתרה כהכנסה למאזן השוטף?` : `חרגת ב- ${Math.round(displayDiff).toLocaleString()} ש"ח מהתקציב. האם להוריד את סכום החריגה כהוצאה מהמאזן השוטף?`;
+            confirmBtn.onclick = () => window.executeCloseCategory(name, diff, cellRef);
+            overlay.classList.remove('hidden'); setTimeout(() => overlay.classList.add('opacity-100'), 10);
+        };
+        window.closeCatModalClose = () => { const overlay = document.getElementById('closeCatOverlay'); if (overlay) { overlay.classList.remove('opacity-100'); setTimeout(() => overlay.classList.add('hidden'), 300); } };
+        window.initTagModal = function() {
+            const list = document.getElementById('categoryList'); if(!list) return;
+            list.innerHTML = '';
+            const activeAnnuals = state.budget.annual.filter(a => safeParseFloat(a.value) > 0);
+            if(activeAnnuals.length === 0) { list.innerHTML = '<p class="text-center text-slate-400 text-xs py-4">לא נמצאו קטגוריות שנתיות פעילות</p>'; } 
+            else {
+                activeAnnuals.forEach(cat => {
+                    const btn = document.createElement('button');
+                    btn.className = 'w-full text-right p-4 bg-slate-50 hover:bg-slate-100 rounded-xl font-bold text-slate-700 text-sm border border-slate-100 mb-2';
+                    btn.innerText = cat.name;
+                    const nameCellRef = cat.cell.replace(/[0-9]+/, match => (parseInt(match) - 1).toString());
+                    btn.onclick = () => window.applyTag(nameCellRef);
+                    list.appendChild(btn);
+                });
             }
+            const o = document.getElementById('tagOverlay'); if (o) { o.classList.remove('hidden'); setTimeout(() => o.classList.add('opacity-100'), 10); }
+        };
+        window.closeTagModal = () => { const o = document.getElementById('tagOverlay'); if (o) { o.classList.remove('opacity-100'); setTimeout(() => o.classList.add('hidden'), 300); } };
+        window.applyTag = async function(cellRef) {
+            setLoading(true, true); window.closeTagModal();
+            if (!state.pendingActionRow) return;
+            try {
+                const params = new URLSearchParams({ action: 'updateRow', row: state.pendingActionRow.row.toString(), formula: '=' + cellRef, offset: state.currentOffset.toString() });
+                await fetchGAS(`https://script.google.com/macros/s/${state.sheetKey}/exec?${params.toString()}`);
+                state.isDirty = true; await window.fetchData(); window.showToast('שויך בהצלחה', 'check');
+            } finally { setLoading(false, true); }
+        };
+        window.clearTag = async function() {
+            setLoading(true, true); window.closeTagModal();
+            if (!state.pendingActionRow) return;
+            try {
+                const params = new URLSearchParams({ action: 'updateRow', row: state.pendingActionRow.row.toString(), formula: '', offset: state.currentOffset.toString() });
+                await fetchGAS(`https://script.google.com/macros/s/${state.sheetKey}/exec?${params.toString()}`);
+                state.isDirty = true; await window.fetchData(); window.showToast('השיוך הוסר', 'check');
+            } finally { setLoading(false, true); }
+        };
+
+        window.handleBudgetInput = (cell, val) => { 
+            let actualValue = val;
+            const isNumberCell = /^[A-Z]+[0-9]+$/.test(cell);
+            if (state.isPrivacyMode && isNumberCell && !isNaN(parseFloat(val))) {
+                actualValue = denormalizeAmount(parseFloat(val)).toString();
+            }
+            state.dirtyBudgetItems[cell] = actualValue; 
             
-            const sIcon = document.getElementById('submitIcon');
-            if (sIcon) sIcon.className = v ? 'fa-solid fa-spinner animate-spin text-sm' : 'fa-solid fa-plus text-sm'; 
+            const updateBtn = document.getElementById('batchUpdateBtn');
+            if (updateBtn) {
+                if (Object.keys(state.dirtyBudgetItems).length > 0) {
+                    updateBtn.classList.add('visible');
+                } else {
+                    updateBtn.classList.remove('visible');
+                }
+            }
+        };
+
+        window.checkG4Change = () => { 
+            const btn = document.getElementById('g4UpdateBtn'), inp = document.getElementById('g4Input'); 
+            if (btn && inp) {
+                const displayVal = safeParseFloat(inp.value);
+                const currentDisplayG4 = Math.round(formatDisplayAmount(safeParseFloat(state.budget.g4)));
+                btn.disabled = displayVal === currentDisplayG4; 
+            }
+        };
+
+        window.updateG4Budget = async function() {
+            const displayVal = document.getElementById('g4Input').value;
+            const actualVal = denormalizeAmount(safeParseFloat(displayVal));
+            setLoading(true, true);
+            try {
+                await fetchGAS(`https://script.google.com/macros/s/${state.sheetKey}/exec?${new URLSearchParams({ action: 'updateBudgetItem', cell: 'G4', value: actualVal.toString() })}`);
+                state.isDirty = true; await window.fetchBudgetData(); window.showToast('תקציב עודכן', 'check');
+                const btn = document.getElementById('g4UpdateBtn'); if (btn) btn.disabled = true;
+            } finally { setLoading(false, true); }
+        };
+
+        window.saveAllBudgetChanges = async function() {
+            if (!state.sheetKey) return;
+            setLoading(true, true);
+            
+            const updateBtn = document.getElementById('batchUpdateBtn');
+            if (updateBtn) updateBtn.classList.remove('visible');
+
+            const updates = Object.entries(state.dirtyBudgetItems).map(([cell, value]) => ({ cell, value }));
+            try {
+                const res = await fetchGAS(`https://script.google.com/macros/s/${state.sheetKey}/exec?${new URLSearchParams({ action: 'updateMultiple', data: JSON.stringify(updates) })}`);
+                const data = await res.json();
+                state.isDirty = true; 
+                state.dirtyBudgetItems = {}; 
+                
+                renderBudget(data);
+                window.showToast('תקציב עודכן', 'check');
+            } catch (e) {
+                if (updateBtn && Object.keys(state.dirtyBudgetItems).length > 0) updateBtn.classList.add('visible');
+            } finally { setLoading(false, true); }
+        };
+
+        function setLoading(v, syncIcon = false) { 
+            state.isLoading = v; 
+            const actionElements = [
+                document.getElementById('submitBtn'),
+                document.getElementById('balanceRefreshBtn'),
+                document.getElementById('loadMoreBtn'),
+                document.getElementById('budgetSyncBtn'),
+                document.getElementById('annualSyncBtnTop'),
+                document.getElementById('g4UpdateBtn'),
+                document.getElementById('batchUpdateBtn'),
+                document.getElementById('saveSettingsBtn'),
+                document.getElementById('clearTagBtn'),
+                document.getElementById('saveEditBtn'),
+                document.getElementById('deleteConfirmBtn'),
+                document.getElementById('closeCatConfirmBtn'),
+                document.getElementById('confirmAddCatBtn')
+            ];
+            actionElements.forEach(el => { if (el) el.disabled = v; });
+            const appRoot = document.getElementById('appRoot');
+            if (appRoot) appRoot.classList.toggle('loading-disabled', v);
+            const refIcon = document.getElementById('refreshIcon'), subIcon = document.getElementById('submitIcon');
+            if (refIcon) refIcon.classList.toggle('animate-spin', v); 
+            if (syncIcon) {
+                const annS = document.getElementById('annualRefreshIcon'), budS = document.getElementById('budgetRefreshIcon');
+                if (annS) annS.classList.toggle('animate-spin', v); if (budS) budS.classList.toggle('animate-spin', v);
+            }
+            if (subIcon) subIcon.className = v ? 'fa-solid fa-spinner animate-spin text-sm' : 'fa-solid fa-plus text-sm'; 
         }
 
-        function toggleSettings() { 
-            const o = document.getElementById('settingsOverlay'); 
-            if (!o) return;
-            if (o.classList.contains('hidden')) { 
-                if (sheetKeyInput) sheetKeyInput.value = state.sheetKey; 
-                o.classList.remove('hidden'); 
-                setTimeout(function() { o.classList.add('opacity-100'); }, 10); 
-            } else { 
-                o.classList.remove('opacity-100'); 
-                setTimeout(function() { o.classList.add('hidden'); }, 300); 
-            } 
+        function updateChart(grouped) {
+            const ctxEl = document.getElementById('expensesChart'); if (!ctxEl) return;
+            const ctx = ctxEl.getContext('2d'); if (!ctx) return;
+            const days = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ש'], last7 = [];
+            const untagged = {};
+            state.transactions.forEach(tx => { if (!state.showAnnualInMain && tx.tag) return; untagged[tx.date] = (untagged[tx.date] || 0) + safeParseFloat(tx.amount); });
+            for (let i = 6; i >= 0; i--) { 
+                const d = new Date(); d.setDate(d.getDate() - i); const ds = d.toLocaleDateString('en-GB'); 
+                const actualTotal = untagged[ds] ? safeParseFloat(untagged[ds]) : 0;
+                last7.push({ label: days[d.getDay()], total: Math.round(formatDisplayAmount(actualTotal)) }); 
+            }
+            if (expensesChart) expensesChart.destroy();
+            expensesChart = new Chart(ctx, { type: 'bar', data: { labels: last7.map(d => d.label), datasets: [{ data: last7.map(d => d.total), backgroundColor: '#3b82f6', borderRadius: 4, barThickness: 16 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: false }, scales: { y: { beginAtZero: true }, x: { grid: { display: false } } } } });
         }
 
-        function saveSettings() { 
-            const skInp = document.getElementById('sheetKeyInput');
-            if (!skInp) return;
-            const k = sanitizeScriptId(skInp.value); 
-            state.sheetKey = k; localStorage.setItem('google_sheet_key', k); toggleSettings(); fetchData(); 
-        }
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('expenseForm');
+            if (form) form.addEventListener('submit', window.handleAddExpense);
+            window.fetchData();
+        });
 
-        function showToast(m, i) { 
-            const t = document.getElementById('toast'); 
-            const tm = document.getElementById('toastMessage');
-            const ti = document.getElementById('toastIcon');
-            if (!t || !tm || !ti) return;
-            tm.innerText = m; 
-            ti.className = 'fa-solid fa-circle-' + i; 
-            t.classList.add('opacity-100'); 
-            setTimeout(function() { t.classList.remove('opacity-100'); }, 3000); 
-        }
-        
-        init();
+        render();
     </script>
 </body>
 </html>
