@@ -31,8 +31,8 @@
         .ltr-num { direction: ltr; display: inline-block; }
         .compact-tx { padding: 0.4rem 0.75rem !important; margin-bottom: 0.25rem !important; overflow: hidden; position: relative; }
         .tx-inner { display: flex; align-items: center; width: 100%; transition: transform 0.3s ease; }
-        .tx-actions-panel { position: absolute; left: 0; top: 0; bottom: 0; width: 175px; background: #ffffff; display: flex; align-items: center; justify-content: space-around; transform: translateX(-100%); transition: transform 0.3s ease; padding-left: 8px; }
-        .row-active .tx-inner { transform: translateX(175px); }
+        .tx-actions-panel { position: absolute; left: 0; top: 0; bottom: 0; width: 210px; background: #ffffff; display: flex; align-items: center; justify-content: space-around; transform: translateX(-100%); transition: transform 0.3s ease; padding-left: 8px; }
+        .row-active .tx-inner { transform: translateX(210px); }
         .row-active .tx-actions-panel { transform: translateX(0); }
         .action-btn { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: background 0.2s; }
         .tag-badge { font-size: 8px; font-weight: bold; background: #ede9fe; color: #7c3aed; padding: 1px 6px; border-radius: 4px; display: inline-flex; align-items: center; margin-right: 6px; }
@@ -138,7 +138,7 @@
                         </div>
                         <p class="text-[9px] text-slate-400 font-semibold">תקציב יומי: ₪ <span id="dailyBudgetValue" class="ltr-num">0</span></p>
                     </div>
-                    <button onclick="window.fetchData()" id="balanceRefreshBtn" class="bg-blue-600 text-white w-10 h-10 rounded-xl shadow-sm hover:bg-blue-700 flex items-center justify-center">
+                    <button onclick="window.fetchTransactionsOnly()" id="balanceRefreshBtn" class="bg-blue-600 text-white w-10 h-10 rounded-xl shadow-sm hover:bg-blue-700 flex items-center justify-center">
                         <i id="refreshIcon" class="fa-solid fa-arrows-rotate text-sm"></i>
                     </button>
                 </div>
@@ -313,6 +313,31 @@
         </div>
     </div>
 
+    <!-- Refined Split Modal -->
+    <div id="splitRowOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
+            <h3 class="text-lg font-bold text-slate-900 mb-6 text-center">פיצול הוצאה</h3>
+            <div class="space-y-4">
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 mb-2">
+                    <p class="text-[10px] text-slate-400 font-bold uppercase mb-1">סכום מקורי</p>
+                    <p class="text-sm font-bold text-slate-800">₪ <span id="splitOriginalAmount">0</span></p>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 mr-1">סכום לפיצול (החלק החדש)</label>
+                    <input type="number" id="splitValueInput" step="any" inputmode="decimal" placeholder="כמה לפצל?" class="input-field w-full px-4 py-3 rounded-xl font-bold">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 mr-1">שם לחלק המפוצל</label>
+                    <input type="text" id="splitNameInput" placeholder="למשל: טיפ, חומרי ניקוי" class="input-field w-full px-4 py-3 rounded-xl">
+                </div>
+                <div class="flex gap-2 pt-2">
+                    <button id="splitConfirmBtn" onclick="window.submitSplit()" class="flex-1 bg-blue-600 text-white font-bold py-3 rounded-xl">בצע פיצול</button>
+                    <button onclick="window.closeSplitModal()" class="flex-1 bg-slate-100 text-slate-700 py-3 rounded-xl">ביטול</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="confirmOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity">
         <div class="bg-white w-full max-w-xs rounded-3xl p-6 shadow-2xl text-center">
             <h3 class="text-md font-bold mb-3">מחיקת הוצאה</h3>
@@ -407,6 +432,15 @@
             if (!state.isPrivacyMode) return displayAmount;
             const factor = getNormalizationFactor();
             return displayAmount / factor;
+        }
+
+        function updateInternalStateFromResponse(data) {
+            state.transactions = data.transactions;
+            state.isEnd = data.isEnd; 
+            state.balance = safeParseFloat(data.balance);
+            localStorage.setItem('expense_history', JSON.stringify(state.transactions));
+            localStorage.setItem('cached_balance', state.balance.toString());
+            render();
         }
 
         window.togglePrivacyMode = function() {
@@ -572,10 +606,10 @@
             }
         };
 
-        window.fetchTransactionsOnly = function() { 
+        window.fetchTransactionsOnly = async function() { 
             state.currentOffset = 0; 
             state.isEnd = false;
-            window.fetchTransactions(false); 
+            await window.fetchTransactions(false); 
         };
 
         window.loadMoreTransactions = async function() {
@@ -759,10 +793,11 @@
             const displayAmt = Math.round(formatDisplayAmount(safeParseFloat(tx.amount)));
             d.innerHTML = `
                 <div class="tx-actions-panel">
-                    <button onclick="window.initEditRowByData(${tx.row}, '${escapedName}', ${tx.amount})" class="action-btn btn-edit"><i class="fa-solid fa-pen"></i></button>
-                    <button onclick="window.initTagModalByRow(${tx.row})" class="action-btn btn-tag"><i class="fa-solid fa-tag"></i></button>
-                    <button onclick="window.handleDeleteByRow(${tx.row})" class="action-btn btn-delete"><i class="fa-solid fa-trash"></i></button>
-                    <button onclick="window.closeRowActions(event)" class="action-btn btn-close-actions"><i class="fa-solid fa-xmark"></i></button>
+                    <button onclick="window.initEditRowByData(${tx.row}, '${escapedName}', ${tx.amount})" class="action-btn btn-edit" title="ערוך"><i class="fa-solid fa-pen"></i></button>
+                    <button onclick="window.initTagModalByRow(${tx.row})" class="action-btn btn-tag" title="תייג"><i class="fa-solid fa-tag"></i></button>
+                    <button onclick="window.initSplitRow(${tx.row}, '${escapedName}', ${tx.amount}, '${tx.date}', '${tx.time}')" class="action-btn btn-split" title="פצל"><i class="fa-solid fa-scissors"></i></button>
+                    <button onclick="window.handleDeleteByRow(${tx.row})" class="action-btn btn-delete" title="מחק"><i class="fa-solid fa-trash"></i></button>
+                    <button onclick="window.closeRowActions(event)" class="action-btn btn-close-actions" title="סגור"><i class="fa-solid fa-xmark"></i></button>
                 </div>
                 <div id="tx-content-${tx.row}" class="tx-inner">
                     <div class="flex-1 flex flex-col">
@@ -850,10 +885,22 @@
             const a = amtInp.value, n = nameInp.value;
             setLoading(true); const now = new Date();
             try {
-                const params = new URLSearchParams({ action: 'add', amount: a, name: n, time: now.toLocaleTimeString('he-IL'), date: now.toLocaleDateString('en-GB') });
-                await fetchGAS(`https://script.google.com/macros/s/${state.sheetKey}/exec?${params.toString()}`);
-                state.isDirty = true; await window.fetchData(); 
-                expenseForm.reset(); window.showToast('הוצאה נרשמה', 'check');
+                // Combined action 'addAndFetch' returns updated transactions immediately
+                const params = new URLSearchParams({ 
+                    action: 'addAndFetch', 
+                    amount: a, 
+                    name: n, 
+                    time: now.toLocaleTimeString('he-IL'), 
+                    date: now.toLocaleDateString('en-GB'),
+                    offset: '0'
+                });
+                const res = await fetchGAS(`https://script.google.com/macros/s/${state.sheetKey}/exec?${params.toString()}`);
+                const data = await res.json();
+                
+                updateInternalStateFromResponse(data);
+                
+                expenseForm.reset(); 
+                window.showToast('הוצאה נרשמה', 'check');
             } finally { setLoading(false); }
         };
 
@@ -889,9 +936,79 @@
             if (!editNameInp || !editAmtInp || !state.pendingActionRow) return;
             try {
                 const params = new URLSearchParams({ action: 'updateRow', row: state.pendingActionRow.row.toString(), name: editNameInp.value, amount: editAmtInp.value, offset: state.currentOffset.toString() });
-                await fetchGAS(`https://script.google.com/macros/s/${state.sheetKey}/exec?${params.toString()}`);
-                state.isDirty = true; await window.fetchData(); window.showToast('הוצאה עודכנה', 'check');
+                const res = await fetchGAS(`https://script.google.com/macros/s/${state.sheetKey}/exec?${params.toString()}`);
+                const data = await res.json();
+                updateInternalStateFromResponse(data);
+                window.showToast('הוצאה עודכנה', 'check');
             } finally { setLoading(false, true); }
+        };
+
+        window.initSplitRow = (row, name, amount, date, time) => {
+            state.pendingActionRow = { row, name, amount, date, time };
+            const origEl = document.getElementById('splitOriginalAmount');
+            if (origEl) origEl.innerText = formatDisplayAmount(amount).toLocaleString();
+            
+            const splitInp = document.getElementById('splitValueInput');
+            const nameInp = document.getElementById('splitNameInput');
+            if (splitInp) splitInp.value = '';
+            if (nameInp) nameInp.value = '';
+            
+            const o = document.getElementById('splitRowOverlay');
+            if (o) { o.classList.remove('hidden'); setTimeout(() => o.classList.add('opacity-100'), 10); }
+        };
+
+        window.closeSplitModal = () => { const o = document.getElementById('splitRowOverlay'); if (o) { o.classList.remove('opacity-100'); setTimeout(() => o.classList.add('hidden'), 300); } };
+
+        /**
+         * Re-implemented Split Logic as per Task requirements.
+         * Function bridges the Modal UI with the backend requirements.
+         */
+        window.submitSplit = async function() {
+            const valInp = document.getElementById('splitValueInput');
+            const nameInp = document.getElementById('splitNameInput');
+            
+            if (!valInp || !valInp.value || !state.pendingActionRow) return;
+            
+            const splitAmountDisplay = safeParseFloat(valInp.value);
+            const originalAmountActual = safeParseFloat(state.pendingActionRow.amount);
+            const splitAmountActual = denormalizeAmount(splitAmountDisplay);
+            const splitName = nameInp ? nameInp.value.trim() : 'מפוצל';
+
+            // Validation: amount must be positive and less than original
+            if (splitAmountActual <= 0 || splitAmountActual >= originalAmountActual) {
+                alert('סכום הפיצול חייב להיות גדול מאפס וקטן מהסכום המקורי.');
+                return;
+            }
+
+            const originalNewAmount = originalAmountActual - splitAmountActual;
+
+            setLoading(true, true); 
+            window.closeSplitModal();
+            
+            try {
+                // Building the refined query string
+                const params = new URLSearchParams({ 
+                    action: 'split', 
+                    row: state.pendingActionRow.row.toString(), 
+                    originalNewAmount: originalNewAmount.toString(),
+                    splitName: splitName,
+                    splitAmount: splitAmountActual.toString(), 
+                    date: state.pendingActionRow.date,
+                    time: state.pendingActionRow.time,
+                    offset: state.currentOffset.toString() 
+                });
+
+                const res = await fetchGAS(`https://script.google.com/macros/s/${state.sheetKey}/exec?${params.toString()}`);
+                const data = await res.json();
+                
+                // Update internal state directly from the combined response
+                updateInternalStateFromResponse(data);
+                window.showToast('ההוצאה פוצלה בהצלחה', 'check');
+            } catch (err) {
+                console.error('Split failed', err);
+            } finally { 
+                setLoading(false, true); 
+            }
         };
 
         window.confirmDeleteAction = async function() {
@@ -899,8 +1016,10 @@
             if (!state.pendingActionRow) return;
             try {
                 const params = new URLSearchParams({ action: 'delete', row: state.pendingActionRow.row.toString(), offset: state.currentOffset.toString() });
-                await fetchGAS(`https://script.google.com/macros/s/${state.sheetKey}/exec?${params.toString()}`);
-                state.isDirty = true; await window.fetchData(); window.showToast('הוצאה נמחקה', 'check');
+                const res = await fetchGAS(`https://script.google.com/macros/s/${state.sheetKey}/exec?${params.toString()}`);
+                const data = await res.json();
+                updateInternalStateFromResponse(data);
+                window.showToast('הוצאה נמחקה', 'check');
             } finally { setLoading(false, true); }
         };
 
@@ -944,8 +1063,10 @@
             if (!state.pendingActionRow) return;
             try {
                 const params = new URLSearchParams({ action: 'updateRow', row: state.pendingActionRow.row.toString(), formula: '=' + cellRef, offset: state.currentOffset.toString() });
-                await fetchGAS(`https://script.google.com/macros/s/${state.sheetKey}/exec?${params.toString()}`);
-                state.isDirty = true; await window.fetchData(); window.showToast('שויך בהצלחה', 'check');
+                const res = await fetchGAS(`https://script.google.com/macros/s/${state.sheetKey}/exec?${params.toString()}`);
+                const data = await res.json();
+                updateInternalStateFromResponse(data);
+                window.showToast('שויך בהצלחה', 'check');
             } finally { setLoading(false, true); }
         };
         window.clearTag = async function() {
@@ -953,8 +1074,10 @@
             if (!state.pendingActionRow) return;
             try {
                 const params = new URLSearchParams({ action: 'updateRow', row: state.pendingActionRow.row.toString(), formula: '', offset: state.currentOffset.toString() });
-                await fetchGAS(`https://script.google.com/macros/s/${state.sheetKey}/exec?${params.toString()}`);
-                state.isDirty = true; await window.fetchData(); window.showToast('השיוך הוסר', 'check');
+                const res = await fetchGAS(`https://script.google.com/macros/s/${state.sheetKey}/exec?${params.toString()}`);
+                const data = await res.json();
+                updateInternalStateFromResponse(data);
+                window.showToast('השיוך הוסר', 'check');
             } finally { setLoading(false, true); }
         };
 
@@ -1032,7 +1155,8 @@
                 document.getElementById('saveEditBtn'),
                 document.getElementById('deleteConfirmBtn'),
                 document.getElementById('closeCatConfirmBtn'),
-                document.getElementById('confirmAddCatBtn')
+                document.getElementById('confirmAddCatBtn'),
+                document.getElementById('splitConfirmBtn')
             ];
             actionElements.forEach(el => { if (el) el.disabled = v; });
             const appRoot = document.getElementById('appRoot');
