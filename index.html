@@ -412,7 +412,8 @@
             isDirty: true,
             showAnnualInMain: false,
             isPrivacyMode: localStorage.getItem('isPrivacyMode') === 'true',
-            showZeroSections: { income: false, fixed: false, annual: false }
+            showZeroSections: { income: false, fixed: false, annual: false },
+            plannedLoaded: false
         };
 
         let expensesChart = null;
@@ -457,11 +458,34 @@
             state.currentOffset = 0;
             state.isEnd = false; 
             try { 
-                await window.fetchBudgetData(); 
-                await window.fetchTransactions(false); 
+                // Prioritize transactions for immediate feedback
+                await window.fetchTransactions(false);
+                
+                // Fetch others in the background after main page is interactive
+                window.fetchBudgetData().catch(console.error);
+                window.fetchPlannedTransactions().catch(console.error);
+                
                 state.isDirty = false;
                 window.showToast('הנתונים סונכרנו בהצלחה', 'check');
             } finally { setLoading(false); }
+        };
+
+        window.fetchPlannedTransactions = async function() {
+            if (!state.sheetKey) return;
+            try {
+                const res = await fetchGAS(`https://script.google.com/macros/s/${state.sheetKey}/exec?action=getPlannedTransactions`);
+                const data = await res.json();
+                const txs = Array.isArray(data) ? data : (data.transactions || []);
+                if (txs.length > 0) {
+                    const existingRows = new Set(state.transactions.map(t => t.row));
+                    const newUnique = txs.filter(t => !existingRows.has(t.row));
+                    state.transactions = state.transactions.concat(newUnique);
+                    state.plannedLoaded = true;
+                    render();
+                }
+            } catch (e) {
+                console.error("Background planned transactions fetch failed", e);
+            }
         };
 
         window.fetchTransactions = async function(append) {
@@ -522,8 +546,12 @@
             else if (view === 'budget') document.getElementById('navBudget').classList.add('active');
             else if (view === 'annual') document.getElementById('navAnnual').classList.add('active');
             updateNavigationUI();
-            if (view === 'annual') window.fetchAnnualData();
-            else if (view === 'budget') {
+            
+            if (view === 'annual') {
+                // If already loaded in background, just render. Otherwise fetch.
+                if (!state.plannedLoaded) window.fetchAnnualData();
+                else renderAnnualView();
+            } else if (view === 'budget') {
                 if (state.isDirty || state.budget.incomes.length === 0) window.fetchBudgetData();
                 else renderBudget();
             } else render();
@@ -578,10 +606,16 @@
 
         window.fetchAnnualData = async function(force = false) {
             if (!state.sheetKey) return;
+            
+            // If we are already displaying annual data and no force is needed, skip
+            if (state.plannedLoaded && !force) {
+                renderAnnualView();
+                return;
+            }
+
             const icon = document.getElementById('annualRefreshIcon');
             if (icon) icon.classList.add('animate-spin');
             try {
-                // Request specialized 'getPlannedTransactions' action to get all tagged movements
                 const res = await fetchGAS(`https://script.google.com/macros/s/${state.sheetKey}/exec?action=getPlannedTransactions`);
                 const data = await res.json();
                 
@@ -590,13 +624,9 @@
                     const existingRows = new Set(state.transactions.map(t => t.row));
                     const newUnique = txs.filter(t => !existingRows.has(t.row));
                     state.transactions = state.transactions.concat(newUnique);
+                    state.plannedLoaded = true;
                 }
                 
-                // Ensure budget categories are up-to-date
-                if (!state.budget.annual || state.budget.annual.length === 0 || force) {
-                    await window.fetchBudgetData();
-                }
-
                 state.isDirty = false;
                 renderAnnualView();
             } catch (e) {
@@ -959,10 +989,6 @@
 
         window.closeSplitModal = () => { const o = document.getElementById('splitRowOverlay'); if (o) { o.classList.remove('opacity-100'); setTimeout(() => o.classList.add('hidden'), 300); } };
 
-        /**
-         * Re-implemented Split Logic as per Task requirements.
-         * Function bridges the Modal UI with the backend requirements.
-         */
         window.submitSplit = async function() {
             const valInp = document.getElementById('splitValueInput');
             const nameInp = document.getElementById('splitNameInput');
@@ -974,7 +1000,6 @@
             const splitAmountActual = denormalizeAmount(splitAmountDisplay);
             const splitName = nameInp ? nameInp.value.trim() : 'מפוצל';
 
-            // Validation: amount must be positive and less than original
             if (splitAmountActual <= 0 || splitAmountActual >= originalAmountActual) {
                 alert('סכום הפיצול חייב להיות גדול מאפס וקטן מהסכום המקורי.');
                 return;
@@ -986,7 +1011,6 @@
             window.closeSplitModal();
             
             try {
-                // Building the refined query string
                 const params = new URLSearchParams({ 
                     action: 'split', 
                     row: state.pendingActionRow.row.toString(), 
@@ -1001,7 +1025,6 @@
                 const res = await fetchGAS(`https://script.google.com/macros/s/${state.sheetKey}/exec?${params.toString()}`);
                 const data = await res.json();
                 
-                // Update internal state directly from the combined response
                 updateInternalStateFromResponse(data);
                 window.showToast('ההוצאה פוצלה בהצלחה', 'check');
             } catch (err) {
