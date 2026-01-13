@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
@@ -14,7 +13,6 @@
     <title>מנהל הוצאות Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700&display=swap');
         body { font-family: 'Assistant', sans-serif; background-color: #f3f4f6; -webkit-tap-highlight-color: transparent; position: relative; min-height: 100vh; overflow-x: hidden; }
@@ -25,7 +23,6 @@
         .animate-fade-in { animation: fadeIn 0.2s ease-out forwards; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .sticky-header { position: sticky; top: 0; z-index: 10; background-color: rgba(243, 244, 246, 0.95); backdrop-filter: blur(4px); }
-        .chart-container { position: relative; height: 160px; width: 100%; }
         .budget-input { background: transparent; border-bottom: 1px dashed #e2e8f0; text-align: left; width: 65px; padding: 1px 4px; }
         .name-input { background: transparent; border: none; width: 100%; font-weight: 600; color: #334155; padding: 1px 0; }
         .btn-sync { background: #eff6ff; color: #2563eb; font-size: 0.7rem; font-weight: 700; padding: 0.4rem 0.8rem; border-radius: 9999px; display: flex; align-items: center; gap: 0.4rem; transition: all 0.2s; }
@@ -44,7 +41,7 @@
         .nav-btn.active::after { content: ''; position: absolute; bottom: 0.25rem; left: 25%; right: 25%; height: 2px; background: #2563eb; border-radius: 9999px; }
         .cat-expand-btn { transition: transform 0.2s; cursor: pointer; color: #94a3b8; padding: 4px; margin-right: 2px; }
         .cat-expand-btn.expanded { transform: rotate(180deg); color: #2563eb; }
-        .btn-toggle-annual { border: 1px solid #e2e8f0; font-size: 0.7rem; color: #64748b; padding: 0.3rem 0.6rem; border-radius: 9999px; transition: all 0.2s; background: white; }
+        .btn-toggle-annual { border: 1px solid #e2e8f0; font-size: 0.65rem; color: #64748b; padding: 0.25rem 0.6rem; border-radius: 9999px; transition: all 0.2s; background: white; white-space: nowrap; }
         .btn-toggle-annual.active { background: #f1f5f9; color: #0f172a; border-color: #cbd5e1; font-weight: bold; }
         .loading-disabled { pointer-events: none; opacity: 0.6; }
 
@@ -55,15 +52,11 @@
         input:checked + .slider { background-color: #2563eb; }
         input:checked + .slider:before { transform: translateX(20px); }
         
-        .section-header-btn { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; }
-        .zero-item { transition: all 0.2s ease; }
         .show-zero-btn { width: 100%; padding: 0.5rem; margin-top: 0.5rem; text-align: center; font-size: 0.75rem; font-weight: 600; color: #94a3b8; background: #f8fafc; border: 1px dashed #e2e8f0; border-radius: 0.75rem; transition: all 0.2s; }
-        .show-zero-btn:hover { background: #f1f5f9; color: #64748b; border-color: #cbd5e1; }
-
-        /* Floating Update Bar */
+        
         .batch-update-container {
             position: fixed;
-            bottom: 80px; /* Above the nav bar */
+            bottom: 80px;
             left: 0;
             right: 0;
             display: flex;
@@ -75,9 +68,7 @@
         }
         .batch-update-btn.visible { transform: translateY(0); opacity: 1; }
         .btn-add-cat { width: 24px; height: 24px; border-radius: 6px; background: #eff6ff; color: #2563eb; display: flex; align-items: center; justify-content: center; font-size: 10px; transition: all 0.2s; }
-        .btn-add-cat:hover { background: #dbeafe; }
 
-        /* Reserve Component */
         .reserve-banner {
             background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
             border: 1px solid #e2e8f0;
@@ -87,9 +78,10 @@
             position: relative;
             overflow: hidden;
         }
-        .reserve-banner::before { content: ''; position: absolute; top: 0; right: 0; width: 4px; height: 100%; background: #2563eb; }
-        .reserve-info-btn { width: 18px; height: 18px; border-radius: 50%; background: #e2e8f0; color: #64748b; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; cursor: pointer; transition: all 0.2s; }
-        .reserve-info-btn:hover { background: #cbd5e1; color: #334155; }
+        .reserve-info-btn { width: 18px; height: 18px; border-radius: 50%; background: #e2e8f0; color: #64748b; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; cursor: pointer; }
+        
+        .btn-record-compact { background: #2563eb; color: white; padding: 0.75rem 1rem; border-radius: 1rem; font-size: 0.75rem; font-weight: 700; transition: all 0.2s; white-space: nowrap; }
+        .btn-record-compact:active { transform: scale(0.95); background: #1d4ed8; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center p-4">
@@ -114,8 +106,11 @@
         <div class="flex justify-between items-center mb-4 px-1">
             <h1 id="pageTitle" class="text-xl font-bold text-slate-800 tracking-tight">הוצאות שוטפות</h1>
             <div class="flex items-center gap-2">
-                <button id="toggleAnnualBtn" onclick="window.toggleShowAnnualMain()" class="btn-toggle-annual">
-                    הצג הוצאות שנתיות
+                <button id="mainSyncBtn" onclick="window.fetchTransactionsOnly()" class="btn-sync">
+                    <i id="refreshIcon" class="fa-solid fa-arrows-rotate"></i>סנכרן
+                </button>
+                <button id="budgetSyncBtn" onclick="window.fetchBudgetData(true)" class="btn-sync hidden">
+                    <i id="budgetRefreshIcon" class="fa-solid fa-arrows-rotate"></i>סנכרן
                 </button>
                 <button id="annualSyncBtnTop" onclick="window.fetchAnnualData(true)" class="btn-sync hidden">
                     <i id="annualRefreshIcon" class="fa-solid fa-arrows-rotate"></i>סנכרן
@@ -124,38 +119,33 @@
         </div>
 
         <div id="mainView" class="view-content">
-            <header class="mb-4">
-                <div id="balanceTrigger" class="flex justify-between items-center bg-white/60 backdrop-blur p-3 rounded-2xl border border-slate-100 balance-container shadow-sm">
-                    <div class="flex flex-col items-start">
-                        <p class="text-slate-500 text-[10px] font-bold">מאזן נוכחי</p>
-                        <div class="flex items-baseline gap-1">
+            <header class="mb-6">
+                <!-- Unified Header Card: Balance right, Button left -->
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between gap-4">
+                    <!-- Left side: Button -->
+                    <button onclick="window.openAddExpenseModal()" class="btn-record-compact">
+                        תיעוד הוצאה
+                    </button>
+
+                    <!-- Right side: Balance Info -->
+                    <div class="text-right">
+                        <p class="text-slate-500 text-[10px] font-bold uppercase tracking-widest">מאזן נוכחי</p>
+                        <div class="flex items-baseline justify-end gap-1">
                             <span id="balanceValue" class="text-2xl font-bold text-slate-900 ltr-num">0</span>
-                            <span class="text-xs text-slate-400">₪</span>
+                            <span class="text-xs text-slate-400 font-bold">₪</span>
                         </div>
                         <p class="text-[9px] text-slate-400 font-semibold">תקציב יומי: ₪ <span id="dailyBudgetValue" class="ltr-num">0</span></p>
                     </div>
-                    <button onclick="window.fetchTransactionsOnly()" id="balanceRefreshBtn" class="bg-blue-600 text-white w-10 h-10 rounded-xl shadow-sm hover:bg-blue-700 flex items-center justify-center">
-                        <i id="refreshIcon" class="fa-solid fa-arrows-rotate text-sm"></i>
-                    </button>
                 </div>
             </header>
-            <section class="card p-3 mb-4">
-                <form id="expenseForm" class="flex gap-2 items-end">
-                    <div class="flex-[1.5]">
-                        <label class="block text-[9px] font-bold text-slate-400 mb-1 mr-1">כמות</label>
-                        <input type="number" id="amountInput" step="any" inputmode="decimal" placeholder="0" required class="input-field w-full px-2 py-2 rounded-lg text-sm font-bold text-slate-800">
-                    </div>
-                    <div class="flex-[2.5]">
-                        <label class="block text-[9px] font-bold text-slate-400 mb-1 mr-1">שם ההוצאה</label>
-                        <input type="text" id="nameInput" placeholder="מה קנית?" required class="input-field w-full px-2 py-2 rounded-lg text-sm text-slate-800">
-                    </div>
-                    <button type="submit" id="submitBtn" class="bg-blue-600 text-white w-10 h-10 rounded-lg flex items-center justify-center shadow-md"><i id="submitIcon" class="fa-solid fa-plus text-sm"></i></button>
-                </form>
-            </section>
-            <section class="mb-4 card p-2">
-                <div class="chart-container"><canvas id="expensesChart"></canvas></div>
-            </section>
+
             <section class="flex flex-col pb-6">
+                <div class="flex justify-between items-center mb-2 px-1">
+                    <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">רשימת הוצאות</h2>
+                    <button id="toggleAnnualBtn" onclick="window.toggleShowAnnualMain()" class="btn-toggle-annual">
+                        הצג הוצאות שנתיות
+                    </button>
+                </div>
                 <div id="transactionContainer" class="relative">
                     <div id="transactionList" class="space-y-1"></div>
                     <button id="loadMoreBtn" onclick="window.loadMoreTransactions()" class="w-full py-3 mt-2 text-blue-600 font-bold text-xs bg-white rounded-xl shadow-sm border border-slate-100 hidden">
@@ -164,6 +154,36 @@
                     </button>
                 </div>
             </section>
+        </div>
+
+        <!-- Add Expense Modal -->
+        <div id="addExpenseOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity">
+            <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
+                <h3 class="text-lg font-bold text-slate-900 mb-6 text-center">תיעוד הוצאה חדשה</h3>
+                <form id="expenseFormModal" onsubmit="window.handleAddExpense(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 mr-1">כמה?</label>
+                        <input type="number" id="amountInput" step="any" inputmode="decimal" placeholder="0" required class="input-field w-full px-4 py-3 rounded-xl font-bold text-lg">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 mr-1">על מה?</label>
+                        <input type="text" id="nameInput" placeholder="מה קנית?" required class="input-field w-full px-4 py-3 rounded-xl">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 mr-1">קטגוריה</label>
+                        <select id="categorySelect" class="input-field w-full px-4 py-3 rounded-xl appearance-none bg-no-repeat bg-[left_1rem_center]">
+                            <option value="">ללא (שוטף)</option>
+                        </select>
+                    </div>
+                    <div class="flex gap-2 pt-2">
+                        <button type="submit" id="submitBtnModal" class="flex-1 bg-blue-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-blue-200 flex items-center justify-center gap-2">
+                            <i id="submitIconModal" class="fa-solid fa-plus hidden"></i>
+                            <span>הוסף הוצאה</span>
+                        </button>
+                        <button type="button" onclick="window.closeAddExpenseModal()" class="flex-1 bg-slate-100 text-slate-700 font-bold py-3.5 rounded-xl">ביטול</button>
+                    </div>
+                </form>
+            </div>
         </div>
 
         <div id="annualView" class="view-content hidden">
@@ -184,14 +204,9 @@
 
         <div id="budgetView" class="view-content hidden">
             <div id="budgetSummary" class="card p-4 mb-4 border border-slate-200 bg-white shadow-sm">
-                <div class="flex justify-between items-center mb-4">
-                    <div>
-                        <h3 class="text-slate-500 text-[10px] font-bold uppercase tracking-widest">סיכום חודשי</h3>
-                        <p class="text-[9px] text-slate-400 font-semibold" id="startDateDisplay">תאריך התחלה: --</p>
-                    </div>
-                    <button id="budgetSyncBtn" onclick="window.fetchBudgetData(true)" class="btn-sync">
-                        <i id="budgetRefreshIcon" class="fa-solid fa-arrows-rotate"></i>סנכרן
-                    </button>
+                <div class="flex flex-col mb-4">
+                    <h3 class="text-slate-500 text-[10px] font-bold uppercase tracking-widest">סיכום חודשי</h3>
+                    <p class="text-[9px] text-slate-400 font-semibold" id="startDateDisplay">תאריך התחלה: --</p>
                 </div>
                 <div class="grid grid-cols-2 gap-3 mb-4">
                     <div class="bg-slate-50 p-2 rounded-xl border border-slate-100">
@@ -215,7 +230,7 @@
                     <label class="block text-[9px] text-slate-400 mb-1 font-bold">תקציב חודשי מוגדר</label>
                     <div class="flex gap-2">
                         <input type="number" id="g4Input" oninput="window.checkG4Change()" class="input-field border-none rounded-lg px-3 py-1.5 flex-1 text-slate-800 font-bold text-xs" placeholder="0">
-                        <button id="g4UpdateBtn" onclick="window.updateG4Budget()" disabled class="bg-blue-600 px-3 py-1.5 rounded-lg text-[10px] font-bold text-white min-w-[60px]">עדכן</button>
+                        <button id="g4UpdateBtn" onclick="window.initG4Update()" disabled class="bg-blue-600 px-3 py-1.5 rounded-lg text-[10px] font-bold text-white min-w-[60px]">עדכן</button>
                     </div>
                 </div>
             </div>
@@ -247,6 +262,25 @@
 
         <div class="batch-update-container">
             <button id="batchUpdateBtn" onclick="window.saveAllBudgetChanges()" class="batch-update-btn">עדכן תקציב</button>
+        </div>
+    </div>
+
+    <!-- Retro Update Selection Modal -->
+    <div id="retroUpdateOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity">
+        <div class="bg-white w-full max-sm rounded-3xl p-6 shadow-2xl">
+            <h3 class="text-lg font-bold text-slate-900 mb-3 text-center">עדכון תקציב חודשי</h3>
+            <p class="text-xs text-slate-500 mb-4 text-center">בחר כיצד להחיל את השינוי:</p>
+            
+            <div id="todayExplanation" class="bg-blue-50 border border-blue-100 rounded-2xl p-4 mb-6 text-xs text-blue-800 leading-relaxed">
+                <p class="font-bold mb-1">איזון "מהיום":</p>
+                <div id="explNumbers">התקציב ישתנה ב-₪0. זהו שינוי של ₪0 ליום. מכיוון שעברו 0 ימים, תיווצר הוצאת איזון בסך ₪0.</div>
+            </div>
+
+            <div class="space-y-3">
+                <button onclick="window.updateG4Budget('retro')" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl text-sm shadow-lg shadow-blue-200">עדכן רטרואקטיבית מתאריך ההתחלה</button>
+                <button onclick="window.updateG4Budget('today')" class="w-full bg-slate-100 text-slate-700 font-bold py-3.5 rounded-xl text-sm">עדכן מהיום (הוספת הוצאת איזון)</button>
+                <button onclick="window.closeRetroUpdateModal()" class="w-full text-slate-400 text-xs py-2">ביטול</button>
+            </div>
         </div>
     </div>
 
@@ -290,7 +324,6 @@
                             <span class="slider"></span>
                         </label>
                     </div>
-                    <p class="text-[10px] text-slate-400">מציג מספרים מנורמלים לפי הכנסה של 20,000 ש"ח לצורך הצגת האפליקציה לאחרים.</p>
                 </div>
                 <button id="saveSettingsBtn" onclick="window.saveSettings()" class="w-full bg-slate-900 text-white font-bold py-3.5 rounded-xl text-xs mt-4">שמור הגדרות</button>
             </div>
@@ -408,8 +441,6 @@
             budget: { incomes: [], fixed: [], annual: [], g4: 0, startDate: '' }, 
             currentView: 'main', isLoading: false, pendingActionRow: null, pendingAddType: 0, expandedAnnualCategories: new Set(), dirtyBudgetItems: {}, currentOffset: 0, isEnd: false, isPaginating: false, isDirty: true, showAnnualInMain: false, isPrivacyMode: localStorage.getItem('isPrivacyMode') === 'true', showZeroSections: { income: false, fixed: false, annual: false }, plannedLoaded: false
         };
-
-        let expensesChart = null;
 
         function getNormalizationFactor() {
             const totalIncome = state.budget.incomes.reduce((s, i) => s + safeParseFloat(i.value), 0);
@@ -585,9 +616,16 @@
             if (av) av.classList.toggle('hidden', state.currentView !== 'annual');
             const pt = document.getElementById('pageTitle'); const titles = { main: 'הוצאות שוטפות', budget: 'ניהול תקציב', annual: 'הוצאות שנתיות' };
             if (pt) pt.innerText = titles[state.currentView];
-            const syncBtn = document.getElementById('annualSyncBtnTop'); if (syncBtn) syncBtn.classList.toggle('hidden', state.currentView !== 'annual');
-            const toggleBtn = document.getElementById('toggleAnnualBtn'); if (toggleBtn) toggleBtn.classList.toggle('hidden', state.currentView !== 'main');
+            
+            const mainSyncBtn = document.getElementById('mainSyncBtn');
+            const annualSyncBtn = document.getElementById('annualSyncBtnTop'); 
+            const budgetSyncBtn = document.getElementById('budgetSyncBtn');
             const updateBtn = document.getElementById('batchUpdateBtn');
+
+            if (mainSyncBtn) mainSyncBtn.classList.toggle('hidden', state.currentView !== 'main');
+            if (annualSyncBtn) annualSyncBtn.classList.toggle('hidden', state.currentView !== 'annual');
+            if (budgetSyncBtn) budgetSyncBtn.classList.toggle('hidden', state.currentView !== 'budget');
+            
             if (state.currentView !== 'budget' || Object.keys(state.dirtyBudgetItems).length === 0) { if (updateBtn) updateBtn.classList.remove('visible'); } 
             else { if (updateBtn) updateBtn.classList.add('visible'); }
         }
@@ -628,7 +666,32 @@
             const updateBtn = document.getElementById('batchUpdateBtn');
             if (updateBtn) { if (state.currentView === 'budget' && Object.keys(state.dirtyBudgetItems).length > 0) updateBtn.classList.add('visible'); else updateBtn.classList.remove('visible'); }
             if(state.currentView === 'annual') renderAnnualView();
+            updateCategoryDropdown();
         }
+
+        function updateCategoryDropdown() {
+            const select = document.getElementById('categorySelect');
+            if (!select) return;
+            select.innerHTML = '<option value="">ללא (שוטף)</option>';
+            const activeAnnuals = state.budget.annual.filter(a => safeParseFloat(a.value) > 0);
+            activeAnnuals.forEach(cat => {
+                const opt = document.createElement('option');
+                const cellRef = cat.cell.replace(/[0-9]+/, m => (parseInt(m)-1).toString());
+                opt.value = cellRef;
+                opt.innerText = cat.name;
+                select.appendChild(opt);
+            });
+        }
+
+        window.openAddExpenseModal = () => {
+            const o = document.getElementById('addExpenseOverlay');
+            if (o) { o.classList.remove('hidden'); setTimeout(() => o.classList.add('opacity-100'), 10); }
+        };
+
+        window.closeAddExpenseModal = () => {
+            const o = document.getElementById('addExpenseOverlay');
+            if (o) { o.classList.remove('opacity-100'); setTimeout(() => o.classList.add('hidden'), 300); }
+        };
 
         window.initNewCategory = (type) => { state.pendingAddType = type; const o = document.getElementById('newCategoryOverlay'); if (o) { o.classList.remove('hidden'); setTimeout(() => o.classList.add('opacity-100'), 10); } };
         window.closeNewCategoryModal = () => { const o = document.getElementById('newCategoryOverlay'); if (o) { o.classList.remove('opacity-100'); setTimeout(() => o.classList.add('hidden'), 300); } };
@@ -658,7 +721,6 @@
                 });
             }
             const lmBtn = document.getElementById('loadMoreBtn'); if (lmBtn) lmBtn.classList.toggle('hidden', state.isEnd || state.transactions.length === 0);
-            updateChart(grouped);
         }
 
         function createTransactionEl(tx, hideDate = true, hideTag = false) {
@@ -719,12 +781,22 @@
 
         window.handleAddExpense = async function(e) {
             e.preventDefault(); if (!state.sheetKey) return window.toggleSettings();
-            const aInp = document.getElementById('amountInput'), nInp = document.getElementById('nameInput'); if (!aInp || !nInp) return;
-            setLoading(true); const now = new Date();
+            const aInp = document.getElementById('amountInput'), nInp = document.getElementById('nameInput'), cSel = document.getElementById('categorySelect'); 
+            if (!aInp || !nInp) return;
+            setLoading(true, false, true); 
+            const now = new Date();
+            const formula = cSel && cSel.value ? '=' + cSel.value : '';
             try {
-                const res = await fetchGAS(`https://script.google.com/macros/s/${state.sheetKey}/exec?${new URLSearchParams({ action: 'addAndFetch', amount: aInp.value, name: nInp.value, time: now.toLocaleTimeString('he-IL'), date: now.toLocaleDateString('en-GB'), offset: '0' })}`);
-                const data = await res.json(); updateInternalStateFromResponse(data); expenseForm.reset(); window.showToast('הוצאה נרשמה', 'check');
-            } finally { setLoading(false); }
+                const res = await fetchGAS(`https://script.google.com/macros/s/${state.sheetKey}/exec?${new URLSearchParams({ 
+                    action: 'addAndFetch', amount: aInp.value, name: nInp.value, time: now.toLocaleTimeString('he-IL'), 
+                    date: now.toLocaleDateString('en-GB'), tag: formula, offset: '0' 
+                })}`);
+                const data = await res.json(); 
+                updateInternalStateFromResponse(data); 
+                document.getElementById('expenseFormModal').reset(); 
+                window.closeAddExpenseModal();
+                window.showToast('הוצאה נרשמה', 'check');
+            } finally { setLoading(false, false, true); }
         };
 
         window.executeCloseCategory = async function(name, diff, cellRef) {
@@ -833,10 +905,62 @@
         };
 
         window.checkG4Change = () => { const btn = document.getElementById('g4UpdateBtn'), inp = document.getElementById('g4Input'); if (btn && inp) btn.disabled = safeParseFloat(inp.value) === Math.round(formatDisplayAmount(safeParseFloat(state.budget.g4))); };
-        window.updateG4Budget = async function() {
-            const actualVal = denormalizeAmount(safeParseFloat(document.getElementById('g4Input').value)); setLoading(true, true);
-            try { await fetchGAS(`https://script.google.com/macros/s/${state.sheetKey}/exec?${new URLSearchParams({ action: 'updateBudgetItem', cell: 'G4', value: actualVal.toString() })}`); state.isDirty = true; await window.fetchBudgetData(); window.showToast('עודכן', 'check'); } finally { setLoading(false, true); }
+        
+        window.initG4Update = () => {
+            const requestedMonthlyDisplay = safeParseFloat(document.getElementById('g4Input').value);
+            const actualRequestedMonthly = denormalizeAmount(requestedMonthlyDisplay);
+            const oldMonthly = safeParseFloat(state.budget.g4);
+            const diff = actualRequestedMonthly - oldMonthly;
+            const dailyDiff = diff / 30;
+
+            const startParts = state.budget.startDate.split('/');
+            const startDate = new Date(startParts[2], startParts[1] - 1, startParts[0]);
+            const today = new Date(); today.setHours(0,0,0,0);
+            const timeDiff = today.getTime() - startDate.getTime();
+            const daysElapsed = Math.max(0, Math.floor(timeDiff / (1000 * 3600 * 24)));
+
+            const balancingAmount = dailyDiff * daysElapsed;
+            
+            const explNums = document.getElementById('explNumbers');
+            explNums.innerHTML = `התקציב ישתנה ב-₪${Math.round(formatDisplayAmount(diff))}. 
+                זהו שינוי של <b>₪${formatDisplayAmount(dailyDiff).toFixed(1)}</b> ליום. 
+                מכיוון שעברו <b>${daysElapsed} ימים</b> מתחילת החודש, תיווצר הוצאת איזון בסך <b>₪${Math.round(formatDisplayAmount(balancingAmount))}</b> כדי לשמור על המאזן היומי שלך מעודכן מהיום.`;
+
+            const o = document.getElementById('retroUpdateOverlay');
+            o.classList.remove('hidden'); setTimeout(() => o.classList.add('opacity-100'), 10);
+            
+            state.pendingG4 = { finalG4: actualRequestedMonthly, balancingAmount };
         };
+
+        window.updateG4Budget = async function(mode) {
+            window.closeRetroUpdateModal();
+            setLoading(true, true);
+            try {
+                const { finalG4, balancingAmount } = state.pendingG4;
+                const updates = [{ cell: 'G4', value: finalG4.toString() }];
+                await fetchGAS(`https://script.google.com/macros/s/${state.sheetKey}/exec?action=updateMultiple&data=${JSON.stringify(updates)}`);
+                if (mode === 'today' && Math.abs(balancingAmount) > 0.1) {
+                    const now = new Date();
+                    const params = new URLSearchParams({ 
+                        action: 'add', amount: balancingAmount.toString(), name: 'איזון שינוי תקציב', 
+                        date: now.toLocaleDateString('en-GB'), time: now.toLocaleTimeString('he-IL') 
+                    });
+                    await fetchGAS(`https://script.google.com/macros/s/${state.sheetKey}/exec?${params.toString()}`);
+                }
+                state.isDirty = true;
+                await window.fetchBudgetData();
+                window.showToast('עודכן בהצלחה', 'check');
+            } catch (e) {
+                console.error(e);
+                window.showToast('שגיאה בעדכון', 'circle-xmark');
+            } finally { setLoading(false, true); }
+        };
+
+        window.closeRetroUpdateModal = () => {
+            const o = document.getElementById('retroUpdateOverlay');
+            if (o) { o.classList.remove('opacity-100'); setTimeout(() => o.classList.add('hidden'), 300); }
+        };
+
         window.saveAllBudgetChanges = async function() {
             setLoading(true, true);
             try {
@@ -845,23 +969,19 @@
             } finally { setLoading(false, true); }
         };
 
-        function setLoading(v, syncIcon = false) { 
+        function setLoading(v, syncIcon = false, modalIcon = false) { 
             state.isLoading = v; document.getElementById('appRoot').classList.toggle('loading-disabled', v);
             if (document.getElementById('refreshIcon')) document.getElementById('refreshIcon').classList.toggle('animate-spin', v); 
-            if (syncIcon) { if (document.getElementById('annualRefreshIcon')) document.getElementById('annualRefreshIcon').classList.toggle('animate-spin', v); if (document.getElementById('budgetRefreshIcon')) document.getElementById('budgetRefreshIcon').classList.toggle('animate-spin', v); }
-            if (document.getElementById('submitIcon')) document.getElementById('submitIcon').className = v ? 'fa-solid fa-spinner animate-spin text-sm' : 'fa-solid fa-plus text-sm'; 
+            if (syncIcon) { 
+                if (document.getElementById('annualRefreshIcon')) document.getElementById('annualRefreshIcon').classList.toggle('animate-spin', v); 
+                if (document.getElementById('budgetRefreshIcon')) document.getElementById('budgetRefreshIcon').classList.toggle('animate-spin', v); 
+            }
+            if (modalIcon && document.getElementById('submitIconModal')) {
+                document.getElementById('submitIconModal').className = v ? 'fa-solid fa-spinner animate-spin' : 'fa-solid fa-plus hidden';
+            }
         }
 
-        function updateChart(grouped) {
-            const ctxEl = document.getElementById('expensesChart'); if (!ctxEl) return;
-            const days = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ש'], last7 = [], untagged = {};
-            state.transactions.forEach(tx => { if (!state.showAnnualInMain && tx.tag) return; untagged[tx.date] = (untagged[tx.date] || 0) + safeParseFloat(tx.amount); });
-            for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); const ds = d.toLocaleDateString('en-GB'); last7.push({ label: days[d.getDay()], total: Math.round(formatDisplayAmount(untagged[ds] || 0)) }); }
-            if (expensesChart) expensesChart.destroy();
-            expensesChart = new Chart(ctxEl.getContext('2d'), { type: 'bar', data: { labels: last7.map(d => d.label), datasets: [{ data: last7.map(d => d.total), backgroundColor: '#3b82f6', borderRadius: 4, barThickness: 16 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: false }, scales: { y: { beginAtZero: true }, x: { grid: { display: false } } } } });
-        }
-
-        document.addEventListener('DOMContentLoaded', () => { if (document.getElementById('expenseForm')) document.getElementById('expenseForm').addEventListener('submit', window.handleAddExpense); window.fetchData(); });
+        document.addEventListener('DOMContentLoaded', () => { window.fetchData(); });
         render();
     </script>
 </body>
