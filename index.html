@@ -168,8 +168,8 @@
                 <button id="onboardingBtn" onclick="window.openOnboarding()" class="hidden bg-blue-50 border border-blue-200 text-blue-600 text-[10px] font-bold px-2.5 py-1 rounded-full hover:bg-blue-100 transition-colors whitespace-nowrap" title="איך מתחילים?">איך מתחילים?</button>
             </div>
             <div class="flex items-center gap-2">
-                <button onclick="window.toggleSettings()" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors">
-                    <i class="fa-solid fa-cog text-lg"></i>
+                <button onclick="window.toggleHamburgerMenu()" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors relative">
+                    <i class="fa-solid fa-bars text-lg"></i>
                 </button>
                 <button id="mainSyncBtn" onclick="window.fetchTransactionsOnly(true)" class="btn-sync">
                     <i id="refreshIcon" class="fa-solid fa-arrows-rotate"></i>סנכרן
@@ -382,6 +382,29 @@
         <button id="batchUpdateBtn" onclick="window.saveAllBudgetChanges()" class="batch-update-btn">עדכן תקציב</button>
     </div>
 
+    <!-- ===================== HAMBURGER DROPDOWN ===================== -->
+    <div id="hamburgerMenu" class="fixed top-14 left-2 z-[110] hidden">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden w-48 animate-fade-in">
+            <button onclick="window.closeHamburgerMenu(); window.toggleSettings();" class="w-full flex items-center gap-3 px-4 py-3.5 text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors text-right">
+                <i class="fa-solid fa-cog text-slate-400 w-4"></i>
+                <span>הגדרות</span>
+            </button>
+            <div class="border-t border-slate-100"></div>
+            <button onclick="window.closeHamburgerMenu(); window.openOnboarding();" class="w-full flex items-center gap-3 px-4 py-3.5 text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors text-right">
+                <i class="fa-solid fa-circle-info text-blue-400 w-4"></i>
+                <span>איך מתחילים?</span>
+            </button>
+            <div class="border-t border-slate-100"></div>
+            <button onclick="window.closeHamburgerMenu(); window.shareApp();" class="w-full flex items-center gap-3 px-4 py-3.5 text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors text-right">
+                <i class="fa-solid fa-share-nodes text-green-500 w-4"></i>
+                <span>שיתוף</span>
+            </button>
+        </div>
+    </div>
+    <!-- Backdrop to close hamburger -->
+    <div id="hamburgerBackdrop" class="fixed inset-0 z-[105] hidden" onclick="window.closeHamburgerMenu()"></div>
+    <!-- ====================================================== -->
+
     <!-- ===================== MODALS ===================== -->
 
     <!-- Settings Modal -->
@@ -411,9 +434,6 @@
                 </button>
                 <button onclick="window.openShortcutsModal()" class="w-full bg-slate-50 border border-slate-200 text-slate-700 font-bold py-3 rounded-xl text-xs flex items-center justify-center gap-2">
                     <i class="fa-solid fa-mobile-screen text-sm"></i>הגדרת קיצורים לאייפון
-                </button>
-                <button onclick="window.toggleSettings(); window.openOnboarding();" class="w-full bg-blue-50 border border-blue-200 text-blue-600 font-bold py-3 rounded-xl text-xs flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-circle-info text-sm"></i>איך מתחילים?
                 </button>
                 <button onclick="window.logout()" class="w-full bg-red-50 border border-red-100 text-red-500 font-bold py-3 rounded-xl text-xs">התנתק</button>
             </div>
@@ -2318,6 +2338,42 @@
             window.showToast('שגיאה בסגירת קטגוריה', 'circle-xmark');
         } finally {
             setLoading(false, true);
+        }
+    };
+
+    // =====================================================
+    // HAMBURGER MENU
+    // =====================================================
+    window.toggleHamburgerMenu = function() {
+        const menu = document.getElementById('hamburgerMenu');
+        const backdrop = document.getElementById('hamburgerBackdrop');
+        if (!menu) return;
+        const isHidden = menu.classList.contains('hidden');
+        if (isHidden) {
+            menu.classList.remove('hidden');
+            backdrop.classList.remove('hidden');
+        } else {
+            menu.classList.add('hidden');
+            backdrop.classList.add('hidden');
+        }
+    };
+
+    window.closeHamburgerMenu = function() {
+        const menu = document.getElementById('hamburgerMenu');
+        const backdrop = document.getElementById('hamburgerBackdrop');
+        if (menu) menu.classList.add('hidden');
+        if (backdrop) backdrop.classList.add('hidden');
+    };
+
+    window.shareApp = function() {
+        const url = 'https://urielshavat.github.io/MoneyBoss/';
+        if (navigator.share) {
+            navigator.share({ title: 'MoneyBoss', text: 'ניהול תקציב משפחתי', url })
+                .catch(() => {});
+        } else {
+            navigator.clipboard.writeText(url)
+                .then(() => window.showToast('הקישור הועתק!', 'check'))
+                .catch(() => {});
         }
     };
 
