@@ -161,6 +161,9 @@
         <div class="flex justify-between items-center mb-4 px-1">
             <div class="flex items-center gap-2">
                 <h1 id="pageTitle" class="text-xl font-bold text-slate-800 tracking-tight">הוצאות שוטפות</h1>
+                <button onclick="window.toggleHamburgerMenu()" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors">
+                    <i class="fa-solid fa-bars text-lg"></i>
+                </button>
                 <span id="connIndicator" class="conn-dot disconnected" title="לא מחובר"></span>
                 <button id="budgetHelpBtn" onclick="window.openBudgetHelp()" class="hidden w-6 h-6 rounded-full bg-slate-200 text-slate-500 text-xs font-bold flex items-center justify-center hover:bg-blue-100 hover:text-blue-600 transition-colors" title="איך למלא את התקציב">?</button>
                 <button id="mainHelpBtn" onclick="window.openMainHelp()" class="hidden w-6 h-6 rounded-full bg-slate-200 text-slate-500 text-xs font-bold flex items-center justify-center hover:bg-blue-100 hover:text-blue-600 transition-colors" title="הסבר על הוצאות שוטפות">?</button>
@@ -168,9 +171,6 @@
                 <button id="onboardingBtn" onclick="window.openOnboarding()" class="hidden bg-blue-50 border border-blue-200 text-blue-600 text-[10px] font-bold px-2.5 py-1 rounded-full hover:bg-blue-100 transition-colors whitespace-nowrap" title="איך מתחילים?">איך מתחילים?</button>
             </div>
             <div class="flex items-center gap-2">
-                <button onclick="window.toggleHamburgerMenu()" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors relative">
-                    <i class="fa-solid fa-bars text-lg"></i>
-                </button>
                 <button id="mainSyncBtn" onclick="window.fetchTransactionsOnly(true)" class="btn-sync">
                     <i id="refreshIcon" class="fa-solid fa-arrows-rotate"></i>סנכרן
                 </button>
@@ -383,26 +383,32 @@
     </div>
 
     <!-- ===================== HAMBURGER DROPDOWN ===================== -->
-    <div id="hamburgerMenu" class="fixed top-14 left-2 z-[110] hidden">
-        <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden w-48 animate-fade-in">
-            <button onclick="window.closeHamburgerMenu(); window.toggleSettings();" class="w-full flex items-center gap-3 px-4 py-3.5 text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors text-right">
-                <i class="fa-solid fa-cog text-slate-400 w-4"></i>
+    <!-- Backdrop to close hamburger -->
+    <div id="hamburgerBackdrop" class="fixed inset-0 z-[105] hidden" onclick="window.closeHamburgerMenu()"></div>
+    <!-- Dropdown menu — positioned under the title (top-right in RTL) -->
+    <div id="hamburgerMenu" class="fixed top-14 right-2 z-[110] hidden">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden w-52 animate-fade-in">
+            <button onclick="window.closeHamburgerMenu(); window.toggleSettings();" class="w-full flex items-center gap-3 px-4 py-3.5 text-sm font-bold text-slate-700 hover:bg-slate-50 active:bg-slate-100 transition-colors text-right">
+                <i class="fa-solid fa-cog text-slate-400 w-4 text-center"></i>
                 <span>הגדרות</span>
             </button>
             <div class="border-t border-slate-100"></div>
-            <button onclick="window.closeHamburgerMenu(); window.openOnboarding();" class="w-full flex items-center gap-3 px-4 py-3.5 text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors text-right">
-                <i class="fa-solid fa-circle-info text-blue-400 w-4"></i>
+            <button onclick="window.closeHamburgerMenu(); window.openOnboarding();" class="w-full flex items-center gap-3 px-4 py-3.5 text-sm font-bold text-slate-700 hover:bg-slate-50 active:bg-slate-100 transition-colors text-right">
+                <i class="fa-solid fa-circle-info text-blue-400 w-4 text-center"></i>
                 <span>איך מתחילים?</span>
             </button>
             <div class="border-t border-slate-100"></div>
-            <button onclick="window.closeHamburgerMenu(); window.shareApp();" class="w-full flex items-center gap-3 px-4 py-3.5 text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors text-right">
-                <i class="fa-solid fa-share-nodes text-green-500 w-4"></i>
+            <button onclick="window.closeHamburgerMenu(); window.copyExpensesList();" class="w-full flex items-center gap-3 px-4 py-3.5 text-sm font-bold text-slate-700 hover:bg-slate-50 active:bg-slate-100 transition-colors text-right">
+                <i class="fa-solid fa-copy text-purple-400 w-4 text-center"></i>
+                <span>העתק רשימת הוצאות</span>
+            </button>
+            <div class="border-t border-slate-100"></div>
+            <button onclick="window.closeHamburgerMenu(); window.shareApp();" class="w-full flex items-center gap-3 px-4 py-3.5 text-sm font-bold text-slate-700 hover:bg-slate-50 active:bg-slate-100 transition-colors text-right">
+                <i class="fa-solid fa-share-nodes text-green-500 w-4 text-center"></i>
                 <span>שיתוף</span>
             </button>
         </div>
     </div>
-    <!-- Backdrop to close hamburger -->
-    <div id="hamburgerBackdrop" class="fixed inset-0 z-[105] hidden" onclick="window.closeHamburgerMenu()"></div>
     <!-- ====================================================== -->
 
     <!-- ===================== MODALS ===================== -->
@@ -2349,13 +2355,8 @@
         const backdrop = document.getElementById('hamburgerBackdrop');
         if (!menu) return;
         const isHidden = menu.classList.contains('hidden');
-        if (isHidden) {
-            menu.classList.remove('hidden');
-            backdrop.classList.remove('hidden');
-        } else {
-            menu.classList.add('hidden');
-            backdrop.classList.add('hidden');
-        }
+        menu.classList.toggle('hidden', !isHidden);
+        backdrop.classList.toggle('hidden', !isHidden);
     };
 
     window.closeHamburgerMenu = function() {
@@ -2368,13 +2369,29 @@
     window.shareApp = function() {
         const url = 'https://urielshavat.github.io/MoneyBoss/';
         if (navigator.share) {
-            navigator.share({ title: 'MoneyBoss', text: 'ניהול תקציב משפחתי', url })
-                .catch(() => {});
+            navigator.share({ title: 'MoneyBoss', text: 'ניהול תקציב משפחתי', url }).catch(() => {});
         } else {
             navigator.clipboard.writeText(url)
                 .then(() => window.showToast('הקישור הועתק!', 'check'))
                 .catch(() => {});
         }
+    };
+
+    window.copyExpensesList = function() {
+        if (!state.transactions || state.transactions.length === 0) {
+            window.showToast('אין הוצאות להעתקה', 'circle-xmark');
+            return;
+        }
+        // Sort by date descending (same order as display)
+        const sorted = [...state.transactions].sort((a, b) => parseLocalDate(b.date) - parseLocalDate(a.date));
+        const lines = sorted.map(tx => {
+            const amount = safeParseFloat(tx.amount);
+            return `${tx.date}  ${tx.name}  ₪${Math.round(amount).toLocaleString()}`;
+        });
+        const text = lines.join('\n');
+        navigator.clipboard.writeText(text)
+            .then(() => window.showToast('הרשימה הועתקה!', 'check'))
+            .catch(() => window.showToast('שגיאה בהעתקה', 'circle-xmark'));
     };
 
     // =====================================================
