@@ -161,10 +161,6 @@
         <div class="flex justify-between items-center mb-4 px-1">
             <div class="flex items-center gap-2">
                 <h1 id="pageTitle" class="text-xl font-bold text-slate-800 tracking-tight">הוצאות שוטפות</h1>
-                <button onclick="window.toggleHamburgerMenu()" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors">
-                    <i class="fa-solid fa-bars text-lg"></i>
-                </button>
-                <span id="connIndicator" class="conn-dot disconnected" title="לא מחובר"></span>
                 <button id="budgetHelpBtn" onclick="window.openBudgetHelp()" class="hidden w-6 h-6 rounded-full bg-slate-200 text-slate-500 text-xs font-bold flex items-center justify-center hover:bg-blue-100 hover:text-blue-600 transition-colors" title="איך למלא את התקציב">?</button>
                 <button id="mainHelpBtn" onclick="window.openMainHelp()" class="hidden w-6 h-6 rounded-full bg-slate-200 text-slate-500 text-xs font-bold flex items-center justify-center hover:bg-blue-100 hover:text-blue-600 transition-colors" title="הסבר על הוצאות שוטפות">?</button>
                 <button id="annualHelpBtn" onclick="window.openAnnualHelp()" class="hidden w-6 h-6 rounded-full bg-slate-200 text-slate-500 text-xs font-bold flex items-center justify-center hover:bg-blue-100 hover:text-blue-600 transition-colors" title="הסבר על הוצאות מתוכננות">?</button>
@@ -172,13 +168,16 @@
             </div>
             <div class="flex items-center gap-2">
                 <button id="mainSyncBtn" onclick="window.fetchTransactionsOnly(true)" class="btn-sync">
-                    <i id="refreshIcon" class="fa-solid fa-arrows-rotate"></i>סנכרן
+                    <i id="refreshIcon" class="fa-solid fa-arrows-rotate"></i>
                 </button>
                 <button id="budgetSyncBtn" onclick="window.fetchBudgetData(true)" class="btn-sync hidden">
-                    <i id="budgetRefreshIcon" class="fa-solid fa-arrows-rotate"></i>סנכרן
+                    <i id="budgetRefreshIcon" class="fa-solid fa-arrows-rotate"></i>
                 </button>
                 <button id="annualSyncBtnTop" onclick="window.fetchAnnualData(true)" class="btn-sync hidden">
-                    <i id="annualRefreshIcon" class="fa-solid fa-arrows-rotate"></i>סנכרן
+                    <i id="annualRefreshIcon" class="fa-solid fa-arrows-rotate"></i>
+                </button>
+                <button onclick="window.toggleHamburgerMenu()" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors">
+                    <i class="fa-solid fa-bars text-lg"></i>
                 </button>
             </div>
         </div>
@@ -383,30 +382,66 @@
     </div>
 
     <!-- ===================== HAMBURGER DROPDOWN ===================== -->
-    <!-- Backdrop to close hamburger -->
     <div id="hamburgerBackdrop" class="fixed inset-0 z-[105] hidden" onclick="window.closeHamburgerMenu()"></div>
-    <!-- Dropdown menu — positioned under the title (top-right in RTL) -->
-    <div id="hamburgerMenu" class="fixed top-14 right-2 z-[110] hidden">
-        <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden w-52 animate-fade-in">
-            <button onclick="window.closeHamburgerMenu(); window.toggleSettings();" class="w-full flex items-center gap-3 px-4 py-3.5 text-sm font-bold text-slate-700 hover:bg-slate-50 active:bg-slate-100 transition-colors text-right">
-                <i class="fa-solid fa-cog text-slate-400 w-4 text-center"></i>
+    <div id="hamburgerMenu" class="fixed top-14 right-2 z-[110] hidden" style="min-width:220px">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden animate-fade-in">
+
+            <!-- Main actions -->
+            <button onclick="window.closeHamburgerMenu(); window.toggleSettings();" class="w-full flex items-center gap-3 px-4 py-3.5 text-sm font-bold text-slate-700 hover:bg-slate-50 active:bg-slate-100 transition-colors">
+                <i class="fa-solid fa-cog text-slate-400 w-4 text-center flex-shrink-0"></i>
                 <span>הגדרות</span>
             </button>
-            <div class="border-t border-slate-100"></div>
-            <button onclick="window.closeHamburgerMenu(); window.openOnboarding();" class="w-full flex items-center gap-3 px-4 py-3.5 text-sm font-bold text-slate-700 hover:bg-slate-50 active:bg-slate-100 transition-colors text-right">
-                <i class="fa-solid fa-circle-info text-blue-400 w-4 text-center"></i>
+            <div class="border-t border-slate-100 mx-3"></div>
+            <button onclick="window.closeHamburgerMenu(); window.openOnboarding();" class="w-full flex items-center gap-3 px-4 py-3.5 text-sm font-bold text-slate-700 hover:bg-slate-50 active:bg-slate-100 transition-colors">
+                <i class="fa-solid fa-circle-info text-blue-400 w-4 text-center flex-shrink-0"></i>
                 <span>איך מתחילים?</span>
             </button>
-            <div class="border-t border-slate-100"></div>
-            <button onclick="window.closeHamburgerMenu(); window.copyExpensesList();" class="w-full flex items-center gap-3 px-4 py-3.5 text-sm font-bold text-slate-700 hover:bg-slate-50 active:bg-slate-100 transition-colors text-right">
-                <i class="fa-solid fa-copy text-purple-400 w-4 text-center"></i>
+            <div class="border-t border-slate-100 mx-3"></div>
+            <button onclick="window.closeHamburgerMenu(); window.copyExpensesList();" class="w-full flex items-center gap-3 px-4 py-3.5 text-sm font-bold text-slate-700 hover:bg-slate-50 active:bg-slate-100 transition-colors">
+                <i class="fa-solid fa-copy text-purple-400 w-4 text-center flex-shrink-0"></i>
                 <span>העתק רשימת הוצאות</span>
             </button>
-            <div class="border-t border-slate-100"></div>
-            <button onclick="window.closeHamburgerMenu(); window.shareApp();" class="w-full flex items-center gap-3 px-4 py-3.5 text-sm font-bold text-slate-700 hover:bg-slate-50 active:bg-slate-100 transition-colors text-right">
-                <i class="fa-solid fa-share-nodes text-green-500 w-4 text-center"></i>
+            <div class="border-t border-slate-100 mx-3"></div>
+            <button onclick="window.closeHamburgerMenu(); window.shareApp();" class="w-full flex items-center gap-3 px-4 py-3.5 text-sm font-bold text-slate-700 hover:bg-slate-50 active:bg-slate-100 transition-colors">
+                <i class="fa-solid fa-share-nodes text-green-500 w-4 text-center flex-shrink-0"></i>
                 <span>שיתוף</span>
             </button>
+
+            <!-- Financial tools section -->
+            <div class="border-t border-slate-200 mt-1"></div>
+            <div class="px-4 pt-3 pb-1">
+                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">כלים פיננסיים</p>
+            </div>
+            <a href="car-cost.html" target="_blank" onclick="window.closeHamburgerMenu();" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50 active:bg-slate-100 transition-colors">
+                <i class="fa-solid fa-car text-blue-400 w-4 text-center flex-shrink-0"></i>
+                <span>החזקת רכב</span>
+            </a>
+            <div class="border-t border-slate-100 mx-3"></div>
+            <a href="family-savings.html" target="_blank" onclick="window.closeHamburgerMenu();" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50 active:bg-slate-100 transition-colors">
+                <i class="fa-solid fa-piggy-bank text-pink-400 w-4 text-center flex-shrink-0"></i>
+                <span>חסכון לילדים</span>
+            </a>
+
+            <!-- Coming soon section -->
+            <div class="border-t border-slate-200 mt-1"></div>
+            <button disabled class="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-400 cursor-default">
+                <i class="fa-solid fa-circle-question w-4 text-center flex-shrink-0 text-slate-300"></i>
+                <span class="flex-1 text-right">שאלות נפוצות</span>
+                <span class="text-[9px] font-bold text-purple-500 bg-purple-50 border border-purple-200 px-1.5 py-0.5 rounded-full whitespace-nowrap">בקרוב</span>
+            </button>
+            <div class="border-t border-slate-100 mx-3"></div>
+            <button disabled class="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-400 cursor-default">
+                <i class="fa-solid fa-users w-4 text-center flex-shrink-0 text-slate-300"></i>
+                <span class="flex-1 text-right">קהילת MoneyBoss</span>
+                <span class="text-[9px] font-bold text-purple-500 bg-purple-50 border border-purple-200 px-1.5 py-0.5 rounded-full whitespace-nowrap">בקרוב</span>
+            </button>
+            <div class="border-t border-slate-100 mx-3"></div>
+            <button disabled class="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-400 cursor-default">
+                <i class="fa-solid fa-envelope w-4 text-center flex-shrink-0 text-slate-300"></i>
+                <span class="flex-1 text-right">צור קשר</span>
+                <span class="text-[9px] font-bold text-purple-500 bg-purple-50 border border-purple-200 px-1.5 py-0.5 rounded-full whitespace-nowrap">בקרוב</span>
+            </button>
+
         </div>
     </div>
     <!-- ====================================================== -->
@@ -2382,11 +2417,10 @@
             window.showToast('אין הוצאות להעתקה', 'circle-xmark');
             return;
         }
-        // Sort by date descending (same order as display)
         const sorted = [...state.transactions].sort((a, b) => parseLocalDate(b.date) - parseLocalDate(a.date));
         const lines = sorted.map(tx => {
-            const amount = safeParseFloat(tx.amount);
-            return `${tx.date}  ${tx.name}  ₪${Math.round(amount).toLocaleString()}`;
+            const amount = Math.round(safeParseFloat(tx.amount));
+            return `${tx.date}  ${tx.name}  ${amount.toLocaleString()}`;
         });
         const text = lines.join('\n');
         navigator.clipboard.writeText(text)
