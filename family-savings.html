@@ -2,15 +2,16 @@
 <html lang="he" dir="rtl">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>מחשבון חיסכון משפחתי</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>חיסכון משפחתי</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <style>
-      body { font-family: 'Heebo', sans-serif; background-color: #f8fafc; color: #1e293b; }
-      .btn-primary { background: linear-gradient(135deg, #059669 0%, #10b981 100%); transition: all 0.2s; }
-      .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 16px -8px rgba(16,185,129,0.5); }
-      input:focus, select:focus { border-color: #10b981 !important; box-shadow: 0 0 0 3px rgba(16,185,129,0.1); }
+      body { font-family: 'Assistant', sans-serif; background-color: #f3f4f6; color: #1e293b; -webkit-tap-highlight-color: transparent; }
+      .btn-primary { background: #2563eb; transition: all 0.2s; }
+      .btn-primary:hover { background: #1d4ed8; }
+      input:focus, select:focus { border-color: #3b82f6 !important; background: #fff !important; outline: none; box-shadow: none; }
       @keyframes slideIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
       .animate-slide-in { animation: slideIn 0.25s ease-out forwards; }
       @media print {
@@ -21,12 +22,7 @@
         .print-expand { max-height: none !important; overflow: visible !important; }
         section, .bg-white { break-inside: avoid; }
         button { display: none !important; }
-        .btn-primary, .bg-blue-600 { display: none !important; }
         footer { display: none !important; }
-        h1 { font-size: 16px !important; }
-        .text-4xl { font-size: 28px !important; }
-        .text-2xl { font-size: 20px !important; }
-        .text-lg { font-size: 14px !important; }
         canvas { max-width: 100% !important; }
       }
     </style>
@@ -192,27 +188,27 @@
         return (
           <div className="min-h-screen pb-24">
             {/* Compact header */}
-            <header className="bg-white border-b border-slate-200 sticky top-0 z-20">
+            <header className="bg-white border-b border-slate-100 sticky top-0 z-20 shadow-sm">
               <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="bg-emerald-600 p-1.5 rounded-xl text-white">
-                    <Calculator size={18} strokeWidth={2.5} />
-                  </div>
+                <div className="flex items-center gap-3">
+                  <a href="index.html" className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors">
+                    <i className="fa-solid fa-arrow-right"></i>
+                  </a>
                   <div>
-                    <h1 className="text-sm font-black text-slate-800 leading-tight">מחשבון חיסכון משפחתי</h1>
-                    <p className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest">Family Savings Planner</p>
+                    <h1 className="text-sm font-bold text-slate-800 leading-tight">מחשבון חיסכון משפחתי</h1>
+                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Family Savings Planner</p>
                   </div>
                 </div>
                 <div className="flex gap-1">
                   {simulation && (
-                    <button onClick={() => window.print()} className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-xl transition" title="הורד PDF">
+                    <button onClick={() => window.print()} className="p-2 text-blue-600 hover:bg-blue-50 rounded-xl transition" title="הורד PDF">
                       <FileText size={16} />
                     </button>
                   )}
-                  <button onClick={() => { const blob = new Blob([JSON.stringify({ params, events })], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'savings.json'; a.click(); }} className="p-2 text-slate-500 hover:bg-slate-100 rounded-xl transition no-print">
+                  <button onClick={() => { const blob = new Blob([JSON.stringify({ params, events })], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'savings.json'; a.click(); }} className="p-2 text-slate-400 hover:bg-slate-100 rounded-xl transition no-print">
                     <Download size={16} />
                   </button>
-                  <button onClick={() => fileRef.current.click()} className="p-2 text-slate-500 hover:bg-slate-100 rounded-xl transition no-print">
+                  <button onClick={() => fileRef.current.click()} className="p-2 text-slate-400 hover:bg-slate-100 rounded-xl transition no-print">
                     <Upload size={16} />
                   </button>
                   <input type="file" ref={fileRef} className="hidden" onChange={(e) => { const f = e.target.files[0]; if(!f) return; const r = new FileReader(); r.onload = (ev) => { try { const d = JSON.parse(ev.target.result); setParams(d.params); setEvents(d.events); setSimulation(null); } catch(e) { alert('קובץ לא תקין'); } }; r.readAsText(f); }} />
@@ -285,10 +281,10 @@
 
               {/* Action buttons */}
               <div className="flex gap-2 no-print">
-                <button onClick={handleAdd} className="bg-blue-600 hover:bg-blue-700 text-white flex-1 py-3 rounded-xl text-sm font-black flex items-center justify-center gap-1.5 transition shadow-md shadow-blue-100">
-                  <Plus size={16} strokeWidth={3} /> הוסף אירוע
+                <button onClick={handleAdd} className="bg-slate-100 hover:bg-slate-200 text-slate-700 flex-1 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-1.5 transition">
+                  <Plus size={16} strokeWidth={2.5} /> הוסף אירוע
                 </button>
-                <button onClick={handleCalculate} disabled={isCalculating} className="btn-primary text-white flex-1 py-3 rounded-xl shadow-lg shadow-emerald-100 flex items-center justify-center gap-2 disabled:opacity-50 text-sm font-black">
+                <button onClick={handleCalculate} disabled={isCalculating} className="btn-primary text-white flex-1 py-3 rounded-xl shadow-lg shadow-blue-100 flex items-center justify-center gap-2 disabled:opacity-50 text-sm font-bold">
                   {isCalculating ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : <><Sparkles size={16} /> חשב תוכנית</>}
                 </button>
               </div>
@@ -297,18 +293,18 @@
               {simulation && (
                 <div className="space-y-3 animate-slide-in">
                   {/* Summary cards */}
-                  <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
-                    <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1">הפקדה חודשית מומלצת</p>
+                  <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm">
+                    <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-1">הפקדה חודשית מומלצת</p>
                     <p className="text-4xl font-black text-slate-900">{formatCurrency(simulation.schedule[0]?.deposit || 0)}</p>
                     <p className="text-xs text-slate-400 font-bold mt-1">הסכום המרבי להפקדה — עשוי לרדת לאחר אירועים</p>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
-                    <div className="bg-white rounded-2xl border border-slate-200 p-3 shadow-sm">
-                      <p className="text-[9px] font-black text-slate-400 uppercase mb-1">יתרה סופית</p>
+                    <div className="bg-white rounded-2xl border border-slate-100 p-3 shadow-sm">
+                      <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">יתרה סופית</p>
                       <p className="text-2xl font-black text-blue-600">{formatCurrency(simulation.finalBalance)}</p>
                     </div>
-                    <div className="bg-white rounded-2xl border border-slate-200 p-3 shadow-sm">
-                      <p className="text-[9px] font-black text-slate-400 uppercase mb-1">סה"כ הפקדות</p>
+                    <div className="bg-white rounded-2xl border border-slate-100 p-3 shadow-sm">
+                      <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">סה"כ הפקדות</p>
                       <p className="text-2xl font-black text-slate-700">{formatCurrency(simulation.totalDeposited)}</p>
                     </div>
                   </div>
@@ -320,15 +316,15 @@
                         <AreaChart data={simulation.schedule} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
                           <defs>
                             <linearGradient id="colorBal" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="#10b981" stopOpacity={0.15}/>
-                              <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                              <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.15}/>
+                              <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
                             </linearGradient>
                           </defs>
                           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                           <XAxis dataKey="date" interval={Math.floor(simulation.schedule.length/5)} tick={{fontSize: 9, fontWeight: 700, fill: '#94a3b8'}} axisLine={false} tickLine={false} />
                           <YAxis tickFormatter={v => (v/1000).toFixed(0)+'K'} tick={{fontSize: 9, fontWeight: 700, fill: '#94a3b8'}} axisLine={false} tickLine={false} width={35} />
                           <Tooltip contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 20px -8px rgba(0,0,0,0.1)', direction: 'rtl', padding: '10px', fontSize: '11px' }} formatter={v => [formatCurrency(v), ""]} />
-                          <Area type="monotone" dataKey="balanceEnd" name="יתרה" stroke="#10b981" fill="url(#colorBal)" strokeWidth={3} />
+                          <Area type="monotone" dataKey="balanceEnd" name="יתרה" stroke="#3b82f6" fill="url(#colorBal)" strokeWidth={3} />
                           {simulation.schedule.filter(s => s.eventOccurred).map((s, i) => (
                             <ReferenceLine key={i} x={s.date} stroke="#f43f5e" strokeDasharray="6 6" />
                           ))}
@@ -371,7 +367,7 @@
                           </div>
                           <div className="border-t border-slate-200 pt-2 flex items-center justify-between">
                             <span className="text-xs font-black text-slate-400 uppercase">נטו ביד</span>
-                            <span className="text-lg font-black text-emerald-600">{formatCurrency(item.withdrawalNet || 0)}</span>
+                            <span className="text-lg font-black text-blue-600">{formatCurrency(item.withdrawalNet || 0)}</span>
                           </div>
                         </div>
                       ))}
@@ -382,7 +378,7 @@
             </main>
 
             <footer className="mt-10 text-center pb-6">
-              <p className="text-slate-300 text-[9px] font-black uppercase tracking-widest">Family Savings Planner © 2026</p>
+              <p className="text-slate-300 text-[9px] font-bold uppercase tracking-widest">MoneyBoss — Family Savings Planner</p>
             </footer>
           </div>
         );
