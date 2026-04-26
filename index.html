@@ -177,7 +177,7 @@
         </div>
 
         <div id="mainView" class="view-content">
-            <header class="mb-6">
+            <header class="mb-4">
                 <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center justify-center text-center">
                     <p class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-1">מאזן נוכחי</p>
                     <div class="flex items-baseline justify-center gap-1 mb-2">
@@ -196,6 +196,28 @@
                     </div>
                 </div>
             </header>
+
+            <!-- Category summary strip -->
+            <div id="categorySummarySection" class="mb-3 hidden">
+                <div class="flex justify-between items-center mb-2 px-1">
+                    <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">קטגוריות החודש</h2>
+                    <button onclick="window.openManageCategoriesModal()" class="text-[10px] font-bold text-blue-500 flex items-center gap-1">
+                        <i class="fa-solid fa-sliders text-[9px]"></i>נהל
+                    </button>
+                </div>
+                <div id="categorySummaryStrip" class="flex gap-2 overflow-x-auto pb-1 no-scrollbar"></div>
+            </div>
+
+            <!-- No categories yet nudge -->
+            <div id="noCategoriesNudge" class="mb-3 bg-white rounded-2xl border border-dashed border-slate-200 p-3 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-tag text-slate-300 text-sm"></i>
+                    <span class="text-xs font-semibold text-slate-400">סיווג הוצאות לקטגוריות (רשות)</span>
+                </div>
+                <button onclick="window.openManageCategoriesModal()" class="text-[10px] font-bold text-blue-500 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-full">
+                    צור קטגוריה
+                </button>
+            </div>
 
             <section class="flex flex-col pb-6">
                 <div class="flex justify-between items-center mb-2 px-1">
@@ -382,9 +404,35 @@
 
             <!-- Main actions -->
             <button onclick="window.closeHamburgerMenu(); window.toggleSettings();" class="w-full flex items-center gap-3 px-4 py-3.5 text-sm font-bold text-slate-700 hover:bg-slate-50 active:bg-slate-100 transition-colors">
-                <i class="fa-solid fa-cog text-slate-400 w-4 text-center flex-shrink-0"></i>
-                <span>הגדרות</span>
+                <i class="fa-solid fa-circle-user text-blue-500 w-4 text-center flex-shrink-0"></i>
+                <span>החשבון שלי</span>
             </button>
+            <div class="border-t border-slate-100 mx-3"></div>
+            <!-- התקנה with submenu -->
+            <div id="installMenuWrapper">
+                <button onclick="window.toggleInstallSubmenu()" class="w-full flex items-center gap-3 px-4 py-3.5 text-sm font-bold text-slate-700 hover:bg-slate-50 active:bg-slate-100 transition-colors">
+                    <i class="fa-solid fa-download text-slate-400 w-4 text-center flex-shrink-0"></i>
+                    <span class="flex-1 text-right">התקנה</span>
+                    <i id="installChevron" class="fa-solid fa-chevron-left text-[10px] text-slate-300 flex-shrink-0 transition-transform duration-200"></i>
+                </button>
+                <!-- Submenu inline, below the button -->
+                <div id="installSubmenu" class="hidden bg-blue-50 border-t border-b border-blue-100">
+                    <button onclick="window.closeHamburgerMenu(); window.openImportModal();" class="w-full flex items-center gap-3 px-6 py-3 text-sm font-bold text-slate-700 hover:bg-blue-100 active:bg-blue-200 transition-colors">
+                        <i class="fa-brands fa-google text-amber-500 w-4 text-center flex-shrink-0"></i>
+                        <span>ייבא היסטוריה מ-Google Sheets</span>
+                    </button>
+                    <div class="border-t border-blue-100 mx-4"></div>
+                    <button onclick="window.closeHamburgerMenu(); window.openShortcutsModal();" class="w-full flex items-center gap-3 px-6 py-3 text-sm font-bold text-slate-700 hover:bg-blue-100 active:bg-blue-200 transition-colors">
+                        <i class="fa-brands fa-apple text-slate-600 w-4 text-center flex-shrink-0"></i>
+                        <span>התקנת קיצורים לאייפון</span>
+                    </button>
+                    <div class="border-t border-blue-100 mx-4"></div>
+                    <button onclick="window.closeHamburgerMenu(); window.openAndroidShortcutsModal();" class="w-full flex items-center gap-3 px-6 py-3 text-sm font-bold text-slate-700 hover:bg-blue-100 active:bg-blue-200 transition-colors">
+                        <i class="fa-brands fa-android text-green-500 w-4 text-center flex-shrink-0"></i>
+                        <span>התקנת קיצורים לאנדרואיד</span>
+                    </button>
+                </div>
+            </div>
             <div class="border-t border-slate-100 mx-3"></div>
             <button onclick="window.closeHamburgerMenu(); window.openOnboarding();" class="w-full flex items-center gap-3 px-4 py-3.5 text-sm font-bold text-slate-700 hover:bg-slate-50 active:bg-slate-100 transition-colors">
                 <i class="fa-solid fa-circle-info text-blue-400 w-4 text-center flex-shrink-0"></i>
@@ -431,7 +479,10 @@
     <div id="settingsOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 hidden opacity-0 transition-opacity">
         <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-bold text-slate-900">הגדרות</h2>
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-circle-user text-blue-500 text-xl"></i>
+                    <h2 class="text-xl font-bold text-slate-900">החשבון שלי</h2>
+                </div>
                 <button onclick="window.toggleSettings()" class="text-slate-400"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="space-y-5">
@@ -440,24 +491,17 @@
                     <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">הטוקן שלך</p>
                     <span id="settingsTokenDisplay" class="font-mono font-black text-2xl tracking-widest text-slate-800">------</span>
                 </div>
-                <div class="pt-2 border-t border-slate-100">
-                    <div class="flex justify-between items-center">
+                <!-- Privacy toggle with explanation -->
+                <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                    <div class="flex justify-between items-center mb-2">
                         <span class="font-bold text-slate-700 text-sm">מצב Privacy</span>
                         <label class="toggle-switch">
                             <input type="checkbox" id="privacyToggle" onchange="window.togglePrivacyMode()">
                             <span class="slider"></span>
                         </label>
                     </div>
+                    <p class="text-[10px] text-slate-400 leading-relaxed">מצב שמסתיר את הסכומים האמיתיים ומחליף אותם בנתונים משוקללים — שימושי כשמציגים את האפליקציה לאחרים.</p>
                 </div>
-                <button onclick="window.openImportModal()" class="w-full bg-amber-50 border border-amber-200 text-amber-700 font-bold py-3 rounded-xl text-xs flex items-center justify-center gap-2">
-                    <i class="fa-brands fa-google text-sm"></i>ייבוא היסטוריה מ-Google Sheets
-                </button>
-                <button onclick="window.openShortcutsModal()" class="w-full bg-slate-50 border border-slate-200 text-slate-700 font-bold py-3 rounded-xl text-xs flex items-center justify-center gap-2">
-                    <i class="fa-brands fa-apple text-sm"></i>הגדרת קיצורים לאייפון
-                </button>
-                <button onclick="window.openAndroidShortcutsModal()" class="w-full bg-slate-50 border border-slate-200 text-slate-700 font-bold py-3 rounded-xl text-xs flex items-center justify-center gap-2">
-                    <i class="fa-brands fa-android text-sm text-green-600"></i>הגדרת קיצורים לאנדרואיד
-                </button>
                 <button onclick="window.logout()" class="w-full bg-red-50 border border-red-100 text-red-500 font-bold py-3 rounded-xl text-xs">התנתק</button>
             </div>
         </div>
@@ -573,7 +617,7 @@
 
     <!-- Edit Row Modal -->
     <div id="editRowOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 hidden opacity-0 transition-opacity">
-        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
             <h3 class="text-lg font-bold text-slate-900 mb-5 text-center">עריכת הוצאה</h3>
             <div class="space-y-3">
                 <div>
@@ -585,11 +629,21 @@
                     <input type="text" id="editRowName" class="input-field w-full px-4 py-3 rounded-xl">
                 </div>
                 <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 mr-1">קטגוריה</label>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 mr-1">קטגוריה (הוצאות מתוכננות)</label>
                     <select id="editRowCategory" class="input-field w-full px-4 py-3 rounded-xl appearance-none">
                         <option value="שוטף">ללא (שוטף)</option>
                     </select>
                 </div>
+
+                <!-- Quick expense category -->
+                <div id="editRowExpCatSection" class="bg-slate-50 rounded-2xl p-3 border border-slate-100">
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase">קטגוריה</label>
+                        <span id="editRowCatLabel" class="text-xs font-bold text-slate-500">לא מקוטלג</span>
+                    </div>
+                    <div id="editRowCatButtons" class="flex flex-wrap gap-1.5"></div>
+                </div>
+
                 <!-- Primary actions -->
                 <div class="flex gap-2 pt-1">
                     <button id="saveEditBtn" onclick="window.saveRowEdit()" class="flex-1 bg-blue-600 text-white font-bold py-3 rounded-xl">שמור</button>
@@ -1023,6 +1077,60 @@
         </div>
     </div>
 
+    <!-- Manage Expense Categories Modal -->
+    <div id="manageCategoriesOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 hidden opacity-0 transition-opacity">
+        <div class="bg-white w-full max-w-sm rounded-3xl shadow-2xl flex flex-col max-h-[85vh]">
+            <div class="flex justify-between items-center p-5 pb-3 border-b border-slate-100">
+                <h3 class="text-lg font-bold text-slate-900">קטגוריות הוצאות</h3>
+                <button onclick="window.closeManageCategoriesModal()" class="text-slate-400"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div id="categoriesList" class="overflow-y-auto flex-1 p-4 space-y-2"></div>
+            <div class="p-4 border-t border-slate-100">
+                <button onclick="window.openEditCategoryModal(null)" class="w-full bg-blue-600 text-white font-bold py-3 rounded-2xl text-sm flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-plus"></i>קטגוריה חדשה
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit/Create Category Modal -->
+    <div id="editCategoryOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[110] flex items-center justify-center p-4 hidden opacity-0 transition-opacity">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-5 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h3 id="editCategoryTitle" class="text-lg font-bold text-slate-900">קטגוריה חדשה</h3>
+                <button onclick="window.closeEditCategoryModal()" class="text-slate-400"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">שם הקטגוריה</label>
+                    <input type="text" id="catEditName" placeholder="מזון, בילויים..." class="input-field w-full px-4 py-3 rounded-xl">
+                </div>
+                <!-- Color picker -->
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-2">צבע</label>
+                    <div id="colorPicker" class="flex flex-wrap gap-2"></div>
+                </div>
+                <!-- Icon picker -->
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-2">אייקון</label>
+                    <div id="iconPicker" class="grid grid-cols-6 gap-2"></div>
+                </div>
+                <!-- Preview -->
+                <div class="bg-slate-50 rounded-2xl p-3 flex items-center gap-3 border border-slate-100">
+                    <div id="catPreviewBadge" class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0">
+                        <i id="catPreviewIcon" class="text-white text-base"></i>
+                    </div>
+                    <span id="catPreviewName" class="text-sm font-bold text-slate-700">תצוגה מקדימה</span>
+                </div>
+                <div class="flex gap-2 pt-1">
+                    <button onclick="window.saveCategory()" class="flex-1 bg-blue-600 text-white font-bold py-3 rounded-xl">שמור</button>
+                    <button onclick="window.closeEditCategoryModal()" class="flex-1 bg-slate-100 text-slate-700 py-3 rounded-xl">ביטול</button>
+                </div>
+                <button id="deleteCategoryBtn" onclick="window.deleteCategory()" class="w-full bg-red-50 border border-red-100 text-red-500 font-bold py-2.5 rounded-xl text-xs hidden">מחק קטגוריה</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Onboarding Modal -->
     <div id="onboardingOverlay" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[150] flex items-end justify-center p-0 hidden opacity-0 transition-opacity">
         <div class="bg-white w-full max-w-md rounded-t-3xl p-6 shadow-2xl pb-10">
@@ -1030,47 +1138,44 @@
                 <div class="w-10 h-1.5 bg-slate-200 rounded-full"></div>
             </div>
             <div class="flex items-center gap-3 mb-5">
-                <div class="w-11 h-11 bg-blue-600 rounded-2xl flex items-center justify-center shadow-md shadow-blue-200 flex-shrink-0">
-                    <i class="fa-solid fa-wallet text-white text-lg"></i>
-                </div>
+                <img src="apple-touch-icon.png" alt="MoneyBoss" class="w-11 h-11 rounded-2xl shadow-md flex-shrink-0">
                 <div>
-                    <h2 class="text-lg font-black text-slate-900">ברוכים הבאים ל-MoneyBoss</h2>
-                    <p class="text-[11px] text-slate-400 font-semibold">קצת על השיטה לפני שמתחילים</p>
+                    <h2 class="text-lg font-bold text-slate-900">איך MoneyBoss עובד?</h2>
+                    <p class="text-[11px] text-slate-400 font-semibold">שלושה שלבים פשוטים</p>
                 </div>
             </div>
 
             <div class="space-y-3 mb-6">
                 <div class="flex gap-3 items-start bg-blue-50 rounded-2xl p-3 border border-blue-100">
-                    <span class="text-xl mt-0.5">📊</span>
+                    <div class="w-7 h-7 bg-blue-600 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <span class="text-white text-xs font-bold">1</span>
+                    </div>
                     <div>
-                        <p class="text-sm font-bold text-slate-800">תקציב יומי = הכנסות פחות הוצאות</p>
-                        <p class="text-xs text-slate-500 mt-0.5 leading-relaxed">מגדירים הכנסות והוצאות קבועות — המערכת מחשבת כמה אפשר להוציא ביום.</p>
+                        <p class="text-sm font-bold text-slate-800">הגדירו הכנסות והוצאות קבועות</p>
+                        <p class="text-xs text-slate-500 mt-0.5 leading-relaxed">בעמוד <span class="font-bold text-slate-700">תקציב</span> — הכניסו את כל ההכנסות החודשיות שלכם ואת ההוצאות הקבועות: שכר דירה, ביטוחים, חיסכון וכד'.</p>
                     </div>
                 </div>
-                <div class="flex gap-3 items-start bg-slate-50 rounded-2xl p-3 border border-slate-100">
-                    <span class="text-xl mt-0.5">💰</span>
+                <div class="flex gap-3 items-start bg-blue-50 rounded-2xl p-3 border border-blue-100">
+                    <div class="w-7 h-7 bg-blue-600 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <span class="text-white text-xs font-bold">2</span>
+                    </div>
                     <div>
-                        <p class="text-sm font-bold text-slate-800">המאזן גדל כל יום</p>
-                        <p class="text-xs text-slate-500 mt-0.5 leading-relaxed">כל יום שלא הוצאתם כלום — המאזן עולה. כל הוצאה מורידה אותו. המטרה: לשמור אותו חיובי.</p>
+                        <p class="text-sm font-bold text-slate-800">הגדירו הוצאות מתוכננות</p>
+                        <p class="text-xs text-slate-500 mt-0.5 leading-relaxed">בעמוד <span class="font-bold text-slate-700">תקציב</span> — הוסיפו הוצאות גדולות שאינן חודשיות: חופשות, אחזקת רכב, קייטנות. הן מנוהלות בנפרד תחת עמוד <span class="font-bold text-slate-700">מתוכנן</span>.</p>
                     </div>
                 </div>
-                <div class="flex gap-3 items-start bg-slate-50 rounded-2xl p-3 border border-slate-100">
-                    <span class="text-xl mt-0.5">📅</span>
-                    <div>
-                        <p class="text-sm font-bold text-slate-800">הוצאות מתוכננות בנפרד</p>
-                        <p class="text-xs text-slate-500 mt-0.5 leading-relaxed">חופשות, ביגוד, רכב — מנוהלות בעמוד "מתוכנן" ולא מפריעות למאזן השוטף.</p>
+                <div class="flex gap-3 items-start bg-slate-900 rounded-2xl p-3 border border-slate-800">
+                    <div class="w-7 h-7 bg-white rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <span class="text-slate-900 text-xs font-bold">3</span>
                     </div>
-                </div>
-                <div class="flex gap-3 items-start bg-amber-50 rounded-2xl p-3 border border-amber-100">
-                    <span class="text-xl mt-0.5">🚀</span>
                     <div>
-                        <p class="text-sm font-bold text-slate-800">שלבי ההתחלה</p>
-                        <p class="text-xs text-slate-500 mt-0.5 leading-relaxed">① הגדירו הכנסות והוצאות קבועות בעמוד <span class="font-bold">תקציב</span> ← ② ייבאו היסטוריה מגוגל שיט (אם יש) מהגדרות ← ③ התחילו לתעד הוצאות יומיות.</p>
+                        <p class="text-sm font-bold text-white">מה שנשאר — זה העו"ש החדש שלכם</p>
+                        <p class="text-xs text-slate-300 mt-0.5 leading-relaxed">הסכום שנותר מחולק ל-30 ומתווסף למאזן כל יום כ<span class="font-bold text-white">הכנסה יומית</span>. כל הוצאה שתרשמו מורידה את המאזן. המטרה: לשמור אותו חיובי תמיד.</p>
                     </div>
                 </div>
             </div>
 
-            <button onclick="window.closeOnboarding()" class="w-full bg-slate-900 text-white font-bold py-4 rounded-2xl text-sm">
+            <button onclick="window.closeOnboarding()" class="w-full bg-blue-600 text-white font-bold py-4 rounded-2xl text-sm shadow-lg shadow-blue-200">
                 הבנתי — נתחיל!
             </button>
         </div>
@@ -1370,7 +1475,9 @@
         stats: {
             startDay: parseInt(localStorage.getItem('stats_start_day')) || 1,
             specificMonth: ''
-        }
+        },
+        expenseCategories: JSON.parse(localStorage.getItem('expense_categories') || '[]'),
+        activeCategoryFilter: null  // null = show all
     };
 
     // =====================================================
@@ -1486,7 +1593,8 @@
             time: new Date(t.created_at).toLocaleTimeString('he-IL'),
             tag,
             isAdjustment,
-            external_id: t.external_id || null
+            external_id: t.external_id || null,
+            expense_category_id: t.expense_category_id || null
         };
     }
 
@@ -1597,7 +1705,7 @@
         setLoading(true);
         state.displayedTransactionsCount = 30;
         try {
-            await Promise.all([window.fetchTransactionsOnly(), window.fetchBudgetData()]);
+            await Promise.all([window.fetchTransactionsOnly(), window.fetchBudgetData(), window.fetchExpenseCategories()]);
             state.isDirty = false;
             render();
         } catch (e) {
@@ -1626,7 +1734,9 @@
     // GOOGLE SHEETS IMPORT
     // =====================================================
     window.openImportModal = function() {
-        window.toggleSettings();
+        // סגור את חלון ההגדרות רק אם הוא פתוח
+        const settingsEl = document.getElementById('settingsOverlay');
+        if (settingsEl && !settingsEl.classList.contains('hidden')) window.toggleSettings();
         const o = document.getElementById('importOverlay');
         if (o) { o.classList.remove('hidden'); setTimeout(() => o.classList.add('opacity-100'), 10); }
         const prog = document.getElementById('importProgress');
@@ -2458,6 +2568,391 @@
         if (o) { o.classList.remove('opacity-100'); setTimeout(() => o.classList.add('hidden'), 300); }
     };
 
+    window.closeOverspendModal = function() {
+        const o = document.getElementById('overspendOverlay');
+        if (o) { o.classList.remove('opacity-100'); setTimeout(() => o.classList.add('hidden'), 300); }
+    };
+
+    // =====================================================
+    // EXPENSE CATEGORIES (manual tagging)
+    // =====================================================
+    const CAT_COLORS = [
+        { id: 'blue',    hex: '#3b82f6', bg: '#eff6ff' },
+        { id: 'indigo',  hex: '#6366f1', bg: '#eef2ff' },
+        { id: 'purple',  hex: '#9333ea', bg: '#f5f3ff' },
+        { id: 'pink',    hex: '#ec4899', bg: '#fdf2f8' },
+        { id: 'red',     hex: '#ef4444', bg: '#fef2f2' },
+        { id: 'orange',  hex: '#f97316', bg: '#fff7ed' },
+        { id: 'amber',   hex: '#f59e0b', bg: '#fffbeb' },
+        { id: 'yellow',  hex: '#eab308', bg: '#fefce8' },
+        { id: 'lime',    hex: '#84cc16', bg: '#f7fee7' },
+        { id: 'green',   hex: '#22c55e', bg: '#f0fdf4' },
+        { id: 'teal',    hex: '#14b8a6', bg: '#f0fdfa' },
+        { id: 'cyan',    hex: '#06b6d4', bg: '#ecfeff' },
+        { id: 'slate',   hex: '#64748b', bg: '#f8fafc' },
+    ];
+
+    const CAT_ICONS = [
+        { id: 'utensils',         fa: 'fa-utensils',           label: 'מזון' },
+        { id: 'cart-shopping',    fa: 'fa-cart-shopping',       label: 'קניות' },
+        { id: 'shirt',            fa: 'fa-shirt',               label: 'ביגוד' },
+        { id: 'car',              fa: 'fa-car',                 label: 'רכב' },
+        { id: 'gas-pump',         fa: 'fa-gas-pump',            label: 'דלק' },
+        { id: 'house',            fa: 'fa-house',               label: 'בית' },
+        { id: 'bolt',             fa: 'fa-bolt',                label: 'חשמל' },
+        { id: 'droplet',          fa: 'fa-droplet',             label: 'מים' },
+        { id: 'wifi',             fa: 'fa-wifi',                label: 'תקשורת' },
+        { id: 'mobile-screen',    fa: 'fa-mobile-screen',       label: 'סלולר' },
+        { id: 'pills',            fa: 'fa-pills',               label: 'תרופות' },
+        { id: 'heart-pulse',      fa: 'fa-heart-pulse',         label: 'בריאות' },
+        { id: 'face-smile',       fa: 'fa-face-smile',          label: 'קוסמטיקה' },
+        { id: 'dumbbell',         fa: 'fa-dumbbell',            label: 'ספורט' },
+        { id: 'baby',             fa: 'fa-baby',                label: 'ילדים' },
+        { id: 'school',           fa: 'fa-school',              label: 'חינוך' },
+        { id: 'paw',              fa: 'fa-paw',                 label: 'חיות מחמד' },
+        { id: 'music',            fa: 'fa-music',               label: 'בידור' },
+        { id: 'film',             fa: 'fa-film',                label: 'סרטים' },
+        { id: 'gamepad',          fa: 'fa-gamepad',             label: 'משחקים' },
+        { id: 'plane',            fa: 'fa-plane',               label: 'טיסות' },
+        { id: 'umbrella-beach',   fa: 'fa-umbrella-beach',      label: 'חופשה' },
+        { id: 'gift',             fa: 'fa-gift',                label: 'מתנות' },
+        { id: 'handshake',        fa: 'fa-handshake',           label: 'תרומות' },
+        { id: 'wrench',           fa: 'fa-wrench',              label: 'תיקונים' },
+        { id: 'screwdriver-wrench', fa: 'fa-screwdriver-wrench', label: 'אחזקה' },
+        { id: 'book',             fa: 'fa-book',                label: 'ספרים' },
+        { id: 'mug-hot',          fa: 'fa-mug-hot',             label: 'קפה' },
+        { id: 'building',         fa: 'fa-building',            label: 'עסקי' },
+        { id: 'ellipsis',         fa: 'fa-ellipsis',            label: 'שונות' },
+    ];
+
+    let _editingCatId = null;
+    let _editingCatColor = CAT_COLORS[0].id;
+    let _editingCatIcon = CAT_ICONS[0].id;
+
+    // Fetch categories from Supabase
+    window.fetchExpenseCategories = async function() {
+        if (!sbClient || !USER_TOKEN) return;
+        try {
+            const { data, error } = await sbClient
+                .from('expense_categories')
+                .select('*')
+                .eq('user_token', USER_TOKEN)
+                .order('created_at');
+            if (error) throw error;
+            state.expenseCategories = data || [];
+            localStorage.setItem('expense_categories', JSON.stringify(state.expenseCategories));
+        } catch(e) {
+            console.warn('expense_categories fetch failed (table may not exist yet):', e.message);
+        }
+    };
+
+    // Get category by id from state
+    function getExpCatById(id) {
+        return state.expenseCategories.find(c => c.id === id) || null;
+    }
+
+    // Get color object
+    function getCatColor(colorId) {
+        return CAT_COLORS.find(c => c.id === colorId) || CAT_COLORS[0];
+    }
+    function getCatIcon(iconId) {
+        return CAT_ICONS.find(c => c.id === iconId) || CAT_ICONS[0];
+    }
+
+    // Get current month start
+    function currentMonthStart() {
+        const now = new Date();
+        return new Date(now.getFullYear(), now.getMonth(), 1);
+    }
+
+    // Render category summary strip
+    function renderCategorySummary() {
+        const summarySection = document.getElementById('categorySummarySection');
+        const nudge = document.getElementById('noCategoriesNudge');
+        const strip = document.getElementById('categorySummaryStrip');
+        if (!summarySection || !strip) return;
+
+        const cats = state.expenseCategories;
+        if (cats.length === 0) {
+            summarySection.classList.add('hidden');
+            if (nudge) nudge.classList.remove('hidden');
+            return;
+        }
+        summarySection.classList.remove('hidden');
+        if (nudge) nudge.classList.add('hidden');
+
+        const monthStart = currentMonthStart();
+        const monthTxs = state.transactions.filter(tx => {
+            const d = parseLocalDate(tx.date);
+            return d >= monthStart && !tx.tag && !tx.isAdjustment;
+        });
+
+        // Compute totals per category
+        const totals = {};
+        monthTxs.forEach(tx => {
+            const cid = tx.expense_category_id || null;
+            if (cid) totals[cid] = (totals[cid] || 0) + safeParseFloat(tx.amount);
+            else totals['__none__'] = (totals['__none__'] || 0) + safeParseFloat(tx.amount);
+        });
+
+        strip.innerHTML = '';
+
+        // Category chips
+        cats.forEach(cat => {
+            const color = getCatColor(cat.color);
+            const icon = getCatIcon(cat.icon);
+            const total = Math.round(totals[cat.id] || 0);
+            const isActive = state.activeCategoryFilter === cat.id;
+            const chip = document.createElement('button');
+            chip.className = `flex-shrink-0 flex flex-col items-center gap-1 px-3 py-2 rounded-2xl border transition-all ${isActive ? 'shadow-md scale-105' : 'bg-white border-slate-100'}`;
+            chip.style.borderColor = isActive ? color.hex : '';
+            chip.style.background = isActive ? color.bg : '';
+            chip.innerHTML = `
+                <div class="w-7 h-7 rounded-xl flex items-center justify-center" style="background:${color.hex}">
+                    <i class="fa-solid ${icon.fa} text-white text-xs"></i>
+                </div>
+                <span class="text-[9px] font-bold text-slate-600 max-w-[56px] truncate">${cat.name}</span>
+                <span class="text-[9px] font-bold ltr-num" style="color:${color.hex}">₪${total.toLocaleString()}</span>`;
+            chip.onclick = () => window.toggleCategoryFilter(cat.id);
+            strip.appendChild(chip);
+        });
+
+        // Uncategorized chip
+        const noneTotal = Math.round(totals['__none__'] || 0);
+        const isNoneActive = state.activeCategoryFilter === '__none__';
+        const noneChip = document.createElement('button');
+        noneChip.className = `flex-shrink-0 flex flex-col items-center gap-1 px-3 py-2 rounded-2xl border transition-all ${isNoneActive ? 'border-slate-400 bg-slate-50 shadow-md scale-105' : 'bg-white border-slate-100'}`;
+        noneChip.innerHTML = `
+            <div class="w-7 h-7 rounded-xl bg-slate-200 flex items-center justify-center">
+                <i class="fa-solid fa-tag text-slate-400 text-xs"></i>
+            </div>
+            <span class="text-[9px] font-bold text-slate-400">לא מקוטלג</span>
+            <span class="text-[9px] font-bold text-slate-400 ltr-num">₪${noneTotal.toLocaleString()}</span>`;
+        noneChip.onclick = () => window.toggleCategoryFilter('__none__');
+        strip.appendChild(noneChip);
+    }
+
+    window.toggleCategoryFilter = function(catId) {
+        state.activeCategoryFilter = state.activeCategoryFilter === catId ? null : catId;
+        render();
+    };
+
+    // Open manage categories modal
+    window.openManageCategoriesModal = function() {
+        renderCategoriesListModal();
+        const o = document.getElementById('manageCategoriesOverlay');
+        if (o) { o.classList.remove('hidden'); setTimeout(() => o.classList.add('opacity-100'), 10); }
+    };
+    window.closeManageCategoriesModal = function() {
+        const o = document.getElementById('manageCategoriesOverlay');
+        if (o) { o.classList.remove('opacity-100'); setTimeout(() => o.classList.add('hidden'), 300); }
+    };
+
+    function renderCategoriesListModal() {
+        const list = document.getElementById('categoriesList');
+        if (!list) return;
+        list.innerHTML = '';
+        if (state.expenseCategories.length === 0) {
+            list.innerHTML = '<p class="text-center text-slate-400 text-xs py-6">אין קטגוריות עדיין</p>';
+            return;
+        }
+        state.expenseCategories.forEach(cat => {
+            const color = getCatColor(cat.color);
+            const icon = getCatIcon(cat.icon);
+            const div = document.createElement('div');
+            div.className = 'flex items-center gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-100';
+            div.innerHTML = `
+                <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:${color.hex}">
+                    <i class="fa-solid ${icon.fa} text-white text-sm"></i>
+                </div>
+                <span class="flex-1 text-sm font-bold text-slate-700">${cat.name}</span>
+                <button onclick="window.openEditCategoryModal('${cat.id}')" class="p-1.5 text-slate-400 hover:text-blue-600 transition-colors">
+                    <i class="fa-solid fa-pen text-xs"></i>
+                </button>`;
+            list.appendChild(div);
+        });
+    }
+
+    // Open create/edit category modal
+    window.openEditCategoryModal = function(catId) {
+        _editingCatId = catId;
+        const cat = catId ? getExpCatById(catId) : null;
+        _editingCatColor = cat ? cat.color : CAT_COLORS[0].id;
+        _editingCatIcon  = cat ? cat.icon  : CAT_ICONS[0].id;
+
+        const titleEl = document.getElementById('editCategoryTitle');
+        if (titleEl) titleEl.textContent = cat ? 'עריכת קטגוריה' : 'קטגוריה חדשה';
+        const nameEl = document.getElementById('catEditName');
+        if (nameEl) nameEl.value = cat ? cat.name : '';
+        const delBtn = document.getElementById('deleteCategoryBtn');
+        if (delBtn) delBtn.classList.toggle('hidden', !cat);
+
+        renderColorPicker();
+        renderIconPicker();
+        updateCatPreview();
+
+        const o = document.getElementById('editCategoryOverlay');
+        if (o) { o.classList.remove('hidden'); setTimeout(() => o.classList.add('opacity-100'), 10); }
+    };
+    window.closeEditCategoryModal = function() {
+        const o = document.getElementById('editCategoryOverlay');
+        if (o) { o.classList.remove('opacity-100'); setTimeout(() => o.classList.add('hidden'), 300); }
+    };
+
+    function renderColorPicker() {
+        const el = document.getElementById('colorPicker');
+        if (!el) return;
+        el.innerHTML = '';
+        CAT_COLORS.forEach(c => {
+            const btn = document.createElement('button');
+            const isActive = c.id === _editingCatColor;
+            btn.className = `w-8 h-8 rounded-xl transition-all ${isActive ? 'ring-2 ring-offset-2 scale-110' : ''}`;
+            btn.style.background = c.hex;
+            btn.style.ringColor = c.hex;
+            if (isActive) btn.style.outline = `2px solid ${c.hex}`;
+            btn.onclick = () => { _editingCatColor = c.id; renderColorPicker(); updateCatPreview(); };
+            el.appendChild(btn);
+        });
+    }
+
+    function renderIconPicker() {
+        const el = document.getElementById('iconPicker');
+        if (!el) return;
+        el.innerHTML = '';
+        CAT_ICONS.forEach(ic => {
+            const btn = document.createElement('button');
+            const isActive = ic.id === _editingCatIcon;
+            const color = getCatColor(_editingCatColor);
+            btn.className = `w-10 h-10 rounded-xl flex items-center justify-center transition-all ${isActive ? 'scale-110' : 'bg-slate-100'}`;
+            btn.style.background = isActive ? color.hex : '';
+            btn.title = ic.label;
+            btn.innerHTML = `<i class="fa-solid ${ic.fa} text-sm ${isActive ? 'text-white' : 'text-slate-500'}"></i>`;
+            btn.onclick = () => { _editingCatIcon = ic.id; renderIconPicker(); updateCatPreview(); };
+            el.appendChild(btn);
+        });
+    }
+
+    function updateCatPreview() {
+        const color = getCatColor(_editingCatColor);
+        const icon  = getCatIcon(_editingCatIcon);
+        const badge = document.getElementById('catPreviewBadge');
+        const iconEl = document.getElementById('catPreviewIcon');
+        const nameEl = document.getElementById('catPreviewName');
+        const inputEl = document.getElementById('catEditName');
+        if (badge) badge.style.background = color.hex;
+        if (iconEl) iconEl.className = `fa-solid ${icon.fa} text-white text-base`;
+        if (nameEl) nameEl.textContent = inputEl?.value || 'תצוגה מקדימה';
+    }
+
+    // Live preview on name input
+    document.addEventListener('input', function(e) {
+        if (e.target.id === 'catEditName') updateCatPreview();
+    });
+
+    window.saveCategory = async function() {
+        const name = (document.getElementById('catEditName')?.value || '').trim();
+        if (!name) return window.showToast('נא להזין שם', 'circle-xmark');
+        if (!sbClient || !USER_TOKEN) return;
+        try {
+            if (_editingCatId) {
+                const { error } = await sbClient.from('expense_categories')
+                    .update({ name, color: _editingCatColor, icon: _editingCatIcon })
+                    .eq('id', _editingCatId).eq('user_token', USER_TOKEN);
+                if (error) throw error;
+            } else {
+                const { error } = await sbClient.from('expense_categories')
+                    .insert({ name, color: _editingCatColor, icon: _editingCatIcon, user_token: USER_TOKEN });
+                if (error) throw error;
+            }
+            window.closeEditCategoryModal();
+            await window.fetchExpenseCategories();
+            renderCategoriesListModal();
+            render();
+            window.showToast('נשמר', 'check');
+        } catch(e) {
+            console.error(e);
+            window.showToast('שגיאה: ' + e.message, 'circle-xmark');
+        }
+    };
+
+    window.deleteCategory = async function() {
+        if (!_editingCatId || !sbClient) return;
+        try {
+            // Clear category from transactions
+            await sbClient.from('transactions')
+                .update({ expense_category_id: null })
+                .eq('expense_category_id', _editingCatId)
+                .eq('user_token', USER_TOKEN);
+            await sbClient.from('expense_categories')
+                .delete().eq('id', _editingCatId).eq('user_token', USER_TOKEN);
+            // Remove from state transactions too
+            state.transactions.forEach(t => { if (t.expense_category_id === _editingCatId) t.expense_category_id = null; });
+            window.closeEditCategoryModal();
+            await window.fetchExpenseCategories();
+            renderCategoriesListModal();
+            render();
+            window.showToast('נמחק', 'check');
+        } catch(e) {
+            console.error(e);
+            window.showToast('שגיאה', 'circle-xmark');
+        }
+    };
+
+    // Quick assign category from edit modal
+    window.quickAssignCategory = async function(catId) {
+        if (!state.pendingActionRow || !sbClient) return;
+        const updateVal = catId === '__none__' ? null : catId;
+        try {
+            const { error } = await sbClient.from('transactions')
+                .update({ expense_category_id: updateVal })
+                .eq('id', state.pendingActionRow.row).eq('user_token', USER_TOKEN);
+            if (error) throw error;
+            // Update local state
+            const tx = state.transactions.find(t => t.row === state.pendingActionRow.row || t.id === state.pendingActionRow.row);
+            if (tx) tx.expense_category_id = updateVal;
+            window.closeEditRowModal();
+            render();
+            window.showToast('שויך', 'check');
+        } catch(e) {
+            console.error(e);
+            window.showToast('שגיאה', 'circle-xmark');
+        }
+    };
+
+    // Populate quick category section in edit modal
+    function populateEditRowCatSection(tx) {
+        const section = document.getElementById('editRowExpCatSection');
+        const label   = document.getElementById('editRowCatLabel');
+        const btns    = document.getElementById('editRowCatButtons');
+        if (!section || !label || !btns) return;
+
+        const cats = state.expenseCategories;
+        if (cats.length === 0) { section.classList.add('hidden'); return; }
+        section.classList.remove('hidden');
+
+        const currentCatId = tx?.expense_category_id || null;
+        const currentCat = currentCatId ? getExpCatById(currentCatId) : null;
+        label.textContent = currentCat ? currentCat.name : 'לא מקוטלג';
+        if (currentCat) {
+            label.style.color = getCatColor(currentCat.color).hex;
+        } else {
+            label.style.color = '';
+        }
+
+        btns.innerHTML = '';
+        cats.forEach(cat => {
+            const color = getCatColor(cat.color);
+            const icon  = getCatIcon(cat.icon);
+            const isActive = cat.id === currentCatId;
+            const btn = document.createElement('button');
+            btn.className = `flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[11px] font-bold border transition-all ${isActive ? 'text-white border-transparent shadow-sm' : 'bg-white border-slate-200 text-slate-600'}`;
+            btn.style.background = isActive ? color.hex : '';
+            btn.innerHTML = `<i class="fa-solid ${icon.fa} text-[10px]"></i>${cat.name}`;
+            btn.onclick = () => window.quickAssignCategory(isActive ? '__none__' : cat.id);
+            btns.appendChild(btn);
+        });
+    }
+
     // =====================================================
     // HAMBURGER MENU
     // =====================================================
@@ -2468,6 +2963,8 @@
         const isHidden = menu.classList.contains('hidden');
         menu.classList.toggle('hidden', !isHidden);
         backdrop.classList.toggle('hidden', !isHidden);
+        // Reset submenu when closing
+        if (!isHidden) window.closeInstallSubmenu();
     };
 
     window.closeHamburgerMenu = function() {
@@ -2475,6 +2972,23 @@
         const backdrop = document.getElementById('hamburgerBackdrop');
         if (menu) menu.classList.add('hidden');
         if (backdrop) backdrop.classList.add('hidden');
+        window.closeInstallSubmenu();
+    };
+
+    window.toggleInstallSubmenu = function() {
+        const sub = document.getElementById('installSubmenu');
+        const chevron = document.getElementById('installChevron');
+        if (!sub) return;
+        const isHidden = sub.classList.contains('hidden');
+        sub.classList.toggle('hidden', !isHidden);
+        if (chevron) chevron.style.transform = isHidden ? 'rotate(-90deg)' : '';
+    };
+
+    window.closeInstallSubmenu = function() {
+        const sub = document.getElementById('installSubmenu');
+        const chevron = document.getElementById('installChevron');
+        if (sub) sub.classList.add('hidden');
+        if (chevron) chevron.style.transform = '';
     };
 
     window.shareApp = function() {
@@ -2611,9 +3125,18 @@
             aiBtn.classList.toggle('hidden', !(daysPassed >= 30 && Math.abs(state.balance) > threshold));
         } else if (aiBtn) aiBtn.classList.add('hidden');
 
+        renderCategorySummary();
+
         const filteredTxs = state.transactions.filter(tx => {
             if (tx.isAdjustment) return state.showAnnualInMain;
-            return state.showAnnualInMain || !tx.tag;
+            const passAnnual = state.showAnnualInMain || !tx.tag;
+            if (!passAnnual) return false;
+            // Apply expense category filter
+            if (state.activeCategoryFilter) {
+                if (state.activeCategoryFilter === '__none__') return !tx.expense_category_id && !tx.tag;
+                return tx.expense_category_id === state.activeCategoryFilter;
+            }
+            return true;
         });
         if (state.showAnnualInMain) {
             const adj = state.transactions.filter(t => t.isAdjustment);
@@ -2648,8 +3171,21 @@
         const d = document.createElement('div');
         d.className = 'bg-white compact-tx rounded-xl shadow-sm animate-fade-in';
         const displayAmt = Math.round(formatDisplayAmount(safeParseFloat(tx.amount)));
+
+        // Expense category badge (right side dot)
+        let catBadgeHtml = '';
+        if (tx.expense_category_id) {
+            const cat = getExpCatById(tx.expense_category_id);
+            if (cat) {
+                const color = getCatColor(cat.color);
+                const icon  = getCatIcon(cat.icon);
+                catBadgeHtml = `<div class="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 ml-1" style="background:${color.hex}" title="${cat.name}"><i class="fa-solid ${icon.fa} text-white text-[9px]"></i></div>`;
+            }
+        }
+
         d.innerHTML = `
             <div class="tx-inner">
+                ${catBadgeHtml}
                 <div class="flex-1 flex flex-col">
                     <div class="flex items-center">
                         <span class="font-bold text-slate-800 text-xs">${tx.name}</span>
@@ -3015,7 +3551,7 @@
         const eaInp = document.getElementById('editRowAmount');
         const eCat  = document.getElementById('editRowCategory');
         if (enInp && eaInp) { enInp.value = tx.name; eaInp.value = safeParseFloat(tx.amount).toString(); }
-        // Populate category dropdown
+        // Populate annual category dropdown
         if (eCat) {
             eCat.innerHTML = '<option value="שוטף">ללא (שוטף)</option>';
             const activeAnnuals = state.budget.annual.filter(a => safeParseFloat(a.budget_amount) > 0);
@@ -3028,6 +3564,8 @@
             });
             if (!tx.tag) eCat.value = 'שוטף';
         }
+        // Populate quick expense category section
+        populateEditRowCatSection(tx);
         const o = document.getElementById('editRowOverlay');
         if (o) { o.classList.remove('hidden'); setTimeout(() => o.classList.add('opacity-100'), 10); }
     };
