@@ -657,7 +657,7 @@
                     <input type="text" id="editRowName" class="input-field w-full px-4 py-3 rounded-xl">
                 </div>
                 <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 mr-1">קטגוריה (הוצאות מתוכננות)</label>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 mr-1">קטגוריה (מתוכנן)</label>
                     <select id="editRowCategory" class="input-field w-full px-4 py-3 rounded-xl appearance-none">
                         <option value="שוטף">ללא (שוטף)</option>
                     </select>
@@ -666,7 +666,7 @@
                 <!-- Quick expense category -->
                 <div id="editRowExpCatSection" class="bg-slate-50 rounded-2xl p-3 border border-slate-100">
                     <div class="flex items-center justify-between mb-2">
-                        <label class="text-[10px] font-bold text-slate-400 uppercase">קטגוריה</label>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase">קטגוריה (שוטף)</label>
                         <span id="editRowCatLabel" class="text-xs font-bold text-slate-500">לא מקוטלג</span>
                     </div>
                     <div id="editRowCatButtons" class="flex flex-wrap gap-1.5"></div>
@@ -2077,9 +2077,13 @@
         const eCat  = document.getElementById('editRowCategory');
         try {
             const category = eCat ? eCat.value : 'שוטף';
+            // אם קוטלג כהוצאה מתוכננת — נקה קטלוג שוטף
+            const isPlanned = category && category !== 'שוטף';
+            const updateData = { name: enInp.value, amount: safeParseFloat(eaInp.value), category };
+            if (isPlanned) updateData.expense_category_id = null;
             const { error } = await sbClient
                 .from('transactions')
-                .update({ name: enInp.value, amount: safeParseFloat(eaInp.value), category })
+                .update(updateData)
                 .eq('id', state.pendingActionRow.row)
                 .eq('user_token', USER_TOKEN);
             if (error) throw error;
@@ -2125,7 +2129,7 @@
         try {
             const { error } = await sbClient
                 .from('transactions')
-                .update({ category: categoryName })
+                .update({ category: categoryName, expense_category_id: null })
                 .eq('id', state.pendingActionRow.row)
                 .eq('user_token', USER_TOKEN);
             if (error) throw error;
@@ -3099,13 +3103,13 @@
         if (!state.pendingActionRow || !sbClient) return;
         const updateVal = catId === '__none__' ? null : catId;
         try {
+            // כשמשייכים לקטגוריה שוטפת — נוודא שהקטגוריה המתוכננת מאופסת
             const { error } = await sbClient.from('transactions')
-                .update({ expense_category_id: updateVal })
+                .update({ expense_category_id: updateVal, category: 'שוטף' })
                 .eq('id', state.pendingActionRow.row).eq('user_token', USER_TOKEN);
             if (error) throw error;
-            // Update local state
             const tx = state.transactions.find(t => t.row === state.pendingActionRow.row || t.id === state.pendingActionRow.row);
-            if (tx) tx.expense_category_id = updateVal;
+            if (tx) { tx.expense_category_id = updateVal; tx.tag = null; }
             window.closeEditRowModal();
             render();
             window.showToast('שויך', 'check');
