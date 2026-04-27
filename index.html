@@ -473,6 +473,17 @@
     </div>
     <!-- ====================================================== -->
 
+    <!-- Bulk Categorize Bar -->
+    <div id="bulkCatBar" class="fixed bottom-24 left-0 right-0 px-4 z-[60] pointer-events-none hidden">
+        <div class="bg-slate-900 rounded-2xl shadow-2xl p-3 pointer-events-auto">
+            <div class="flex items-center justify-between mb-2.5">
+                <span id="bulkCatCount" class="text-white text-xs font-bold">0 נבחרו</span>
+                <button onclick="window.clearBulkSelection()" class="text-slate-400 text-xs font-bold">ביטול</button>
+            </div>
+            <div id="bulkCatButtons" class="flex flex-wrap gap-1.5"></div>
+        </div>
+    </div>
+
     <!-- ===================== MODALS ===================== -->
 
     <!-- Settings Modal -->
@@ -1084,6 +1095,24 @@
                 <h3 class="text-lg font-bold text-slate-900">קטגוריות הוצאות</h3>
                 <button onclick="window.closeManageCategoriesModal()" class="text-slate-400"><i class="fa-solid fa-xmark"></i></button>
             </div>
+            <!-- Budget summary bar -->
+            <div id="catBudgetSummaryBar" class="mx-4 mt-3 mb-1 bg-slate-50 rounded-2xl p-3 border border-slate-100 hidden">
+                <div class="flex justify-between items-center mb-1.5">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">תקציב שוטף חודשי</span>
+                    <span id="catBudgetG4" class="text-[10px] font-bold text-blue-600 ltr-num">₪0</span>
+                </div>
+                <div class="flex justify-between items-center mb-1.5">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">סה"כ קטגוריות</span>
+                    <span id="catBudgetTotal" class="text-[10px] font-bold text-slate-700 ltr-num">₪0</span>
+                </div>
+                <div class="h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                    <div id="catBudgetBar" class="h-full rounded-full transition-all duration-300" style="width:0%"></div>
+                </div>
+                <div class="flex justify-between items-center mt-1">
+                    <span id="catBudgetDiff" class="text-[10px] font-bold"></span>
+                    <span id="catBudgetPct" class="text-[10px] font-bold text-slate-400 ltr-num">0%</span>
+                </div>
+            </div>
             <div id="categoriesList" class="overflow-y-auto flex-1 p-4 space-y-2"></div>
             <div class="p-4 border-t border-slate-100">
                 <button onclick="window.openEditCategoryModal(null)" class="w-full bg-blue-600 text-white font-bold py-3 rounded-2xl text-sm flex items-center justify-center gap-2">
@@ -1104,6 +1133,14 @@
                 <div>
                     <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">שם הקטגוריה</label>
                     <input type="text" id="catEditName" placeholder="מזון, בילויים..." class="input-field w-full px-4 py-3 rounded-xl">
+                </div>
+                <!-- Monthly budget -->
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">תקציב חודשי (₪) — רשות</label>
+                    <div class="input-field w-full px-4 py-3 rounded-xl flex items-center gap-2">
+                        <span class="text-slate-400 font-bold text-sm">₪</span>
+                        <input type="number" inputmode="decimal" id="catEditBudget" placeholder="0" class="flex-1 bg-transparent border-none outline-none font-bold text-slate-800 text-sm">
+                    </div>
                 </div>
                 <!-- Color picker -->
                 <div>
@@ -1477,7 +1514,8 @@
             specificMonth: ''
         },
         expenseCategories: JSON.parse(localStorage.getItem('expense_categories') || '[]'),
-        activeCategoryFilter: null  // null = show all
+        activeCategoryFilter: null,  // null = show all
+        selectedTxIds: new Set()     // for bulk categorization
     };
 
     // =====================================================
@@ -2697,44 +2735,146 @@
 
         strip.innerHTML = '';
 
-        // Category chips
+        // Category cards
         cats.forEach(cat => {
             const color = getCatColor(cat.color);
             const icon = getCatIcon(cat.icon);
-            const total = Math.round(totals[cat.id] || 0);
+            const spent = Math.round(totals[cat.id] || 0);
+            const budget = safeParseFloat(cat.monthly_budget || 0);
+            const hasBudget = budget > 0;
+            const remaining = budget - spent;
+            const pct = hasBudget ? Math.min(100, Math.round((spent / budget) * 100)) : 0;
+            const isOver = hasBudget && spent > budget;
             const isActive = state.activeCategoryFilter === cat.id;
-            const chip = document.createElement('button');
-            chip.className = `flex-shrink-0 flex flex-col items-center gap-1 px-3 py-2 rounded-2xl border transition-all ${isActive ? 'shadow-md scale-105' : 'bg-white border-slate-100'}`;
-            chip.style.borderColor = isActive ? color.hex : '';
-            chip.style.background = isActive ? color.bg : '';
-            chip.innerHTML = `
-                <div class="w-7 h-7 rounded-xl flex items-center justify-center" style="background:${color.hex}">
-                    <i class="fa-solid ${icon.fa} text-white text-xs"></i>
+
+            const card = document.createElement('button');
+            card.className = `flex-shrink-0 flex flex-col gap-1.5 p-3 rounded-2xl border transition-all text-right ${isActive ? 'shadow-md' : 'bg-white border-slate-100'}`;
+            card.style.borderColor = isActive ? color.hex : '';
+            card.style.background = isActive ? color.bg : '';
+            card.style.minWidth = '130px';
+
+            const barHtml = hasBudget ? `
+                <div class="w-full h-1 bg-slate-100 rounded-full overflow-hidden">
+                    <div class="h-full rounded-full transition-all duration-500" style="width:${pct}%; background:${isOver ? '#ef4444' : color.hex}"></div>
                 </div>
-                <span class="text-[9px] font-bold text-slate-600 max-w-[56px] truncate">${cat.name}</span>
-                <span class="text-[9px] font-bold ltr-num" style="color:${color.hex}">₪${total.toLocaleString()}</span>`;
-            chip.onclick = () => window.toggleCategoryFilter(cat.id);
-            strip.appendChild(chip);
+                <div class="flex justify-between items-center w-full">
+                    <span class="text-[8px] font-bold ${isOver ? 'text-red-500' : 'text-slate-400'} ltr-num">${isOver ? 'חריגה ₪' + Math.abs(remaining).toLocaleString() : 'נותר ₪' + remaining.toLocaleString()}</span>
+                    <span class="text-[8px] font-bold text-slate-300 ltr-num">${pct}%</span>
+                </div>` : '';
+
+            card.innerHTML = `
+                <div class="flex items-center gap-1.5 w-full">
+                    <div class="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0" style="background:${color.hex}">
+                        <i class="fa-solid ${icon.fa} text-white text-[9px]"></i>
+                    </div>
+                    <span class="text-[10px] font-bold text-slate-600 truncate flex-1">${cat.name}</span>
+                </div>
+                <div class="flex justify-between items-baseline w-full">
+                    <span class="text-sm font-black ltr-num" style="color:${color.hex}">₪${spent.toLocaleString()}</span>
+                    ${hasBudget ? `<span class="text-[9px] font-bold text-slate-300 ltr-num">/ ₪${Math.round(budget).toLocaleString()}</span>` : ''}
+                </div>
+                ${barHtml}`;
+            card.onclick = () => window.toggleCategoryFilter(cat.id);
+            strip.appendChild(card);
         });
 
         // Uncategorized chip
         const noneTotal = Math.round(totals['__none__'] || 0);
         const isNoneActive = state.activeCategoryFilter === '__none__';
         const noneChip = document.createElement('button');
-        noneChip.className = `flex-shrink-0 flex flex-col items-center gap-1 px-3 py-2 rounded-2xl border transition-all ${isNoneActive ? 'border-slate-400 bg-slate-50 shadow-md scale-105' : 'bg-white border-slate-100'}`;
+        noneChip.className = `flex-shrink-0 flex flex-col gap-1.5 p-3 rounded-2xl border transition-all text-right ${isNoneActive ? 'border-slate-400 bg-slate-50 shadow-md' : 'bg-white border-slate-100'}`;
+        noneChip.style.minWidth = '110px';
         noneChip.innerHTML = `
-            <div class="w-7 h-7 rounded-xl bg-slate-200 flex items-center justify-center">
-                <i class="fa-solid fa-tag text-slate-400 text-xs"></i>
+            <div class="flex items-center gap-1.5 w-full">
+                <div class="w-6 h-6 rounded-lg bg-slate-200 flex items-center justify-center flex-shrink-0">
+                    <i class="fa-solid fa-tag text-slate-400 text-[9px]"></i>
+                </div>
+                <span class="text-[10px] font-bold text-slate-400 flex-1">${isNoneActive ? 'לחץ לסימון' : 'לא מקוטלג'}</span>
             </div>
-            <span class="text-[9px] font-bold text-slate-400">לא מקוטלג</span>
-            <span class="text-[9px] font-bold text-slate-400 ltr-num">₪${noneTotal.toLocaleString()}</span>`;
+            <span class="text-sm font-black text-slate-400 ltr-num">₪${noneTotal.toLocaleString()}</span>`;
         noneChip.onclick = () => window.toggleCategoryFilter('__none__');
         strip.appendChild(noneChip);
     }
 
     window.toggleCategoryFilter = function(catId) {
+        // When switching away from __none__, clear selection
+        if (state.activeCategoryFilter === '__none__' && catId !== '__none__') {
+            state.selectedTxIds.clear();
+        }
         state.activeCategoryFilter = state.activeCategoryFilter === catId ? null : catId;
+        if (state.activeCategoryFilter !== '__none__') state.selectedTxIds.clear();
         render();
+    };
+
+    window.toggleTxSelection = function(rowId) {
+        if (state.selectedTxIds.has(rowId)) {
+            state.selectedTxIds.delete(rowId);
+        } else {
+            state.selectedTxIds.add(rowId);
+        }
+        updateBulkBar();
+        render();
+    };
+
+    window.clearBulkSelection = function() {
+        state.selectedTxIds.clear();
+        state.activeCategoryFilter = null;
+        render();
+    };
+
+    function updateBulkBar() {
+        const bar = document.getElementById('bulkCatBar');
+        const countEl = document.getElementById('bulkCatCount');
+        const btnsEl = document.getElementById('bulkCatButtons');
+        if (!bar) return;
+
+        const count = state.selectedTxIds.size;
+        const isSelectMode = state.activeCategoryFilter === '__none__';
+
+        if (!isSelectMode || count === 0) {
+            bar.classList.add('hidden');
+            return;
+        }
+
+        bar.classList.remove('hidden');
+        if (countEl) countEl.textContent = `${count} נבחרו`;
+
+        if (btnsEl) {
+            btnsEl.innerHTML = '';
+            state.expenseCategories.forEach(cat => {
+                const color = getCatColor(cat.color);
+                const icon  = getCatIcon(cat.icon);
+                const btn = document.createElement('button');
+                btn.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-white transition-all active:scale-95';
+                btn.style.background = color.hex;
+                btn.innerHTML = `<i class="fa-solid ${icon.fa} text-[10px]"></i>${cat.name}`;
+                btn.onclick = () => window.bulkAssignCategory(cat.id);
+                btnsEl.appendChild(btn);
+            });
+        }
+    }
+
+    window.bulkAssignCategory = async function(catId) {
+        if (!sbClient || !USER_TOKEN || state.selectedTxIds.size === 0) return;
+        const ids = Array.from(state.selectedTxIds);
+        try {
+            const { error } = await sbClient.from('transactions')
+                .update({ expense_category_id: catId })
+                .in('id', ids)
+                .eq('user_token', USER_TOKEN);
+            if (error) throw error;
+            // Update local state
+            state.transactions.forEach(t => {
+                if (ids.includes(t.id) || ids.includes(t.row)) t.expense_category_id = catId;
+            });
+            state.selectedTxIds.clear();
+            state.activeCategoryFilter = null;
+            render();
+            window.showToast(`שויכו ${ids.length} הוצאות`, 'check');
+        } catch(e) {
+            console.error(e);
+            window.showToast('שגיאה בשיוך', 'circle-xmark');
+        }
     };
 
     // Open manage categories modal
@@ -2752,20 +2892,55 @@
         const list = document.getElementById('categoriesList');
         if (!list) return;
         list.innerHTML = '';
-        if (state.expenseCategories.length === 0) {
+
+        const cats = state.expenseCategories;
+
+        // Render budget summary bar
+        const summaryBar = document.getElementById('catBudgetSummaryBar');
+        const g4 = safeParseFloat(state.budget.g4);
+        const totalCatBudget = cats.reduce((s, c) => s + safeParseFloat(c.monthly_budget || 0), 0);
+        const hasBudgets = cats.some(c => safeParseFloat(c.monthly_budget || 0) > 0);
+
+        if (summaryBar) {
+            if (hasBudgets && g4 > 0) {
+                summaryBar.classList.remove('hidden');
+                const pct = Math.min(100, Math.round((totalCatBudget / g4) * 100));
+                const diff = g4 - totalCatBudget;
+                const isOver = diff < 0;
+                document.getElementById('catBudgetG4').textContent = `₪${Math.round(g4).toLocaleString()}`;
+                document.getElementById('catBudgetTotal').textContent = `₪${Math.round(totalCatBudget).toLocaleString()}`;
+                const bar = document.getElementById('catBudgetBar');
+                if (bar) { bar.style.width = pct + '%'; bar.style.background = isOver ? '#ef4444' : pct > 90 ? '#f59e0b' : '#3b82f6'; }
+                const diffEl = document.getElementById('catBudgetDiff');
+                if (diffEl) {
+                    diffEl.textContent = isOver ? `חריגה של ₪${Math.round(Math.abs(diff)).toLocaleString()}` : `נותר ₪${Math.round(diff).toLocaleString()}`;
+                    diffEl.style.color = isOver ? '#ef4444' : '#64748b';
+                }
+                document.getElementById('catBudgetPct').textContent = pct + '%';
+            } else {
+                summaryBar.classList.add('hidden');
+            }
+        }
+
+        if (cats.length === 0) {
             list.innerHTML = '<p class="text-center text-slate-400 text-xs py-6">אין קטגוריות עדיין</p>';
             return;
         }
-        state.expenseCategories.forEach(cat => {
+
+        cats.forEach(cat => {
             const color = getCatColor(cat.color);
             const icon = getCatIcon(cat.icon);
+            const budget = safeParseFloat(cat.monthly_budget || 0);
             const div = document.createElement('div');
             div.className = 'flex items-center gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-100';
             div.innerHTML = `
                 <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:${color.hex}">
                     <i class="fa-solid ${icon.fa} text-white text-sm"></i>
                 </div>
-                <span class="flex-1 text-sm font-bold text-slate-700">${cat.name}</span>
+                <div class="flex-1 min-w-0">
+                    <span class="text-sm font-bold text-slate-700 block">${cat.name}</span>
+                    ${budget > 0 ? `<span class="text-[10px] font-bold ltr-num" style="color:${color.hex}">₪${Math.round(budget).toLocaleString()} / חודש</span>` : '<span class="text-[10px] text-slate-300 font-bold">ללא תקציב</span>'}
+                </div>
                 <button onclick="window.openEditCategoryModal('${cat.id}')" class="p-1.5 text-slate-400 hover:text-blue-600 transition-colors">
                     <i class="fa-solid fa-pen text-xs"></i>
                 </button>`;
@@ -2784,6 +2959,8 @@
         if (titleEl) titleEl.textContent = cat ? 'עריכת קטגוריה' : 'קטגוריה חדשה';
         const nameEl = document.getElementById('catEditName');
         if (nameEl) nameEl.value = cat ? cat.name : '';
+        const budgetEl = document.getElementById('catEditBudget');
+        if (budgetEl) budgetEl.value = cat && safeParseFloat(cat.monthly_budget) > 0 ? Math.round(safeParseFloat(cat.monthly_budget)) : '';
         const delBtn = document.getElementById('deleteCategoryBtn');
         if (delBtn) delBtn.classList.toggle('hidden', !cat);
 
@@ -2853,15 +3030,16 @@
         const name = (document.getElementById('catEditName')?.value || '').trim();
         if (!name) return window.showToast('נא להזין שם', 'circle-xmark');
         if (!sbClient || !USER_TOKEN) return;
+        const monthly_budget = safeParseFloat(document.getElementById('catEditBudget')?.value || '0');
         try {
             if (_editingCatId) {
                 const { error } = await sbClient.from('expense_categories')
-                    .update({ name, color: _editingCatColor, icon: _editingCatIcon })
+                    .update({ name, color: _editingCatColor, icon: _editingCatIcon, monthly_budget })
                     .eq('id', _editingCatId).eq('user_token', USER_TOKEN);
                 if (error) throw error;
             } else {
                 const { error } = await sbClient.from('expense_categories')
-                    .insert({ name, color: _editingCatColor, icon: _editingCatIcon, user_token: USER_TOKEN });
+                    .insert({ name, color: _editingCatColor, icon: _editingCatIcon, monthly_budget, user_token: USER_TOKEN });
                 if (error) throw error;
             }
             window.closeEditCategoryModal();
@@ -3126,6 +3304,7 @@
         } else if (aiBtn) aiBtn.classList.add('hidden');
 
         renderCategorySummary();
+        updateBulkBar();
 
         const filteredTxs = state.transactions.filter(tx => {
             if (tx.isAdjustment) return state.showAnnualInMain;
@@ -3169,10 +3348,12 @@
 
     function createTransactionEl(tx, hideDate = true, hideTag = false) {
         const d = document.createElement('div');
-        d.className = 'bg-white compact-tx rounded-xl shadow-sm animate-fade-in';
-        const displayAmt = Math.round(formatDisplayAmount(safeParseFloat(tx.amount)));
+        const isSelectMode = state.activeCategoryFilter === '__none__';
+        const isSelected = state.selectedTxIds.has(tx.row);
 
-        // Expense category badge (right side dot)
+        d.className = `bg-white compact-tx rounded-xl shadow-sm animate-fade-in transition-all ${isSelected ? 'ring-2 ring-blue-500 bg-blue-50' : ''}`;
+
+        // Expense category badge
         let catBadgeHtml = '';
         if (tx.expense_category_id) {
             const cat = getExpCatById(tx.expense_category_id);
@@ -3182,6 +3363,13 @@
                 catBadgeHtml = `<div class="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 ml-1" style="background:${color.hex}" title="${cat.name}"><i class="fa-solid ${icon.fa} text-white text-[9px]"></i></div>`;
             }
         }
+
+        // Selection checkbox (only in __none__ mode)
+        const checkHtml = isSelectMode
+            ? `<div class="w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ml-2 transition-all ${isSelected ? 'bg-blue-500 border-blue-500' : 'border-slate-300'}">
+                   ${isSelected ? '<i class="fa-solid fa-check text-white text-[9px]"></i>' : ''}
+               </div>`
+            : '';
 
         d.innerHTML = `
             <div class="tx-inner">
@@ -3194,10 +3382,19 @@
                     ${!hideDate ? `<span class="text-[8px] text-slate-400 font-bold">${tx.date}</span>` : ''}
                 </div>
                 <div class="flex items-center gap-2">
-                    <div class="text-red-500 font-bold text-xs ltr-num">₪${displayAmt.toLocaleString()}</div>
-                    <button onclick="window.initEditRow('${tx.row}')" class="p-1.5"><i class="fa-solid fa-ellipsis-vertical text-[10px] text-slate-300"></i></button>
+                    <div class="text-red-500 font-bold text-xs ltr-num">₪${Math.round(formatDisplayAmount(safeParseFloat(tx.amount))).toLocaleString()}</div>
+                    ${isSelectMode
+                        ? checkHtml
+                        : `<button onclick="window.initEditRow('${tx.row}')" class="p-1.5"><i class="fa-solid fa-ellipsis-vertical text-[10px] text-slate-300"></i></button>`
+                    }
                 </div>
             </div>`;
+
+        if (isSelectMode) {
+            d.style.cursor = 'pointer';
+            d.addEventListener('click', () => window.toggleTxSelection(tx.row));
+        }
+
         return d;
     }
 
