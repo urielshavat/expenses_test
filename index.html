@@ -256,11 +256,17 @@
             </div>
             <!-- Category breakdown pie -->
             <div id="catStatsCard" class="card p-6 mb-4 border border-slate-200 bg-white shadow-sm flex-col items-center hidden">
-                <h3 class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-6 self-start w-full">הוצאות שוטפות לפי קטגוריה</h3>
-                <div id="catChartContainer" class="w-full aspect-square max-w-[240px] relative mb-6 mx-auto">
+                <h3 class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-4 self-start w-full">הוצאות שוטפות לפי קטגוריה</h3>
+                <div id="catChartContainer" class="w-full aspect-square max-w-[240px] relative mb-4 mx-auto">
                     <canvas id="catStatsChart"></canvas>
                 </div>
-                <div id="catChartLegend" class="w-full space-y-2"></div>
+                <!-- Shared legend used by both charts -->
+                <div id="catChartLegend" class="w-full space-y-1 mb-4"></div>
+                <!-- Monthly trend line chart -->
+                <h3 class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-3 self-start w-full border-t border-slate-100 pt-4">מגמה חודשית</h3>
+                <div class="w-full relative" style="height:220px">
+                    <canvas id="catTrendChart"></canvas>
+                </div>
             </div>
             <!-- Export section -->
             <div class="card p-4 mb-4 border border-slate-200 bg-white shadow-sm">
@@ -2845,12 +2851,20 @@
         render();
     };
 
-    window.toggleTxSelection = function(rowId) {
+    window.toggleTxSelectionFast = function(rowId, el) {
         if (state.selectedTxIds.has(rowId)) {
             state.selectedTxIds.delete(rowId);
+            if (el) el.style.background = '';
         } else {
             state.selectedTxIds.add(rowId);
+            if (el) el.style.background = '#dbeafe';
         }
+        updateBulkBar();
+    };
+
+    window.toggleTxSelection = function(rowId) {
+        if (state.selectedTxIds.has(rowId)) state.selectedTxIds.delete(rowId);
+        else state.selectedTxIds.add(rowId);
         updateBulkBar();
         render();
     };
@@ -3442,9 +3456,9 @@
     function createTransactionEl(tx, hideDate = true, hideTag = false) {
         const d = document.createElement('div');
         const isSelectMode = state.activeCategoryFilter === '__none__';
-        const isSelected = state.selectedTxIds.has(tx.row);
 
-        d.className = `bg-white compact-tx rounded-xl shadow-sm animate-fade-in transition-all ${isSelected ? 'ring-2 ring-blue-500 bg-blue-50' : ''}`;
+        d.className = `bg-white compact-tx rounded-xl shadow-sm animate-fade-in transition-colors`;
+        d.dataset.txRow = tx.row; // for direct DOM selection
 
         // Expense category badge
         let catBadgeHtml = '';
@@ -3456,13 +3470,6 @@
                 catBadgeHtml = `<div class="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 ml-1" style="background:${color.hex}" title="${cat.name}"><i class="fa-solid ${icon.fa} text-white text-[9px]"></i></div>`;
             }
         }
-
-        // Selection checkbox (only in __none__ mode)
-        const checkHtml = isSelectMode
-            ? `<div class="w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ml-2 transition-all ${isSelected ? 'bg-blue-500 border-blue-500' : 'border-slate-300'}">
-                   ${isSelected ? '<i class="fa-solid fa-check text-white text-[9px]"></i>' : ''}
-               </div>`
-            : '';
 
         d.innerHTML = `
             <div class="tx-inner">
@@ -3477,7 +3484,7 @@
                 <div class="flex items-center gap-2">
                     <div class="text-red-500 font-bold text-xs ltr-num">₪${Math.round(formatDisplayAmount(safeParseFloat(tx.amount))).toLocaleString()}</div>
                     ${isSelectMode
-                        ? checkHtml
+                        ? ''
                         : `<button onclick="window.initEditRow('${tx.row}')" class="p-1.5"><i class="fa-solid fa-ellipsis-vertical text-[10px] text-slate-300"></i></button>`
                     }
                 </div>
@@ -3485,7 +3492,14 @@
 
         if (isSelectMode) {
             d.style.cursor = 'pointer';
-            d.addEventListener('click', () => window.toggleTxSelection(tx.row));
+            // Apply selection state directly without re-render
+            if (state.selectedTxIds.has(tx.row)) {
+                d.style.background = '#dbeafe'; // blue-100
+            }
+            d.addEventListener('click', (e) => {
+                e.stopPropagation();
+                window.toggleTxSelectionFast(tx.row, d);
+            });
         }
 
         return d;
@@ -4209,9 +4223,87 @@
             catStatsChartInstance.data.datasets[0].borderColor = visBorder;
             catStatsChartInstance.update();
             renderLegend();
+            renderTrendChart();
         };
 
         renderLegend();
+        renderTrendChart();
+
+        function renderTrendChart() {
+            const trendCtx = document.getElementById('catTrendChart');
+            if (!trendCtx) return;
+
+            // Build months from startDate to today
+            let startDate = null;
+            if (state.transactions.length > 0) {
+                const sorted = [...state.transactions].sort((a, b) =>
+                    parseLocalDate(a.date) - parseLocalDate(b.date));
+                startDate = parseLocalDate(sorted[0].date);
+            } else if (state.budget.startDate) {
+                const parts = state.budget.startDate.split('/');
+                if (parts.length === 3) startDate = new Date(parseInt(parts[2]), parseInt(parts[1])-1, 1);
+            }
+            if (!startDate) return;
+
+            const now = new Date();
+            const sortedMonths = [];
+            const cur = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
+            const end = new Date(now.getFullYear(), now.getMonth(), 1);
+            while (cur <= end) {
+                sortedMonths.push(`${cur.getFullYear()}-${String(cur.getMonth()+1).padStart(2,'0')}`);
+                cur.setMonth(cur.getMonth() + 1);
+            }
+            if (sortedMonths.length === 0) return;
+
+            const monthLabels = sortedMonths.map(m => {
+                const [y, mo] = m.split('-');
+                const names = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+                return names[parseInt(mo)-1] + ' ' + y.slice(2);
+            });
+
+            // Build datasets — one per visible category + uncategorized
+            // Use ALL transactions (not just the selected month) for the trend
+            const allTxs = state.transactions.filter(tx => !tx.tag && !tx.isAdjustment);
+            const datasets = [];
+            allLabels.forEach((label, i) => {
+                if (_catHidden.has(i)) return;
+                const cat = cats.find(c => c.name === label);
+                const monthlyTotals = sortedMonths.map(m => {
+                    return allTxs.filter(tx => {
+                        const d = parseLocalDate(tx.date);
+                        const txMonth = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+                        if (txMonth !== m) return false;
+                        if (label === 'לא מקוטלג') return !tx.expense_category_id;
+                        return cat && tx.expense_category_id === cat.id;
+                    }).reduce((s, tx) => s + safeParseFloat(tx.amount), 0);
+                });
+                datasets.push({
+                    label,
+                    data: monthlyTotals.map(v => Math.round(v)),
+                    borderColor: allColors[i],
+                    backgroundColor: allColors[i] + '22',
+                    borderWidth: 2,
+                    pointRadius: 3,
+                    pointHoverRadius: 5,
+                    tension: 0.3,
+                    fill: false
+                });
+            });
+
+            if (window._catTrendChartInstance) window._catTrendChartInstance.destroy();
+            window._catTrendChartInstance = new Chart(trendCtx, {
+                type: 'line',
+                data: { labels: monthLabels, datasets },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { font: { size: 9 }, maxRotation: 45 } },
+                        y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { size: 9 }, callback: v => '₪' + v.toLocaleString() } }
+                    }
+                }
+            });
+        }
     }
 
     function renderStatsChart(income, fixed, planned, current) {
