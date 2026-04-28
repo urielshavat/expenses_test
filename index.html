@@ -158,6 +158,9 @@
                     <i class="fa-solid fa-bars text-lg"></i>
                 </button>
                 <h1 id="pageTitle" class="text-xl font-bold text-slate-800 tracking-tight">הוצאות שוטפות</h1>
+                <button id="budgetAiBtn" onclick="window.showBudgetRecommendation()" class="hidden w-6 h-6 rounded-full bg-amber-100 text-amber-600 text-xs font-bold flex items-center justify-center hover:bg-amber-200 transition-colors ai-pulse" title="המלצה">
+                    <i class="fa-solid fa-lightbulb text-[10px]"></i>
+                </button>
                 <button id="budgetHelpBtn" onclick="window.openBudgetHelp()" class="hidden w-6 h-6 rounded-full bg-slate-200 text-slate-500 text-xs font-bold flex items-center justify-center hover:bg-blue-100 hover:text-blue-600 transition-colors" title="איך למלא את התקציב">?</button>
                 <button id="mainHelpBtn" onclick="window.openMainHelp()" class="hidden w-6 h-6 rounded-full bg-slate-200 text-slate-500 text-xs font-bold flex items-center justify-center hover:bg-blue-100 hover:text-blue-600 transition-colors" title="הסבר על הוצאות שוטפות">?</button>
                 <button id="annualHelpBtn" onclick="window.openAnnualHelp()" class="hidden w-6 h-6 rounded-full bg-slate-200 text-slate-500 text-xs font-bold flex items-center justify-center hover:bg-blue-100 hover:text-blue-600 transition-colors" title="הסבר על הוצאות מתוכננות">?</button>
@@ -178,21 +181,22 @@
 
         <div id="mainView" class="view-content">
             <header class="mb-4">
-                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center justify-center text-center">
-                    <p class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-1">מאזן נוכחי</p>
-                    <div class="flex items-baseline justify-center gap-1 mb-2">
-                        <span id="balanceValue" class="text-4xl font-black text-slate-900 ltr-num">0</span>
-                        <span class="text-lg text-slate-400 font-bold">₪</span>
-                    </div>
-                    <div class="flex flex-col items-center gap-2 mb-2">
-                        <div class="bg-slate-50 px-3 py-1 rounded-full border border-slate-100 flex items-center gap-1.5">
-                            <span class="text-[10px] text-slate-500 font-bold">תקציב יומי:</span>
-                            <span class="text-blue-600 font-bold text-[10px]">₪</span>
-                            <span id="dailyBudgetValue" class="text-blue-600 font-bold text-[10px] ltr-num">0</span>
+                <div class="bg-white px-4 py-4 rounded-3xl shadow-sm border border-slate-100 flex items-center">
+                    <!-- מאזן נוכחי — חצי ימין -->
+                    <div class="flex-1 flex flex-col items-center border-l border-slate-100">
+                        <p class="text-slate-400 text-[9px] font-bold uppercase tracking-widest mb-1">מאזן נוכחי</p>
+                        <div class="flex items-baseline gap-0.5">
+                            <span id="balanceValue" class="text-2xl font-black text-slate-900 ltr-num">0</span>
+                            <span class="text-sm text-slate-400 font-bold">₪</span>
                         </div>
-                        <button id="budgetAiBtn" onclick="window.showBudgetRecommendation()" class="hidden bg-amber-50 border border-amber-200 text-amber-600 font-bold text-xs px-3 py-1.5 rounded-full flex items-center gap-1.5 transition-all hover:bg-amber-100 ai-pulse">
-                            המלצה <i class="fa-solid fa-lightbulb text-[11px]"></i>
-                        </button>
+                    </div>
+                    <!-- תקציב יומי — חצי שמאל -->
+                    <div class="flex-1 flex flex-col items-center">
+                        <p class="text-slate-400 text-[9px] font-bold uppercase tracking-widest mb-1">תקציב יומי</p>
+                        <div class="flex items-baseline gap-0.5">
+                            <span id="dailyBudgetValue" class="text-2xl font-black text-blue-600 ltr-num">0</span>
+                            <span class="text-sm text-blue-400 font-bold">₪</span>
+                        </div>
                     </div>
                 </div>
             </header>
@@ -200,7 +204,7 @@
             <!-- Category summary strip -->
             <div id="categorySummarySection" class="mb-3 hidden">
                 <div class="flex justify-between items-center mb-2 px-1">
-                    <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">קטגוריות החודש</h2>
+                    <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">קטגוריות</h2>
                     <button onclick="window.openManageCategoriesModal()" class="text-[10px] font-bold text-blue-500 flex items-center gap-1">
                         <i class="fa-solid fa-sliders text-[9px]"></i>נהל
                     </button>
@@ -648,9 +652,15 @@
         <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
             <h3 class="text-lg font-bold text-slate-900 mb-5 text-center">עריכת הוצאה</h3>
             <div class="space-y-3">
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 mr-1">סכום</label>
-                    <input type="number" id="editRowAmount" step="any" inputmode="decimal" class="input-field w-full px-4 py-3 rounded-xl font-bold text-lg">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 mr-1">סכום</label>
+                        <input type="number" id="editRowAmount" step="any" inputmode="decimal" class="input-field w-full px-4 py-3 rounded-xl font-bold text-lg">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 mr-1">תאריך</label>
+                        <input type="date" id="editRowDate" class="input-field w-full px-3 py-3 rounded-xl text-sm font-bold text-slate-700">
+                    </div>
                 </div>
                 <div>
                     <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 mr-1">תיאור</label>
@@ -2074,13 +2084,19 @@
         window.closeEditRowModal();
         const enInp = document.getElementById('editRowName');
         const eaInp = document.getElementById('editRowAmount');
+        const eDateInp = document.getElementById('editRowDate');
         const eCat  = document.getElementById('editRowCategory');
         try {
             const category = eCat ? eCat.value : 'שוטף';
-            // אם קוטלג כהוצאה מתוכננת — נקה קטלוג שוטף
             const isPlanned = category && category !== 'שוטף';
             const updateData = { name: enInp.value, amount: safeParseFloat(eaInp.value), category };
             if (isPlanned) updateData.expense_category_id = null;
+            // Update date if changed — keep original time, only change date
+            if (eDateInp && eDateInp.value) {
+                const origTx = state.transactions.find(t => t.row === state.pendingActionRow.row);
+                const origTime = origTx ? new Date(origTx.date.split('/').reverse().join('-') + 'T' + (origTx.time || '12:00:00')).toTimeString().slice(0,8) : '12:00:00';
+                updateData.created_at = `${eDateInp.value}T${origTime}`;
+            }
             const { error } = await sbClient
                 .from('transactions')
                 .update(updateData)
@@ -2765,7 +2781,8 @@
             const budget = safeParseFloat(cat.monthly_budget || 0);
             const hasBudget = budget > 0;
             const remaining = budget - spent;
-            const pct = hasBudget ? Math.min(100, Math.round((spent / budget) * 100)) : 0;
+            const pct = hasBudget ? Math.round((spent / budget) * 100) : 0;  // allow >100
+            const barPct = Math.min(100, pct);  // bar capped at 100
             const isOver = hasBudget && spent > budget;
             const isActive = state.activeCategoryFilter === cat.id;
 
@@ -2776,12 +2793,12 @@
             card.style.minWidth = '130px';
 
             const barHtml = hasBudget ? `
-                <div class="w-full h-1 bg-slate-100 rounded-full overflow-hidden">
-                    <div class="h-full rounded-full transition-all duration-500" style="width:${pct}%; background:${isOver ? '#ef4444' : color.hex}"></div>
+                <div class="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                    <div class="h-full rounded-full transition-all duration-500" style="width:${barPct}%; background:${isOver ? '#ef4444' : color.hex}"></div>
                 </div>
                 <div class="flex justify-between items-center w-full">
-                    <span class="text-[8px] font-bold ${isOver ? 'text-red-500' : 'text-slate-400'} ltr-num">${isOver ? 'חריגה ₪' + Math.abs(remaining).toLocaleString() : 'נותר ₪' + remaining.toLocaleString()}</span>
-                    <span class="text-[8px] font-bold text-slate-300 ltr-num">${pct}%</span>
+                    <span class="text-[9px] font-bold ${isOver ? 'text-red-500' : 'text-slate-500'}">${isOver ? 'חריגה ₪' + Math.abs(remaining).toLocaleString() : 'נותר ₪' + remaining.toLocaleString()}</span>
+                    <span class="text-[9px] font-bold ${isOver ? 'text-red-500' : 'text-slate-500'} ltr-num">${pct}%</span>
                 </div>` : '';
 
             card.innerHTML = `
@@ -2789,11 +2806,11 @@
                     <div class="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0" style="background:${color.hex}">
                         <i class="fa-solid ${icon.fa} text-white text-[9px]"></i>
                     </div>
-                    <span class="text-[10px] font-bold text-slate-600 truncate flex-1">${cat.name}</span>
+                    <span class="text-[10px] font-bold text-slate-700 truncate flex-1">${cat.name}</span>
                 </div>
-                <div class="flex justify-between items-baseline w-full">
+                <div class="flex items-baseline gap-1 w-full justify-end" dir="ltr">
                     <span class="text-sm font-black ltr-num" style="color:${color.hex}">₪${spent.toLocaleString()}</span>
-                    ${hasBudget ? `<span class="text-[9px] font-bold text-slate-300 ltr-num">/ ₪${Math.round(budget).toLocaleString()}</span>` : ''}
+                    ${hasBudget ? `<span class="text-[9px] font-bold text-slate-500">/ ₪${Math.round(budget).toLocaleString()}</span>` : ''}
                 </div>
                 ${barHtml}`;
             card.onclick = () => window.toggleCategoryFilter(cat.id);
@@ -3366,14 +3383,18 @@
         if (dailyEl) dailyEl.innerText = Math.round(formatDisplayAmount(dailyVal)).toLocaleString();
 
         const aiBtn = document.getElementById('budgetAiBtn');
-        if (aiBtn && state.budget.startDate) {
-            const parts = state.budget.startDate.split('/');
-            const startDate = new Date(parts[2], parts[1]-1, parts[0]);
-            const today = new Date(); today.setHours(0,0,0,0);
-            const daysPassed = Math.floor((today - startDate) / (1000*3600*24));
-            const threshold = dailyVal * 7;
-            aiBtn.classList.toggle('hidden', !(daysPassed >= 30 && Math.abs(state.balance) > threshold));
-        } else if (aiBtn) aiBtn.classList.add('hidden');
+        if (aiBtn) {
+            if (state.budget.startDate && state.currentView === 'main') {
+                const parts = state.budget.startDate.split('/');
+                const startDate = new Date(parts[2], parts[1]-1, parts[0]);
+                const today = new Date(); today.setHours(0,0,0,0);
+                const daysPassed = Math.floor((today - startDate) / (1000*3600*24));
+                const threshold = dailyVal * 7;
+                aiBtn.classList.toggle('hidden', !(daysPassed >= 30 && Math.abs(state.balance) > threshold));
+            } else {
+                aiBtn.classList.add('hidden');
+            }
+        }
 
         renderCategorySummary();
         updateBulkBar();
@@ -3818,8 +3839,14 @@
         state.pendingActionRow = { row: tx.row, name: tx.name, amount: tx.amount };
         const enInp = document.getElementById('editRowName');
         const eaInp = document.getElementById('editRowAmount');
+        const eDateInp = document.getElementById('editRowDate');
         const eCat  = document.getElementById('editRowCategory');
         if (enInp && eaInp) { enInp.value = tx.name; eaInp.value = safeParseFloat(tx.amount).toString(); }
+        // Populate date — convert DD/MM/YYYY → YYYY-MM-DD for input[type=date]
+        if (eDateInp && tx.date) {
+            const parts = tx.date.split('/');
+            if (parts.length === 3) eDateInp.value = `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
+        }
         // Populate annual category dropdown
         if (eCat) {
             eCat.innerHTML = '<option value="שוטף">ללא (שוטף)</option>';
@@ -4087,6 +4114,9 @@
     };
 
     let catStatsChartInstance = null;
+    let _catHidden = new Set(); // indices of hidden segments
+    let _catTxsCache = null;   // last txs passed in
+
     function renderCategoryStatsChart(txs) {
         const cats = state.expenseCategories;
         const card = document.getElementById('catStatsCard');
@@ -4094,6 +4124,8 @@
         if (cats.length === 0) { card.classList.add('hidden'); return; }
         card.classList.remove('hidden');
         card.classList.add('flex');
+
+        _catTxsCache = txs;
 
         // Compute totals
         const totals = {};
@@ -4104,28 +4136,43 @@
             else uncategorized += safeParseFloat(tx.amount);
         });
 
-        const labels = [], data = [], colors = [];
+        const allLabels = [], allData = [], allColors = [];
         cats.forEach(cat => {
             const val = totals[cat.id] || 0;
             if (val > 0) {
-                labels.push(cat.name);
-                data.push(Math.round(val));
-                colors.push(getCatColor(cat.color).hex);
+                allLabels.push(cat.name);
+                allData.push(Math.round(val));
+                allColors.push(getCatColor(cat.color).hex);
             }
         });
         if (uncategorized > 0.5) {
-            labels.push('לא מקוטלג');
-            data.push(Math.round(uncategorized));
-            colors.push('#cbd5e1');
+            allLabels.push('לא מקוטלג');
+            allData.push(Math.round(uncategorized));
+            allColors.push('#cbd5e1');
         }
 
-        if (data.length === 0) { card.classList.add('hidden'); return; }
+        if (allData.length === 0) { card.classList.add('hidden'); return; }
+
+        // Reset hidden if segments changed
+        if (_catHidden.size > 0) {
+            const maxIdx = allData.length - 1;
+            _catHidden = new Set([..._catHidden].filter(i => i <= maxIdx));
+        }
+
+        function buildChartData() {
+            const visData = allData.map((v, i) => _catHidden.has(i) ? 0 : v);
+            const visBg = allColors.map((c, i) => _catHidden.has(i) ? 'rgba(0,0,0,0)' : c);
+            const visBorder = allColors.map((c, i) => _catHidden.has(i) ? 'rgba(0,0,0,0)' : '#fff');
+            return { visData, visBg, visBorder };
+        }
 
         const ctx = document.getElementById('catStatsChart').getContext('2d');
         if (catStatsChartInstance) catStatsChartInstance.destroy();
+
+        const { visData, visBg, visBorder } = buildChartData();
         catStatsChartInstance = new Chart(ctx, {
             type: 'doughnut',
-            data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 2, borderColor: '#fff' }] },
+            data: { labels: allLabels, datasets: [{ data: visData, backgroundColor: visBg, borderColor: visBorder, borderWidth: 2 }] },
             options: {
                 responsive: true, maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
@@ -4133,19 +4180,38 @@
             }
         });
 
-        const total = data.reduce((s, v) => s + v, 0);
-        document.getElementById('catChartLegend').innerHTML = `<div class="space-y-2 w-full">` +
-            labels.map((label, i) => `
-                <div class="flex justify-between items-center text-[11px]">
-                    <div class="flex items-center gap-2">
-                        <div class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background:${colors[i]}"></div>
-                        <span class="text-slate-600 font-semibold">${label}</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="text-slate-400 font-bold">${total > 0 ? Math.round(data[i]/total*100) : 0}%</span>
-                        <span class="font-bold text-slate-700 ltr-num">₪${data[i].toLocaleString()}</span>
-                    </div>
-                </div>`).join('') + `</div>`;
+        function renderLegend() {
+            const visTotal = allData.reduce((s, v, i) => _catHidden.has(i) ? s : s + v, 0);
+            document.getElementById('catChartLegend').innerHTML = `<div class="space-y-2 w-full">` +
+                allLabels.map((label, i) => {
+                    const hidden = _catHidden.has(i);
+                    const pct = visTotal > 0 && !hidden ? Math.round(allData[i] / visTotal * 100) : 0;
+                    return `
+                    <button onclick="window.toggleCatChartSlice(${i})" class="w-full flex justify-between items-center text-[11px] py-0.5 rounded-lg transition-all ${hidden ? 'opacity-35' : ''}">
+                        <div class="flex items-center gap-2">
+                            <div class="w-2.5 h-2.5 rounded-full flex-shrink-0 transition-all" style="background:${hidden ? '#cbd5e1' : allColors[i]}"></div>
+                            <span class="font-semibold ${hidden ? 'text-slate-400 line-through' : 'text-slate-600'}">${label}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="${hidden ? 'text-slate-300' : 'text-slate-400'} font-bold ltr-num">${hidden ? '—' : pct + '%'}</span>
+                            <span class="font-bold ${hidden ? 'text-slate-300' : 'text-slate-700'} ltr-num">₪${allData[i].toLocaleString()}</span>
+                        </div>
+                    </button>`; }).join('') + `</div>`;
+        }
+
+        window.toggleCatChartSlice = function(idx) {
+            if (_catHidden.has(idx)) _catHidden.delete(idx);
+            else _catHidden.add(idx);
+            // Rebuild chart data
+            const { visData, visBg, visBorder } = buildChartData();
+            catStatsChartInstance.data.datasets[0].data = visData;
+            catStatsChartInstance.data.datasets[0].backgroundColor = visBg;
+            catStatsChartInstance.data.datasets[0].borderColor = visBorder;
+            catStatsChartInstance.update();
+            renderLegend();
+        };
+
+        renderLegend();
     }
 
     function renderStatsChart(income, fixed, planned, current) {
