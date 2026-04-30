@@ -613,8 +613,9 @@
                     <input type="text" id="nameInput" placeholder="מה קנית?" required class="input-field w-full px-4 py-3 rounded-xl">
                 </div>
                 <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 mr-1">קטגוריה</label>
-                    <select id="categorySelect" class="input-field w-full px-4 py-3 rounded-xl appearance-none">
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 mr-1">קטגוריה מתוכננת</label>
+                    <div id="addExpenseCategoryPicker" class="space-y-1"></div>
+                    <select id="categorySelect" class="hidden">
                         <option value="שוטף">ללא (שוטף)</option>
                     </select>
                 </div>
@@ -2034,7 +2035,7 @@
 
         const amount = safeParseFloat(aInp.value);
         const name = nInp.value.trim();
-        const category = cSel ? cSel.value : 'שוטף';
+        const category = (cSel ? cSel.value : null) || 'שוטף';
         if (!amount || !name) return;
 
         setLoading(true, false, true);
@@ -3690,6 +3691,104 @@
         });
     }
 
+    function populateAddExpenseCategoryPicker(currentTag) {
+        const picker = document.getElementById('addExpenseCategoryPicker');
+        const eCat   = document.getElementById('categorySelect');
+        if (!picker) return;
+
+        const activeAnnuals = state.budget.annual.filter(a => safeParseFloat(a.budget_amount) > 0);
+
+        function getSpent(cat) {
+            return state.transactions
+                .filter(t => tagMatchesCat(t.tag, cat))
+                .reduce((s, t) => s + safeParseFloat(t.amount), 0);
+        }
+
+        const groups = {};
+        const standalone = [];
+        activeAnnuals.forEach(cat => {
+            if (cat.parent_group) {
+                groups[cat.parent_group] = groups[cat.parent_group] || [];
+                groups[cat.parent_group].push(cat);
+            } else standalone.push(cat);
+        });
+
+        picker.innerHTML = '';
+
+        const selectedCat = currentTag
+            ? activeAnnuals.find(c => c.category_name.trim() === currentTag.trim())
+            : null;
+        const selectedLabel = selectedCat
+            ? (selectedCat.parent_group ? `${selectedCat.parent_group} › ${selectedCat.category_name}` : selectedCat.category_name)
+            : 'ללא (שוטף)';
+
+        // Collapsed view
+        const collapsed = document.createElement('div');
+        collapsed.id = 'addExpensePickerCollapsed';
+        collapsed.className = 'flex items-center justify-between px-3 py-2.5 rounded-xl border cursor-pointer transition-all ' +
+            (currentTag ? 'bg-blue-50 border-blue-300' : 'bg-slate-50 border-slate-200 hover:bg-slate-100');
+        collapsed.innerHTML = `
+            <span class="text-xs font-bold ${currentTag ? 'text-blue-700' : 'text-slate-500'}">${selectedLabel}</span>
+            <i class="fa-solid fa-chevron-down text-[10px] text-slate-400"></i>`;
+        collapsed.onclick = () => { expanded.classList.toggle('hidden'); collapsed.classList.toggle('hidden'); };
+        picker.appendChild(collapsed);
+
+        // Expanded view
+        const expanded = document.createElement('div');
+        expanded.id = 'addExpensePickerExpanded';
+        expanded.className = 'hidden bg-white rounded-2xl border border-slate-200 shadow-lg overflow-hidden';
+
+        function makeItem(cat, isChild = false) {
+            const budget = safeParseFloat(cat.budget_amount);
+            const spent  = getSpent(cat);
+            const remaining = budget - spent;
+            const isOver = remaining < 0;
+            const isSelected = currentTag && currentTag.trim() === cat.category_name.trim();
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = `w-full flex items-center justify-between px-4 py-2.5 text-right transition-colors ${isChild ? 'pr-7' : ''} ${isSelected ? 'bg-blue-50' : 'hover:bg-slate-50'}`;
+            btn.innerHTML = `
+                <span class="text-xs font-bold ${isSelected ? 'text-blue-700' : 'text-slate-700'}">${isSelected ? '✓ ' : ''}${cat.category_name}</span>
+                <span class="text-[10px] font-bold ${isOver ? 'text-red-400' : 'text-slate-400'} ltr-num flex-shrink-0 mr-2">${isOver ? '−' : '+'}₪${Math.round(Math.abs(remaining)).toLocaleString()}</span>`;
+            btn.onclick = () => {
+                const newTag = isSelected ? null : cat.category_name;
+                if (eCat) eCat.value = newTag || 'שוטף';
+                populateAddExpenseCategoryPicker(newTag);
+            };
+            return btn;
+        }
+
+        const noneBtn = document.createElement('button');
+        noneBtn.type = 'button';
+        const isNone = !currentTag;
+        noneBtn.className = `w-full flex items-center px-4 py-2.5 text-right transition-colors border-b border-slate-100 ${isNone ? 'bg-blue-50' : 'hover:bg-slate-50'}`;
+        noneBtn.innerHTML = `<span class="text-xs font-bold ${isNone ? 'text-blue-700' : 'text-slate-500'}">${isNone ? '✓ ' : ''}ללא (שוטף)</span>`;
+        noneBtn.onclick = () => { if (eCat) eCat.value = 'שוטף'; populateAddExpenseCategoryPicker(null); };
+        expanded.appendChild(noneBtn);
+
+        if (activeAnnuals.length === 0) {
+            const p = document.createElement('p');
+            p.className = 'text-[10px] text-slate-400 text-center py-3';
+            p.textContent = 'אין קטגוריות מתוכננות';
+            expanded.appendChild(p);
+        } else {
+            Object.entries(groups).forEach(([parentName, cats]) => {
+                const header = document.createElement('div');
+                header.className = 'px-4 py-1.5 text-[9px] font-black text-slate-400 uppercase tracking-wider bg-slate-50 border-t border-b border-slate-100';
+                header.textContent = parentName;
+                expanded.appendChild(header);
+                cats.forEach(cat => expanded.appendChild(makeItem(cat, true)));
+            });
+            if (standalone.length > 0) {
+                if (Object.keys(groups).length > 0) {
+                    const sep = document.createElement('div'); sep.className = 'border-t border-slate-100'; expanded.appendChild(sep);
+                }
+                standalone.forEach(cat => expanded.appendChild(makeItem(cat)));
+            }
+        }
+        picker.appendChild(expanded);
+    }
+
     // =====================================================
     // RENDER ANNUAL VIEW
     // =====================================================
@@ -4910,7 +5009,15 @@
         const o = document.getElementById('budgetHelpOverlay');
         if (o) { o.classList.remove('opacity-100'); setTimeout(() => o.classList.add('hidden'), 300); }
     };
-    window.openAddExpenseModal = () => { const o = document.getElementById('addExpenseOverlay'); if (o) { o.classList.remove('hidden'); setTimeout(() => o.classList.add('opacity-100'), 10); } };
+    window.openAddExpenseModal = () => {
+        try {
+            const eCat = document.getElementById('categorySelect');
+            if (eCat) eCat.value = 'שוטף';
+            populateAddExpenseCategoryPicker(null);
+        } catch(e) { console.warn('picker init error:', e); }
+        const o = document.getElementById('addExpenseOverlay');
+        if (o) { o.classList.remove('hidden'); setTimeout(() => o.classList.add('opacity-100'), 10); }
+    };
     window.closeAddExpenseModal = () => { const o = document.getElementById('addExpenseOverlay'); if (o) { o.classList.remove('opacity-100'); setTimeout(() => o.classList.add('hidden'), 300); } };
     window.toggleUsefulInfo = function(id) {
         const el = document.getElementById(id + 'Content'), icon = document.getElementById(id + 'Icon');
