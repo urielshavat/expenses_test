@@ -307,6 +307,19 @@
         </div>
 
         <div id="budgetView" class="view-content hidden">
+            <!-- Wizard CTA — shown when budget is empty -->
+            <div id="budgetWizardCta" class="hidden mb-3">
+                <button onclick="window.openWizard()" class="w-full flex items-center gap-3 bg-blue-600 text-white font-bold py-3.5 px-4 rounded-2xl shadow-lg shadow-blue-200 transition-all hover:bg-blue-700 active:scale-[0.98]">
+                    <div class="w-8 h-8 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                        <i class="fa-solid fa-wand-magic-sparkles text-sm"></i>
+                    </div>
+                    <div class="flex-1 text-right">
+                        <p class="text-sm font-bold">עזור לי לבנות תקציב</p>
+                        <p class="text-[10px] font-semibold text-blue-200">מלא שאלון קצר ונבנה תקציב ראשוני</p>
+                    </div>
+                    <i class="fa-solid fa-chevron-left text-sm text-blue-300"></i>
+                </button>
+            </div>
             <div id="budgetSummary" class="card p-4 mb-4 border border-slate-200 bg-white shadow-sm">
                 <div class="flex flex-col mb-4">
                     <h3 class="text-slate-500 text-[10px] font-bold uppercase tracking-widest">סיכום חודשי</h3>
@@ -508,6 +521,36 @@
                 <button onclick="window.clearBulkSelection()" class="text-slate-400 text-xs font-bold">ביטול</button>
             </div>
             <div id="bulkCatButtons" class="flex flex-wrap gap-1.5"></div>
+        </div>
+    </div>
+
+    <!-- Budget Wizard Modal -->
+    <div id="budgetWizardOverlay" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[160] flex items-end justify-center p-0 hidden opacity-0 transition-opacity">
+        <div class="bg-white w-full max-w-md rounded-t-3xl shadow-2xl flex flex-col" style="max-height:90vh">
+            <!-- Header -->
+            <div class="px-6 pt-5 pb-3 flex-shrink-0">
+                <div class="flex justify-center mb-3">
+                    <div class="w-10 h-1.5 bg-slate-200 rounded-full"></div>
+                </div>
+                <div class="flex items-center justify-between mb-1">
+                    <h2 id="wizardTitle" class="text-lg font-bold text-slate-900"></h2>
+                    <button onclick="window.closeWizard()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <p id="wizardSubtitle" class="text-xs text-slate-400 leading-relaxed"></p>
+                <!-- Progress -->
+                <div class="flex gap-1.5 mt-3">
+                    <div id="wizProg0" class="flex-1 h-1 rounded-full bg-blue-500"></div>
+                    <div id="wizProg1" class="flex-1 h-1 rounded-full bg-slate-200"></div>
+                    <div id="wizProg2" class="flex-1 h-1 rounded-full bg-slate-200"></div>
+                </div>
+            </div>
+            <!-- Content -->
+            <div id="wizardContent" class="flex-1 overflow-y-auto px-6 pb-4 space-y-2"></div>
+            <!-- Footer -->
+            <div class="px-6 py-4 border-t border-slate-100 flex-shrink-0 flex gap-2">
+                <button id="wizPrevBtn" onclick="window.wizardNav(-1)" class="flex-1 bg-slate-100 text-slate-600 font-bold py-3 rounded-2xl text-sm hidden">הקודם</button>
+                <button id="wizNextBtn" onclick="window.wizardNav(1)" class="flex-1 bg-blue-600 text-white font-bold py-3 rounded-2xl text-sm shadow-md shadow-blue-200">המשך</button>
+            </div>
         </div>
     </div>
 
@@ -1466,6 +1509,7 @@
         }
         // הצג onboarding רק בחשבון חדש לגמרי
         if (isNew) {
+            window._isNewAccount = true;
             setTimeout(() => window.openOnboarding(), 600);
         }
         window.fetchData();
@@ -3547,6 +3591,11 @@
         const fixTotal = b.fixed.reduce((s, i) => s + safeParseFloat(i.budget_amount), 0);
         const annMTotal = b.annual.reduce((s, i) => s + safeParseFloat(i.budget_amount), 0) / 12;
 
+        // Show wizard CTA only when budget is completely empty
+        const isEmpty = b.incomes.length === 0 && b.fixed.length === 0 && b.annual.length === 0;
+        const ctaEl = document.getElementById('budgetWizardCta');
+        if (ctaEl) ctaEl.classList.toggle('hidden', !isEmpty);
+
         const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
         setEl('summaryTotalIncome', state.isPrivacyMode ? '20,000' : Math.round(incTotal).toLocaleString());
         setEl('summaryTotalFixed', Math.round(formatDisplayAmount(fixTotal)).toLocaleString());
@@ -4992,6 +5041,273 @@
         const o = document.getElementById('onboardingOverlay');
         if (o) { o.classList.remove('opacity-100'); setTimeout(() => o.classList.add('hidden'), 300); }
         localStorage.setItem('onboarding_seen', '1');
+        // Open wizard for new accounts
+        if (window._isNewAccount) {
+            window._isNewAccount = false;
+            setTimeout(() => window.openWizard(), 400);
+        }
+    };
+
+    // =====================================================
+    // BUDGET WIZARD
+    // =====================================================
+    let _wizStep = 0;
+    const _wizData = { incomes: [], fixed: [], annual: [] };
+
+    const WIZARD_STEPS = [
+        {
+            title: 'הכנסות',
+            subtitle: 'כמה נטו נכנס לחשבון? אם ההכנסה משתנה — הכנס ערך ממוצע',
+            type: 'incomes',
+            items: [
+                { name: 'משכורת אב', checked: true },
+                { name: 'משכורת אם', checked: true },
+                { name: 'קצבת ילדים', checked: false },
+                { name: 'הכנסה מנכס', checked: false },
+            ]
+        },
+        {
+            title: 'הוצאות קבועות',
+            subtitle: 'הוצאות שיורדות בכל חודש ואין לנו שליטה עליהן',
+            type: 'fixed',
+            groups: [
+                { parent: 'דיור', items: ['משכנתא','ביטוח משכנתא','שכירות','ועד בית','ארנונה','חשמל','מים'] },
+                { parent: 'חינוך', items: ['משפחון','מעון','בית ספר','גן','צהרון','חוגים'] },
+                { parent: 'מנויים', items: ['אינטרנט','סלולר','סטרימינג','עיתונים'] },
+                { parent: 'רכב', items: ['ביטוח רכב','דלק'] },
+                { parent: 'שונות', items: ['ביטוח בריאות','תשלומים'] },
+            ]
+        },
+        {
+            title: 'הוצאות מתוכננות',
+            subtitle: 'הוצאות יחסית גדולות שתוציאו השנה ורוצים להיערך מראש. הסכום הוא שנתי',
+            type: 'annual',
+            groups: [
+                { parent: 'רכב', items: ['טיפול שנתי','רישוי וטסט'] },
+                { parent: 'חופשות', items: ['חופשה משפחתית','חופשה זוגית'] },
+            ],
+            standalone: ['קייטנות קיץ','מתנות לאירועים','ימי הולדת','תשלומי הורים לבית הספר']
+        }
+    ];
+
+    window.openWizard = function() {
+        _wizStep = 0;
+        // Init wizard data from defaults
+        WIZARD_STEPS.forEach(step => {
+            if (step.type === 'incomes') {
+                _wizData.incomes = step.items.map(i => ({ ...i, amount: '' }));
+            } else if (step.type === 'fixed') {
+                _wizData.fixed = [];
+                step.groups.forEach(g => g.items.forEach(name =>
+                    _wizData.fixed.push({ parent: g.parent, name, checked: false, amount: '' })
+                ));
+            } else if (step.type === 'annual') {
+                _wizData.annual = [];
+                step.groups.forEach(g => g.items.forEach(name =>
+                    _wizData.annual.push({ parent: g.parent, name, checked: false, amount: '' })
+                ));
+                (step.standalone || []).forEach(name =>
+                    _wizData.annual.push({ parent: '', name, checked: false, amount: '' })
+                );
+            }
+        });
+        renderWizardStep();
+        const o = document.getElementById('budgetWizardOverlay');
+        if (o) { o.classList.remove('hidden'); setTimeout(() => o.classList.add('opacity-100'), 10); }
+    };
+
+    window.closeWizard = function() {
+        const o = document.getElementById('budgetWizardOverlay');
+        if (o) { o.classList.remove('opacity-100'); setTimeout(() => o.classList.add('hidden'), 300); }
+    };
+
+    function renderWizardStep() {
+        const step = WIZARD_STEPS[_wizStep];
+        document.getElementById('wizardTitle').textContent = `שלב ${_wizStep + 1} — ${step.title}`;
+        document.getElementById('wizardSubtitle').textContent = step.subtitle;
+        // Progress bars
+        [0,1,2].forEach(i => {
+            const el = document.getElementById(`wizProg${i}`);
+            if (el) el.className = `flex-1 h-1 rounded-full ${i <= _wizStep ? 'bg-blue-500' : 'bg-slate-200'}`;
+        });
+        // Prev/Next buttons
+        const prevBtn = document.getElementById('wizPrevBtn');
+        const nextBtn = document.getElementById('wizNextBtn');
+        prevBtn.classList.toggle('hidden', _wizStep === 0);
+        nextBtn.textContent = _wizStep === WIZARD_STEPS.length - 1 ? 'צור תקציב ✓' : 'המשך';
+        nextBtn.className = `flex-1 font-bold py-3 rounded-2xl text-sm ${_wizStep === WIZARD_STEPS.length - 1 ? 'bg-green-600 text-white shadow-md shadow-green-200' : 'bg-blue-600 text-white shadow-md shadow-blue-200'}`;
+
+        const content = document.getElementById('wizardContent');
+        content.innerHTML = '';
+
+        if (step.type === 'incomes') renderWizardIncomes(content);
+        else if (step.type === 'fixed') renderWizardGrouped(content, _wizData.fixed, step.groups);
+        else if (step.type === 'annual') renderWizardGrouped(content, _wizData.annual, step.groups, step.standalone);
+    }
+
+    function renderWizardIncomes(container) {
+        _wizData.incomes.forEach((item, idx) => {
+            container.appendChild(makeWizardRow(item, idx, 'incomes'));
+        });
+        // Add more button
+        container.appendChild(makeAddMoreBtn(() => {
+            _wizData.incomes.push({ name: 'הכנסה נוספת', checked: true, amount: '' });
+            renderWizardStep();
+        }));
+    }
+
+    function renderWizardGrouped(container, dataArr, groups, standalone = []) {
+        // Group rendering
+        groups.forEach(g => {
+            const groupItems = dataArr.filter(d => d.parent === g.parent);
+            // Group header
+            const header = document.createElement('div');
+            header.className = 'pt-2 pb-1';
+            header.innerHTML = `<span class="text-[10px] font-black text-slate-400 uppercase tracking-wider">${g.parent}</span>`;
+            container.appendChild(header);
+            groupItems.forEach((item, _) => {
+                const idx = dataArr.indexOf(item);
+                container.appendChild(makeWizardRow(item, idx, dataArr === _wizData.fixed ? 'fixed' : 'annual'));
+            });
+            // Add to group
+            container.appendChild(makeAddMoreBtn(() => {
+                dataArr.push({ parent: g.parent, name: '', checked: true, amount: '' });
+                renderWizardStep();
+            }, `הוסף ל${g.parent}`));
+        });
+        // Standalone
+        if (standalone.length > 0) {
+            const sep = document.createElement('div');
+            sep.className = 'pt-2 pb-1';
+            sep.innerHTML = `<span class="text-[10px] font-black text-slate-400 uppercase tracking-wider">שונות</span>`;
+            container.appendChild(sep);
+            const standaloneItems = dataArr.filter(d => !d.parent);
+            standaloneItems.forEach(item => {
+                const idx = dataArr.indexOf(item);
+                container.appendChild(makeWizardRow(item, idx, 'annual'));
+            });
+            container.appendChild(makeAddMoreBtn(() => {
+                dataArr.push({ parent: '', name: '', checked: true, amount: '' });
+                renderWizardStep();
+            }, 'הוסף לשונות'));
+        } else {
+            // No standalone — add general "add more" at end
+            container.appendChild(makeAddMoreBtn(() => {
+                const lastGroup = groups[groups.length - 1];
+                dataArr.push({ parent: lastGroup ? lastGroup.parent : '', name: '', checked: true, amount: '' });
+                renderWizardStep();
+            }));
+        }
+    }
+
+    function makeWizardRow(item, idx, type) {
+        const row = document.createElement('div');
+        row.className = `flex items-center gap-2 py-1.5 px-2 rounded-xl transition-all ${item.checked ? 'bg-blue-50' : ''}`;
+        const cbId = `wiz_${type}_${idx}`;
+        row.innerHTML = `
+            <input type="checkbox" id="${cbId}" class="w-4 h-4 rounded text-blue-600 flex-shrink-0 cursor-pointer" ${item.checked ? 'checked' : ''}>
+            <input type="text" value="${item.name}" placeholder="שם"
+                class="flex-1 bg-transparent text-xs font-bold text-slate-700 border-b border-transparent focus:border-blue-300 outline-none min-w-0 py-0.5"
+                oninput="window._wizSetName('${type}',${idx},this.value)">
+            <div class="flex items-center gap-0.5 flex-shrink-0">
+                <span class="text-[10px] text-slate-400 font-bold">₪</span>
+                <input type="number" inputmode="decimal" value="${item.amount}" placeholder="0"
+                    class="w-16 text-xs font-bold text-slate-700 text-left bg-slate-100 rounded-lg px-2 py-1 border border-transparent focus:border-blue-300 outline-none"
+                    oninput="window._wizSetAmount('${type}',${idx},this.value)"
+                    ${!item.checked ? 'disabled' : ''}>
+            </div>`;
+        // Checkbox toggle
+        const cb = row.querySelector(`#${cbId}`);
+        cb.addEventListener('change', () => {
+            window._wizToggle(type, idx, cb.checked);
+            row.classList.toggle('bg-blue-50', cb.checked);
+            row.querySelector('input[type=number]').disabled = !cb.checked;
+        });
+        return row;
+    }
+
+    function makeAddMoreBtn(onClick, label = 'הוסף שורה') {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'flex items-center gap-1.5 text-blue-500 font-bold text-xs py-1.5 px-2 hover:bg-blue-50 rounded-xl transition-colors mt-1';
+        btn.innerHTML = `<i class="fa-solid fa-plus text-[10px]"></i>${label}`;
+        btn.onclick = onClick;
+        return btn;
+    }
+
+    window._wizToggle = (type, idx, checked) => {
+        _wizData[type][idx].checked = checked;
+    };
+    window._wizSetName = (type, idx, val) => {
+        _wizData[type][idx].name = val;
+    };
+    window._wizSetAmount = (type, idx, val) => {
+        _wizData[type][idx].amount = val;
+    };
+
+    window.wizardNav = function(dir) {
+        if (dir === 1 && _wizStep === WIZARD_STEPS.length - 1) {
+            window.submitWizard();
+            return;
+        }
+        _wizStep = Math.max(0, Math.min(WIZARD_STEPS.length - 1, _wizStep + dir));
+        document.getElementById('wizardContent').scrollTop = 0;
+        renderWizardStep();
+    };
+
+    window.submitWizard = async function() {
+        if (!sbClient || !USER_TOKEN) return;
+        window.closeWizard();
+
+        const rows = [];
+
+        // Incomes
+        _wizData.incomes.filter(i => i.checked && i.name.trim()).forEach(i => {
+            rows.push({ category_name: i.name.trim(), budget_amount: safeParseFloat(i.amount) || 1, type: 'income', parent_group: null, user_token: USER_TOKEN });
+        });
+
+        // Fixed
+        _wizData.fixed.filter(i => i.checked && i.name.trim()).forEach(i => {
+            rows.push({ category_name: i.name.trim(), budget_amount: safeParseFloat(i.amount) || 1, type: 'fixed', parent_group: i.parent || null, user_token: USER_TOKEN });
+        });
+
+        // Annual
+        _wizData.annual.filter(i => i.checked && i.name.trim()).forEach(i => {
+            rows.push({ category_name: i.name.trim(), budget_amount: safeParseFloat(i.amount) || 1, type: 'annual', parent_group: i.parent || null, user_token: USER_TOKEN });
+        });
+
+        if (rows.length === 0) return;
+
+        try {
+            setLoading(true, true);
+            // Delete existing and insert fresh
+            await sbClient.from('budget_settings').delete().eq('user_token', USER_TOKEN);
+            await sbClient.from('budget_settings').insert(rows);
+
+            // Calculate g4: income - fixed - annual_monthly, rounded down to multiple of 5 divisible by 30
+            const totalIncome = rows.filter(r => r.type === 'income').reduce((s, r) => s + r.budget_amount, 0);
+            const totalFixed  = rows.filter(r => r.type === 'fixed').reduce((s, r) => s + r.budget_amount, 0);
+            const totalAnnualMonthly = rows.filter(r => r.type === 'annual').reduce((s, r) => s + r.budget_amount / 12, 0);
+            const remaining = totalIncome - totalFixed - totalAnnualMonthly;
+
+            // Find largest multiple of 150 (=5×30) ≤ remaining
+            const g4 = Math.max(0, Math.floor(remaining / 150) * 150);
+
+            if (g4 > 0) {
+                await sbClient.from('budget_settings').insert({ category_name: '__g4__', budget_amount: g4, type: 'system', parent_group: null, user_token: USER_TOKEN });
+                const todayISO = new Date().toISOString().split('T')[0];
+                await sbClient.rpc('update_daily_budget', { p_user_token: USER_TOKEN, p_daily_budget: g4 / 30, p_start_date: todayISO });
+            }
+
+            await window.fetchBudgetData();
+            window.setNav('budget');
+            window.showToast('התקציב נוצר בהצלחה!', 'check');
+        } catch(e) {
+            console.error(e);
+            window.showToast('שגיאה: ' + e.message, 'circle-xmark');
+        } finally {
+            setLoading(false, true);
+        }
     };
     window.openMainHelp = function() {
         const o = document.getElementById('mainHelpOverlay');
