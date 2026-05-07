@@ -115,12 +115,12 @@
         const eventMonths = Array.from(new Set(sorted.map(e => e.monthOffset))).sort((a,b) => a-b);
         for (const mIdx of eventMonths) {
           const rem = sorted.filter(e => e.monthOffset >= curMonth);
-          const requiredForFuture = solveRequiredDeposit(curBal, curCB, curNCB, addMonths(new Date(params.startDate), curMonth), curMonth, rem, params);
+          const requiredForFuture = solveRequiredDeposit(curBal, curCB, curNCB, addMonths(parseStartDate(params.startDate), curMonth), curMonth, rem, params);
           let deposit = Math.min(requiredForFuture, maxDepConstraint);
           maxDepConstraint = deposit;
           const segmentEvents = new Map();
           segmentEvents.set(mIdx, sorted.filter(e => e.monthOffset === mIdx));
-          const sim = runSimulationPeriod(curBal, curCB, curNCB, addMonths(new Date(params.startDate), curMonth), curMonth, mIdx - curMonth + 1, deposit, params, segmentEvents);
+          const sim = runSimulationPeriod(curBal, curCB, curNCB, addMonths(parseStartDate(params.startDate), curMonth), curMonth, mIdx - curMonth + 1, deposit, params, segmentEvents);
           fullSchedule.push(...sim.schedule);
           curBal = sim.finalBalance; curCB = sim.finalCostBasis; curNCB = sim.finalNominalBasis;
           curMonth = mIdx + 1;
@@ -156,7 +156,8 @@
       const inputCls = "w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold focus:outline-none transition-all";
 
       const App = () => {
-        const [params, setParams] = useState({ startDate: new Date().toISOString().split('T')[0], annualReturn: 7, annualInflation: 2, capitalGainsTax: 25, initialCapital: 0 });
+        const todayMonthYear = () => { const n = new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}`; };
+        const [params, setParams] = useState({ startDate: todayMonthYear(), annualReturn: 7, annualInflation: 2, capitalGainsTax: 25, initialCapital: 0 });
         const [events, setEvents] = useState([]);
         const [simulation, setSimulation] = useState(null);
         const [isCalculating, setIsCalculating] = useState(false);
@@ -175,8 +176,9 @@
         const handleUpd = (id, f, v) => setEvents(events.map(e => e.id === id ? {...e, [f]: v} : e));
         const handleDel = (id) => setEvents(events.filter(e => e.id !== id));
 
+        const parseStartDate = (s) => { const [y, m] = s.split('-'); return new Date(+y, +m - 1, 1); };
         const dateOptions = useMemo(() => {
-          const start = new Date(params.startDate);
+          const start = parseStartDate(params.startDate);
           return Array.from({ length: 481 }, (_, i) => {
             const d = addMonths(start, i);
             const y = Math.floor(i/12), m = i%12;
@@ -205,13 +207,38 @@
                       <FileText size={16} />
                     </button>
                   )}
-                  <button onClick={() => { const blob = new Blob([JSON.stringify({ params, events })], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'savings.json'; a.click(); }} className="p-2 text-slate-400 hover:bg-slate-100 rounded-xl transition no-print">
+                  <button onClick={() => {
+                    const start = new Date(params.startDate);
+                    const exportedEvents = events.map(ev => {
+                      const d = addMonths(start, ev.monthOffset);
+                      const dateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+                      const { monthOffset, ...rest } = ev;
+                      return { ...rest, withdrawalDate: dateStr };
+                    });
+                    const blob = new Blob([JSON.stringify({ params, events: exportedEvents })], { type: 'application/json' });
+                    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'savings.json'; a.click();
+                  }} className="p-2 text-slate-400 hover:bg-slate-100 rounded-xl transition no-print">
                     <Download size={16} />
                   </button>
                   <button onClick={() => fileRef.current.click()} className="p-2 text-slate-400 hover:bg-slate-100 rounded-xl transition no-print">
                     <Upload size={16} />
                   </button>
-                  <input type="file" ref={fileRef} className="hidden" onChange={(e) => { const f = e.target.files[0]; if(!f) return; const r = new FileReader(); r.onload = (ev) => { try { const d = JSON.parse(ev.target.result); setParams(d.params); setEvents(d.events); setSimulation(null); } catch(e) { alert('קובץ לא תקין'); } }; r.readAsText(f); }} />
+                  <input type="file" ref={fileRef} className="hidden" onChange={(e) => { const f = e.target.files[0]; if(!f) return; const r = new FileReader(); r.onload = (ev) => { try {
+                    const d = JSON.parse(ev.target.result);
+                    const loadedParams = d.params;
+                    const [sy, sm] = (loadedParams.startDate || '').split('-');
+                    const start = sy && sm ? new Date(+sy, +sm - 1, 1) : new Date();
+                    const loadedEvents = d.events.map(ev => {
+                      if (ev.withdrawalDate) {
+                        const [ty, tm] = ev.withdrawalDate.split('-');
+                        const target = new Date(+ty, +tm - 1, 1);
+                        const diffMonths = (target.getFullYear() - start.getFullYear()) * 12 + (target.getMonth() - start.getMonth());
+                        return { ...ev, monthOffset: Math.max(0, diffMonths) };
+                      }
+                      return ev;
+                    });
+                    setParams(loadedParams); setEvents(loadedEvents); setSimulation(null);
+                  } catch(e) { alert('קובץ לא תקין'); } }; r.readAsText(f); }} />
                 </div>
               </div>
             </header>
@@ -221,7 +248,7 @@
               <Section title="הגדרות השקעה" icon={Settings} defaultOpen={true}>
                 <div className="pt-3 grid grid-cols-2 gap-3">
                   <Field label="תאריך התחלה">
-                    <input type="date" value={params.startDate} onChange={e => setParams({...params, startDate: e.target.value})} className={inputCls} />
+                    <input type="month" value={params.startDate} onChange={e => setParams({...params, startDate: e.target.value})} className={inputCls} />
                   </Field>
                   <Field label="הון התחלתי (₪)">
                     <input type="number" step="1000" value={params.initialCapital} onChange={e => setParams({...params, initialCapital: +e.target.value})} className={inputCls} />
@@ -293,18 +320,18 @@
               {simulation && (
                 <div className="space-y-3 animate-slide-in">
                   {/* Summary cards */}
-                  <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm">
-                    <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-1">הפקדה חודשית מומלצת</p>
-                    <p className="text-4xl font-black text-slate-900">{formatCurrency(simulation.schedule[0]?.deposit || 0)}</p>
-                    <p className="text-xs text-slate-400 font-bold mt-1">הסכום המרבי להפקדה — עשוי לרדת לאחר אירועים</p>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-3 gap-2">
                     <div className="bg-white rounded-2xl border border-slate-100 p-3 shadow-sm">
-                      <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">יתרה סופית</p>
+                      <p className="text-xs font-bold text-blue-600 uppercase tracking-widest mb-1">הפקדה חודשית</p>
+                      <p className="text-2xl font-black text-slate-900">{formatCurrency(simulation.schedule[0]?.deposit || 0)}</p>
+                      <p className="text-[10px] text-slate-400 font-bold mt-1">עשוי לרדת לאחר אירועים</p>
+                    </div>
+                    <div className="bg-white rounded-2xl border border-slate-100 p-3 shadow-sm">
+                      <p className="text-xs font-bold text-slate-400 uppercase mb-1">יתרה סופית</p>
                       <p className="text-2xl font-black text-blue-600">{formatCurrency(simulation.finalBalance)}</p>
                     </div>
                     <div className="bg-white rounded-2xl border border-slate-100 p-3 shadow-sm">
-                      <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">סה"כ הפקדות</p>
+                      <p className="text-xs font-bold text-slate-400 uppercase mb-1">סה"כ הפקדות</p>
                       <p className="text-2xl font-black text-slate-700">{formatCurrency(simulation.totalDeposited)}</p>
                     </div>
                   </div>
