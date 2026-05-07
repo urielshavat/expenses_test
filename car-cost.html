@@ -12,8 +12,8 @@
   input:focus, select:focus { outline: none; border-color: #3b82f6 !important; background: #fff !important; }
   input[type=number]::-webkit-inner-spin-button { opacity: 0.4; }
   .card { background: #fff; border-radius: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.08); border: 1px solid #e2e8f0; }
-  .input-field { border: 1px solid #e2e8f0; background: #f9fafb; border-radius: 0.75rem; padding: 0.6rem 0.875rem; font-size: 0.875rem; width: 100%; font-family: 'Assistant', sans-serif; transition: all 0.2s; }
-  .toggle-btn { flex: 1; padding: 0.45rem 0.5rem; border: 1px solid #e2e8f0; border-radius: 0.625rem; background: #f9fafb; color: #64748b; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: 'Assistant', sans-serif; white-space: nowrap; }
+  .input-field { border: 1px solid #e2e8f0; background: #f9fafb; border-radius: 0.75rem; padding: 0.6rem 0.875rem; font-size: 1rem; width: 100%; font-family: 'Assistant', sans-serif; transition: all 0.2s; }
+  .toggle-btn { flex: 1; padding: 0.45rem 0.5rem; border: 1px solid #e2e8f0; border-radius: 0.625rem; background: #f9fafb; color: #64748b; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: 'Assistant', sans-serif; white-space: nowrap; }
   .toggle-btn.active { background: #eff6ff; border-color: #bfdbfe; color: #2563eb; }
   .panel { display: none; }
   .panel.visible { display: block; }
@@ -32,14 +32,14 @@
     </a>
     <div>
       <h1 class="text-xl font-bold text-slate-800 tracking-tight">עלות החזקת רכב</h1>
-      <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">חישוב עלות חודשית</p>
+      <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">חישוב עלות חודשית</p>
     </div>
   </div>
 
   <!-- Energy section -->
   <div class="card p-4 mb-3">
     <div class="flex justify-between items-center mb-3">
-      <h2 class="text-xs font-bold text-slate-800">דלק / אנרגיה</h2>
+      <h2 class="text-xl font-bold text-slate-800">דלק/חשמל</h2>
       <span class="section-badge" id="cost-energy">₪0 / חודש</span>
     </div>
     <div class="flex gap-2 mb-3">
@@ -55,22 +55,22 @@
       </div>
       <div class="panel visible" id="panel-fmonth">
         <div class="space-y-1">
-          <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">סכום חודשי (₪)</label>
+          <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">סכום חודשי (₪)</label>
           <input type="number" id="fuel-monthly" value="600" oninput="calc()" class="input-field">
         </div>
       </div>
       <div class="panel" id="panel-fkm">
         <div class="grid grid-cols-3 gap-2">
-          <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">ק"מ שנתי</label><input type="number" id="f-km-annual" value="15000" oninput="calc()" class="input-field"></div>
-          <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">ק"מ/ליטר</label><input type="number" id="f-km-per-liter" value="12" oninput="calc()" class="input-field"></div>
-          <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">מחיר ליטר</label><input type="number" id="f-liter-price" value="7.20" step="0.01" oninput="calc()" class="input-field"></div>
+          <div class="space-y-1"><label class="text-xs font-bold text-slate-400 uppercase tracking-wider">ק"מ שנתי</label><input type="number" id="f-km-annual" value="15000" oninput="calc()" class="input-field"></div>
+          <div class="space-y-1"><label class="text-xs font-bold text-slate-400 uppercase tracking-wider">ק"מ/ליטר</label><input type="number" id="f-km-per-liter" value="12" oninput="calc()" class="input-field"></div>
+          <div class="space-y-1"><label class="text-xs font-bold text-slate-400 uppercase tracking-wider">מחיר ליטר</label><input type="number" id="f-liter-price" value="7.20" step="0.01" oninput="calc()" class="input-field"></div>
         </div>
       </div>
       <div class="panel" id="panel-fl100">
         <div class="grid grid-cols-3 gap-2">
-          <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">ק"מ שנתי</label><input type="number" id="f-km-annual-l100" value="15000" oninput="calc()" class="input-field"></div>
-          <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">ל'/100</label><input type="number" id="f-l100" value="8" step="0.1" oninput="calc()" class="input-field"></div>
-          <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">מחיר ליטר</label><input type="number" id="f-liter-price-l100" value="7.20" step="0.01" oninput="calc()" class="input-field"></div>
+          <div class="space-y-1"><label class="text-xs font-bold text-slate-400 uppercase tracking-wider">ק"מ שנתי</label><input type="number" id="f-km-annual-l100" value="15000" oninput="calc()" class="input-field"></div>
+          <div class="space-y-1"><label class="text-xs font-bold text-slate-400 uppercase tracking-wider">ל'/100</label><input type="number" id="f-l100" value="8" step="0.1" oninput="calc()" class="input-field"></div>
+          <div class="space-y-1"><label class="text-xs font-bold text-slate-400 uppercase tracking-wider">מחיר ליטר</label><input type="number" id="f-liter-price-l100" value="7.20" step="0.01" oninput="calc()" class="input-field"></div>
         </div>
       </div>
     </div>
@@ -82,20 +82,20 @@
         <button class="toggle-btn" id="btn-ekmkwh" onclick="setElecMode('km-kwh')">ק"מ/קוו"ט</button>
       </div>
       <div class="panel visible" id="panel-emonth">
-        <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">סכום חודשי (₪)</label><input type="number" id="elec-monthly" value="150" oninput="calc()" class="input-field"></div>
+        <div class="space-y-1"><label class="text-xs font-bold text-slate-400 uppercase tracking-wider">סכום חודשי (₪)</label><input type="number" id="elec-monthly" value="150" oninput="calc()" class="input-field"></div>
       </div>
       <div class="panel" id="panel-ekwh100">
         <div class="grid grid-cols-3 gap-2">
-          <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">ק"מ שנתי</label><input type="number" id="e-km-annual-kwh100" value="15000" oninput="calc()" class="input-field"></div>
-          <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">קוו"ט/100</label><input type="number" id="e-kwh100" value="17" step="0.1" oninput="calc()" class="input-field"></div>
-          <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">מחיר קוו"ט</label><input type="number" id="e-kwh-price-100" value="0.6432" step="0.0001" oninput="calc()" class="input-field"></div>
+          <div class="space-y-1"><label class="text-xs font-bold text-slate-400 uppercase tracking-wider">ק"מ שנתי</label><input type="number" id="e-km-annual-kwh100" value="15000" oninput="calc()" class="input-field"></div>
+          <div class="space-y-1"><label class="text-xs font-bold text-slate-400 uppercase tracking-wider">קוו"ט/100</label><input type="number" id="e-kwh100" value="17" step="0.1" oninput="calc()" class="input-field"></div>
+          <div class="space-y-1"><label class="text-xs font-bold text-slate-400 uppercase tracking-wider">מחיר קוו"ט</label><input type="number" id="e-kwh-price-100" value="0.6432" step="0.0001" oninput="calc()" class="input-field"></div>
         </div>
       </div>
       <div class="panel" id="panel-ekmkwh">
         <div class="grid grid-cols-3 gap-2">
-          <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">ק"מ שנתי</label><input type="number" id="e-km-annual-kmkwh" value="15000" oninput="calc()" class="input-field"></div>
-          <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">ק"מ/קוו"ט</label><input type="number" id="e-km-per-kwh" value="6" step="0.1" oninput="calc()" class="input-field"></div>
-          <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">מחיר קוו"ט</label><input type="number" id="e-kwh-price-km" value="0.6432" step="0.0001" oninput="calc()" class="input-field"></div>
+          <div class="space-y-1"><label class="text-xs font-bold text-slate-400 uppercase tracking-wider">ק"מ שנתי</label><input type="number" id="e-km-annual-kmkwh" value="15000" oninput="calc()" class="input-field"></div>
+          <div class="space-y-1"><label class="text-xs font-bold text-slate-400 uppercase tracking-wider">ק"מ/קוו"ט</label><input type="number" id="e-km-per-kwh" value="6" step="0.1" oninput="calc()" class="input-field"></div>
+          <div class="space-y-1"><label class="text-xs font-bold text-slate-400 uppercase tracking-wider">מחיר קוו"ט</label><input type="number" id="e-kwh-price-km" value="0.6432" step="0.0001" oninput="calc()" class="input-field"></div>
         </div>
       </div>
     </div>
@@ -104,37 +104,37 @@
   <!-- Insurance -->
   <div class="card p-4 mb-3">
     <div class="flex justify-between items-center mb-3">
-      <h2 class="text-xs font-bold text-slate-800">ביטוחים <span class="text-[10px] font-normal text-slate-400">(עלות שנתית)</span></h2>
+      <h2 class="text-xl font-bold text-slate-800">ביטוחים <span class="text-sm font-normal text-slate-400">(עלות שנתית)</span></h2>
       <span class="section-badge" id="cost-ins">₪0 / חודש</span>
     </div>
     <div class="grid grid-cols-2 gap-3">
-      <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">ביטוח חובה (₪)</label><input type="number" id="ins-mandatory" placeholder="0" oninput="calc()" class="input-field"></div>
-      <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">ביטוח מקיף/צד ג' (₪)</label><input type="number" id="ins-extra" placeholder="0" oninput="calc()" class="input-field"></div>
+      <div class="space-y-1"><label class="text-xs font-bold text-slate-400 uppercase tracking-wider">ביטוח חובה (₪)</label><input type="number" id="ins-mandatory" placeholder="0" oninput="calc()" class="input-field"></div>
+      <div class="space-y-1"><label class="text-xs font-bold text-slate-400 uppercase tracking-wider">ביטוח מקיף/צד ג' (₪)</label><input type="number" id="ins-extra" placeholder="0" oninput="calc()" class="input-field"></div>
     </div>
   </div>
 
   <!-- Fixed annual -->
   <div class="card p-4 mb-3">
     <div class="flex justify-between items-center mb-3">
-      <h2 class="text-xs font-bold text-slate-800">הוצאות שנתיות קבועות</h2>
+      <h2 class="text-xl font-bold text-slate-800">אחזקה <span class="text-sm font-normal text-slate-400">(עלות שנתית)</span></h2>
       <span class="section-badge" id="cost-fixed">₪0 / חודש</span>
     </div>
     <div class="grid grid-cols-2 gap-3 mb-3">
-      <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">רישיון + טסט (₪)</label><input type="number" id="license" placeholder="0" oninput="calc()" class="input-field"></div>
-      <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">טיפול שנתי (₪)</label><input type="number" id="service" placeholder="0" oninput="calc()" class="input-field"></div>
+      <div class="space-y-1"><label class="text-xs font-bold text-slate-400 uppercase tracking-wider">רישיון + טסט (₪)</label><input type="number" id="license" placeholder="0" oninput="calc()" class="input-field"></div>
+      <div class="space-y-1"><label class="text-xs font-bold text-slate-400 uppercase tracking-wider">טיפול שנתי (₪)</label><input type="number" id="service" placeholder="0" oninput="calc()" class="input-field"></div>
     </div>
-    <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">אחזקה נוספת — מצבר, צמיגים, נורות (₪/שנה)</label><input type="number" id="maintenance" placeholder="0" oninput="calc()" class="input-field"></div>
+    <div class="space-y-1"><label class="text-xs font-bold text-slate-400 uppercase tracking-wider">אחזקה נוספת — מצבר, צמיגים, נורות (₪/שנה)</label><input type="number" id="maintenance" placeholder="0" oninput="calc()" class="input-field"></div>
   </div>
 
   <!-- Depreciation -->
   <div class="card p-4 mb-3">
     <div class="flex justify-between items-center mb-3">
-      <h2 class="text-xs font-bold text-slate-800">ירידת ערך ותכנון החלפה</h2>
+      <h2 class="text-xl font-bold text-slate-800">ירידת ערך</h2>
       <span class="section-badge" id="cost-deprec">₪0 / חודש</span>
     </div>
     <div class="grid grid-cols-2 gap-3 mb-3">
-      <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">ערך נוכחי (₪)</label><input type="number" id="car-current" placeholder="0" oninput="calc()" class="input-field"></div>
-      <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">עלות הרכב הבא (₪)</label><input type="number" id="car-next" placeholder="0" oninput="calc()" class="input-field"></div>
+      <div class="space-y-1"><label class="text-xs font-bold text-slate-400 uppercase tracking-wider">ערך נוכחי (₪)</label><input type="number" id="car-current" placeholder="0" oninput="calc()" class="input-field"></div>
+      <div class="space-y-1"><label class="text-xs font-bold text-slate-400 uppercase tracking-wider">עלות הרכב הבא (₪)</label><input type="number" id="car-next" placeholder="0" oninput="calc()" class="input-field"></div>
     </div>
     <div class="flex gap-2 mb-3">
       <button class="toggle-btn" id="btn-sell-manual" onclick="setSellMode('manual')">תמורה צפויה במכירה</button>
@@ -142,19 +142,19 @@
     </div>
     <div class="panel" id="panel-sell-manual">
       <div class="grid grid-cols-2 gap-3">
-        <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">תמורה צפויה במכירה (₪)</label><input type="number" id="car-sell" placeholder="0" oninput="calc()" class="input-field"></div>
-        <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">שנים עד להחלפה</label><input type="number" id="years-manual" value="3" min="1" oninput="syncYears(this)" class="input-field"></div>
+        <div class="space-y-1"><label class="text-xs font-bold text-slate-400 uppercase tracking-wider">תמורה צפויה במכירה (₪)</label><input type="number" id="car-sell" placeholder="0" oninput="calc()" class="input-field"></div>
+        <div class="space-y-1"><label class="text-xs font-bold text-slate-400 uppercase tracking-wider">שנים עד להחלפה</label><input type="number" id="years-manual" value="3" min="1" oninput="syncYears(this)" class="input-field"></div>
       </div>
     </div>
     <div class="panel visible" id="panel-sell-pct">
       <div class="grid grid-cols-2 gap-3">
         <div class="space-y-1">
-          <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">ירידת ערך שנתית (%)</label>
+          <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">ירידת ערך שנתית (%)</label>
           <input type="number" id="depreciation-pct" value="15" step="0.5" min="0" max="100" oninput="calc()" class="input-field">
           <p class="text-[10px] text-blue-500 font-bold mt-1" id="sell-hint"></p>
         </div>
         <div class="space-y-1">
-          <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">שנים עד להחלפה</label>
+          <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">שנים עד להחלפה</label>
           <input type="number" id="years" value="3" min="1" oninput="calc()" class="input-field">
         </div>
       </div>
@@ -164,21 +164,21 @@
 
   <!-- Summary: Car maintenance -->
   <div class="card p-4 mb-3">
-    <h2 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">החזקת רכב</h2>
+    <h2 class="text-xl font-bold text-slate-500 mb-3">החזקת רכב</h2>
     <div id="breakdown-maintenance" class="space-y-2 mb-4"></div>
-    <div class="bg-slate-700 rounded-2xl p-4 flex items-center justify-between gap-3">
-      <p class="text-base font-bold text-white">החזקת רכב חודשית</p>
-      <p class="text-3xl font-black text-white" id="total-maintenance">₪0</p>
+    <div style="background:#2563eb;border-radius:1rem;padding:1.25rem;display:flex;align-items:center;justify-content:space-between;gap:0.75rem;">
+      <p style="font-size:1.75rem;font-weight:900;color:#fff;line-height:1.2;">החזקת רכב<br>חודשית</p>
+      <p style="font-size:2.5rem;font-weight:900;color:#fff;" id="total-maintenance">₪0</p>
     </div>
   </div>
 
   <!-- Summary: Car replacement savings -->
   <div class="card p-4">
-    <h2 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">חיסכון להחלפת הרכב בעוד <span id="years-label">3</span> שנים</h2>
+    <h2 class="text-xl font-bold text-slate-500 mb-3">חיסכון להחלפת הרכב בעוד <span id="years-label">3</span> שנים</h2>
     <div id="breakdown-savings" class="space-y-2 mb-4"></div>
-    <div class="bg-blue-600 rounded-2xl p-5 flex items-center justify-between gap-3">
-      <p class="text-base font-bold text-white">חיסכון חודשי להחלפת הרכב</p>
-      <p class="text-4xl font-black text-white" id="grand-total">₪0</p>
+    <div style="background:#2563eb;border-radius:1rem;padding:1.25rem;display:flex;align-items:center;justify-content:space-between;gap:0.75rem;">
+      <p style="font-size:1.75rem;font-weight:900;color:#fff;line-height:1.2;">חיסכון חודשי<br>להחלפת הרכב</p>
+      <p style="font-size:2.5rem;font-weight:900;color:#fff;" id="grand-total">₪0</p>
     </div>
   </div>
 
