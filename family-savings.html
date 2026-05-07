@@ -97,6 +97,11 @@
 
       const solveRequiredDeposit = (bal, cb, ncb, start, startIdx, events, params) => {
         if (events.length === 0) return 0;
+        const evMap0 = new Map();
+        events.forEach(e => { if(!evMap0.has(e.monthOffset)) evMap0.set(e.monthOffset, []); evMap0.get(e.monthOffset).push(e); });
+        const maxIdx0 = Math.max(...events.map(e => e.monthOffset));
+        const zeroSim = runSimulationPeriod(bal, cb, ncb, start, startIdx, maxIdx0 - startIdx + 1, 0, params, evMap0);
+        if (!zeroSim.failed) return 0;
         let low = 0, high = 20000000, result = high;
         const maxIdx = Math.max(...events.map(e => e.monthOffset));
         const evMap = new Map();
@@ -110,7 +115,13 @@
       };
 
       const calculateSavingsPlan = (params, events) => {
-        const sorted = [...events].sort((a,b) => a.monthOffset - b.monthOffset);
+        const planStart = parseStartDate(params.startDate);
+        const eventsWithOffset = events.map(e => {
+          const evDate = parseStartDate(e.withdrawalDate || params.startDate);
+          const offset = (evDate.getFullYear() - planStart.getFullYear()) * 12 + (evDate.getMonth() - planStart.getMonth());
+          return { ...e, monthOffset: Math.max(0, offset) };
+        });
+        const sorted = [...eventsWithOffset].sort((a,b) => a.monthOffset - b.monthOffset);
         if (sorted.length === 0) return { success: true, schedule: [], finalBalance: params.initialCapital, totalDeposited: 0, totalTaxPaid: 0, totalWithdrawnNet: 0 };
         const fullSchedule = []; let curBal = params.initialCapital, curCB = params.initialCapital, curNCB = params.initialCapital, curMonth = 0, maxDepConstraint = Infinity;
         const eventMonths = Array.from(new Set(sorted.map(e => e.monthOffset))).sort((a,b) => a-b);
@@ -170,22 +181,32 @@
         };
 
         const handleAdd = () => {
-          const lastOffset = events.length ? Math.max(...events.map(e => e.monthOffset)) : 0;
-          setEvents([...events, { id: generateId(), name: `אירוע ${events.length + 1}`, targetAmount: 10000, monthOffset: lastOffset + 12 }]);
+          const lastDate = events.length
+            ? events.reduce((max, e) => e.withdrawalDate > max ? e.withdrawalDate : max, events[0].withdrawalDate)
+            : params.startDate;
+          const d = parseStartDate(lastDate);
+          d.setMonth(d.getMonth() + 12);
+          const nextDate = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+          setEvents([...events, { id: generateId(), name: `אירוע ${events.length + 1}`, targetAmount: 10000, withdrawalDate: nextDate }]);
         };
 
         const handleUpd = (id, f, v) => setEvents(events.map(e => e.id === id ? {...e, [f]: v} : e));
         const handleDel = (id) => setEvents(events.filter(e => e.id !== id));
 
         const dateOptions = useMemo(() => {
-          const start = parseStartDate(params.startDate);
-          return Array.from({ length: 481 }, (_, i) => {
-            const d = addMonths(start, i);
-            const y = Math.floor(i/12), m = i%12;
-            const diff = i === 0 ? "החודש" : `${y > 0 ? y + ' ש\'' : ''} ${m > 0 ? m + ' ח\'' : ''}`.trim();
-            return { v: i, l: `${d.getMonth() + 1}/${d.getFullYear()} (${diff})` };
+          const now = new Date();
+          now.setDate(1);
+          const base = new Date(now.getFullYear(), now.getMonth() - 3, 1);
+          return Array.from({ length: 600 }, (_, i) => {
+            const d = new Date(base.getFullYear(), base.getMonth() + i, 1);
+            const val = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+            const diffMonths = (d.getFullYear() - now.getFullYear()) * 12 + (d.getMonth() - now.getMonth());
+            const y = Math.floor(Math.abs(diffMonths) / 12), m = Math.abs(diffMonths) % 12;
+            const sign = diffMonths < 0 ? 'לפני ' : '';
+            const diff = diffMonths === 0 ? 'החודש' : `${sign}${y > 0 ? y + ' ש\'' : ''} ${m > 0 ? m + ' ח\'' : ''}`.trim();
+            return { v: val, l: `${d.getMonth() + 1}/${d.getFullYear()} (${diff})` };
           });
-        }, [params.startDate]);
+        }, []);
 
         return (
           <div className="min-h-screen pb-24">
@@ -210,10 +231,8 @@
                   <button onClick={() => {
                     const start = new Date(params.startDate);
                     const exportedEvents = events.map(ev => {
-                      const d = addMonths(start, ev.monthOffset);
-                      const dateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
                       const { monthOffset, ...rest } = ev;
-                      return { ...rest, withdrawalDate: dateStr };
+                      return rest;
                     });
                     const blob = new Blob([JSON.stringify({ params, events: exportedEvents })], { type: 'application/json' });
                     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'savings.json'; a.click();
@@ -226,18 +245,7 @@
                   <input type="file" ref={fileRef} className="hidden" onChange={(e) => { const f = e.target.files[0]; if(!f) return; const r = new FileReader(); r.onload = (ev) => { try {
                     const d = JSON.parse(ev.target.result);
                     const loadedParams = d.params;
-                    const [sy, sm] = (loadedParams.startDate || '').split('-');
-                    const start = sy && sm ? new Date(+sy, +sm - 1, 1) : new Date();
-                    const loadedEvents = d.events.map(ev => {
-                      if (ev.withdrawalDate) {
-                        const [ty, tm] = ev.withdrawalDate.split('-');
-                        const target = new Date(+ty, +tm - 1, 1);
-                        const diffMonths = (target.getFullYear() - start.getFullYear()) * 12 + (target.getMonth() - start.getMonth());
-                        return { ...ev, monthOffset: Math.max(0, diffMonths) };
-                      }
-                      return ev;
-                    });
-                    setParams(loadedParams); setEvents(loadedEvents); setSimulation(null);
+                    setParams(loadedParams); setEvents(d.events); setSimulation(null);
                   } catch(e) { alert('קובץ לא תקין'); } }; r.readAsText(f); }} />
                 </div>
               </div>
@@ -254,10 +262,10 @@
                       const years = Array.from({length: 50}, (_, i) => new Date().getFullYear() - 2 + i);
                       return (
                         <div className="flex gap-1">
-                          <select value={sm || ''} onChange={x => setParams({...params, startDate: `${sy}-${x.target.value}`})} className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-2 py-2 text-sm font-bold focus:outline-none">
+                          <select value={sm || ''} onChange={x => { const v = x.target.value; setParams(p => ({...p, startDate: `${p.startDate.split('-')[0]}-${v}`})); }} className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-2 py-2 text-sm font-bold focus:outline-none">
                             {heMonths.map((name, i) => { const val = String(i+1).padStart(2,'0'); return <option key={val} value={val}>{name}</option>; })}
                           </select>
-                          <select value={sy || ''} onChange={x => setParams({...params, startDate: `${x.target.value}-${sm}`})} className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-2 py-2 text-sm font-bold focus:outline-none">
+                          <select value={sy || ''} onChange={x => { const v = x.target.value; setParams(p => ({...p, startDate: `${v}-${p.startDate.split('-')[1]}`})); }} className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-2 py-2 text-sm font-bold focus:outline-none">
                             {years.map(y => <option key={y} value={y}>{y}</option>)}
                           </select>
                         </div>
@@ -289,7 +297,10 @@
                   )}
                   {events.map((e) => {
                     const inflation = getMonthlyRate(params.annualInflation);
-                    const adjusted = e.targetAmount * Math.pow(1 + inflation, e.monthOffset);
+                    const start0 = parseStartDate(params.startDate);
+                    const evDate0 = parseStartDate(e.withdrawalDate || params.startDate);
+                    const dynOffset = (evDate0.getFullYear() - start0.getFullYear()) * 12 + (evDate0.getMonth() - start0.getMonth());
+                    const adjusted = e.targetAmount * Math.pow(1 + inflation, Math.max(0, dynOffset));
                     return (
                       <div key={e.id} className="animate-slide-in bg-slate-50 border border-slate-100 rounded-2xl p-3 space-y-2">
                         <div className="flex items-center gap-2">
@@ -302,7 +313,7 @@
                           <div>
                             <label className="text-[9px] font-black text-slate-400 uppercase">מועד</label>
                             <div className="relative">
-                              <select value={e.monthOffset} onChange={x => handleUpd(e.id, 'monthOffset', +x.target.value)} className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold appearance-none focus:outline-none">
+                              <select value={e.withdrawalDate} onChange={x => handleUpd(e.id, 'withdrawalDate', x.target.value)} className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold appearance-none focus:outline-none">
                                 {dateOptions.map(o => <option key={o.v} value={o.v}>{o.l}</option>)}
                               </select>
                               <ChevronDown className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={12} />
