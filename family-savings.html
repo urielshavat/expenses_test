@@ -47,6 +47,7 @@
       import { Settings, Plus, Trash2, Calculator, Download, Upload, TrendingUp, Wallet, Sparkles, Info, AlertCircle, ChevronDown, Clock, ChevronUp, FileText } from 'lucide-react';
       import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 
+      const parseStartDate = (s) => { const [y, m] = s.split('-'); return new Date(+y, +m - 1, 1); };
       const addMonths = (date, months) => { const d = new Date(date); d.setMonth(d.getMonth() + months); return d; };
       const formatDate = (date) => new Intl.DateTimeFormat('he-IL', { month: 'short', year: 'numeric' }).format(date);
       const getMonthlyRate = (annualRate) => Math.pow(1 + annualRate / 100, 1 / 12) - 1;
@@ -176,7 +177,6 @@
         const handleUpd = (id, f, v) => setEvents(events.map(e => e.id === id ? {...e, [f]: v} : e));
         const handleDel = (id) => setEvents(events.filter(e => e.id !== id));
 
-        const parseStartDate = (s) => { const [y, m] = s.split('-'); return new Date(+y, +m - 1, 1); };
         const dateOptions = useMemo(() => {
           const start = parseStartDate(params.startDate);
           return Array.from({ length: 481 }, (_, i) => {
@@ -248,7 +248,21 @@
               <Section title="הגדרות השקעה" icon={Settings} defaultOpen={true}>
                 <div className="pt-3 grid grid-cols-2 gap-3">
                   <Field label="תאריך התחלה">
-                    <input type="month" value={params.startDate} onChange={e => setParams({...params, startDate: e.target.value})} className={inputCls} />
+                    {(() => {
+                      const [sy, sm] = (params.startDate || '').split('-');
+                      const heMonths = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+                      const years = Array.from({length: 50}, (_, i) => new Date().getFullYear() - 2 + i);
+                      return (
+                        <div className="flex gap-1">
+                          <select value={sm || ''} onChange={x => setParams({...params, startDate: `${sy}-${x.target.value}`})} className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-2 py-2 text-sm font-bold focus:outline-none">
+                            {heMonths.map((name, i) => { const val = String(i+1).padStart(2,'0'); return <option key={val} value={val}>{name}</option>; })}
+                          </select>
+                          <select value={sy || ''} onChange={x => setParams({...params, startDate: `${x.target.value}-${sm}`})} className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-2 py-2 text-sm font-bold focus:outline-none">
+                            {years.map(y => <option key={y} value={y}>{y}</option>)}
+                          </select>
+                        </div>
+                      );
+                    })()}
                   </Field>
                   <Field label="הון התחלתי (₪)">
                     <input type="number" step="1000" value={params.initialCapital} onChange={e => setParams({...params, initialCapital: +e.target.value})} className={inputCls} />
