@@ -696,9 +696,19 @@
         <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
             <h3 class="text-lg font-bold text-slate-900 mb-6 text-center">תיעוד הוצאה חדשה</h3>
             <form id="expenseFormModal" onsubmit="window.handleAddExpense(event)" class="space-y-4">
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 mr-1">כמה?</label>
-                    <input type="text" id="amountInput" step="any" inputmode="decimal" pattern="-?[0-9]*" placeholder="0" required class="input-field w-full px-4 py-3 rounded-xl font-bold text-lg">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 mr-1">כמה?</label>
+                        <input type="text" id="amountInput" step="any" inputmode="decimal" pattern="-?[0-9]*" placeholder="0" required class="input-field w-full px-4 py-3 rounded-xl font-bold text-lg">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 mr-1">סוג</label>
+                        <div class="flex bg-slate-100 p-1 rounded-xl">
+                            <button type="button" id="typeExpenseBtn" onclick="window.setTxType('expense')" class="flex-1 py-2 text-[10px] font-bold rounded-lg transition-all bg-white text-slate-700 shadow-sm">הוצאה</button>
+                            <button type="button" id="typeIncomeBtn" onclick="window.setTxType('income')" class="flex-1 py-2 text-[10px] font-bold rounded-lg transition-all text-slate-400">הכנסה</button>
+                        </div>
+                        <input type="hidden" id="txTypeInput" value="expense">
+                    </div>
                 </div>
                 <div>
                     <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 mr-1">על מה?</label>
@@ -757,9 +767,17 @@
                         <input type="text" id="editRowAmount" step="any" inputmode="decimal" pattern="-?[0-9]*" class="input-field w-full px-4 py-3 rounded-xl font-bold text-lg">
                     </div>
                     <div>
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 mr-1">תאריך</label>
-                        <input type="date" id="editRowDate" class="input-field w-full px-3 py-3 rounded-xl text-sm font-bold text-slate-700">
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 mr-1">סוג</label>
+                        <div class="flex bg-slate-100 p-1 rounded-xl">
+                            <button type="button" id="editTypeExpenseBtn" onclick="window.setEditTxType('expense')" class="flex-1 py-2 text-[10px] font-bold rounded-lg transition-all bg-white text-slate-700 shadow-sm">הוצאה</button>
+                            <button type="button" id="editTypeIncomeBtn" onclick="window.setEditTxType('income')" class="flex-1 py-2 text-[10px] font-bold rounded-lg transition-all text-slate-400">הכנסה</button>
+                        </div>
+                        <input type="hidden" id="editTxTypeInput" value="expense">
                     </div>
+                </div>
+                <div>
+                   <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 mr-1">תאריך</label>
+                   <input type="date" id="editRowDate" class="input-field w-full px-3 py-3 rounded-xl text-sm font-bold text-slate-700">
                 </div>
                 <div>
                     <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 mr-1">תיאור</label>
@@ -1304,7 +1322,73 @@
                 <h3 id="editCategoryTitle" class="text-lg font-bold text-slate-900">קטגוריה חדשה</h3>
                 <button onclick="window.closeEditCategoryModal()" class="text-slate-400"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <div class="space-y-4">
+            
+            <!-- Step 1: Pre-defined categories -->
+            <div id="catPresetStep" class="space-y-4">
+                <p class="text-xs text-slate-400 font-bold mb-3">בחר קטגוריה מוכנה או צור חדשה:</p>
+                <div class="grid grid-cols-1 gap-2">
+                    <button id="preset-food" onclick="window.selectCatPreset('מזון', 'green', 'utensils', 'preset-food')" class="w-full flex items-center gap-3 p-3 bg-slate-50 border border-slate-100 rounded-2xl hover:bg-slate-100 transition-all text-right group">
+                        <div class="w-10 h-10 bg-green-500 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform group-active:scale-95">
+                            <i class="fa-solid fa-utensils text-white"></i>
+                        </div>
+                        <span class="font-bold text-slate-700 flex-grow">מזון</span>
+                        <div class="check-box w-6 h-6 rounded-full border-2 border-slate-200 flex items-center justify-center transition-colors">
+                            <i class="fa-solid fa-check text-white text-[10px] hidden"></i>
+                        </div>
+                    </button>
+                    <button id="preset-clothing" onclick="window.selectCatPreset('ביגוד', 'blue', 'shirt', 'preset-clothing')" class="w-full flex items-center gap-3 p-3 bg-slate-50 border border-slate-100 rounded-2xl hover:bg-slate-100 transition-all text-right group">
+                        <div class="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform group-active:scale-95">
+                            <i class="fa-solid fa-shirt text-white"></i>
+                        </div>
+                        <span class="font-bold text-slate-700 flex-grow">ביגוד</span>
+                        <div class="check-box w-6 h-6 rounded-full border-2 border-slate-200 flex items-center justify-center transition-colors">
+                            <i class="fa-solid fa-check text-white text-[10px] hidden"></i>
+                        </div>
+                    </button>
+                    <button id="preset-entertainment" onclick="window.selectCatPreset('בילוי', 'purple', 'mug-hot', 'preset-entertainment')" class="w-full flex items-center gap-3 p-3 bg-slate-50 border border-slate-100 rounded-2xl hover:bg-slate-100 transition-all text-right group">
+                        <div class="w-10 h-10 bg-purple-500 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform group-active:scale-95">
+                            <i class="fa-solid fa-mug-hot text-white"></i>
+                        </div>
+                        <span class="font-bold text-slate-700 flex-grow">בילוי</span>
+                        <div class="check-box w-6 h-6 rounded-full border-2 border-slate-200 flex items-center justify-center transition-colors">
+                            <i class="fa-solid fa-check text-white text-[10px] hidden"></i>
+                        </div>
+                    </button>
+                    <button id="preset-health" onclick="window.selectCatPreset('טיפוח', 'pink', 'droplet', 'preset-health')" class="w-full flex items-center gap-3 p-3 bg-slate-50 border border-slate-100 rounded-2xl hover:bg-slate-100 transition-all text-right group">
+                        <div class="w-10 h-10 bg-pink-500 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform group-active:scale-95">
+                            <i class="fa-solid fa-droplet text-white"></i>
+                        </div>
+                        <span class="font-bold text-slate-700 flex-grow">טיפוח</span>
+                        <div class="check-box w-6 h-6 rounded-full border-2 border-slate-200 flex items-center justify-center transition-colors">
+                            <i class="fa-solid fa-check text-white text-[10px] hidden"></i>
+                        </div>
+                    </button>
+                    <button id="preset-other" onclick="window.selectCatPreset('שונות', 'slate', 'ellipsis', 'preset-other')" class="w-full flex items-center gap-3 p-3 bg-slate-50 border border-slate-100 rounded-2xl hover:bg-slate-100 transition-all text-right group">
+                        <div class="w-10 h-10 bg-slate-500 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform group-active:scale-95">
+                            <i class="fa-solid fa-ellipsis text-white"></i>
+                        </div>
+                        <span class="font-bold text-slate-700 flex-grow">שונות</span>
+                        <div class="check-box w-6 h-6 rounded-full border-2 border-slate-200 flex items-center justify-center transition-colors">
+                            <i class="fa-solid fa-check text-white text-[10px] hidden"></i>
+                        </div>
+                    </button>
+                    <button onclick="window.showCatFormStep()" class="w-full flex items-center gap-3 p-3 border-2 border-dashed border-slate-200 rounded-2xl hover:bg-slate-50 transition-colors text-right mt-2">
+                        <div class="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <i class="fa-solid fa-plus text-slate-400"></i>
+                        </div>
+                        <span class="font-bold text-slate-500">קטגוריה מותאמת אישית...</span>
+                    </button>
+                </div>
+                <div id="addPresetsBtnContainer" class="hidden mt-6">
+                    <button onclick="window.saveMultiplePresets()" class="w-full bg-blue-600 text-white font-bold py-4 rounded-2xl shadow-lg shadow-blue-200 hover:bg-blue-700 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>הוסף קטגוריות שנבחרו</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 2: Full form -->
+            <div id="catFormStep" class="space-y-4 hidden">
                 <div>
                     <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">שם הקטגוריה</label>
                     <input type="text" id="catEditName" placeholder="מזון, בילויים..." class="input-field w-full px-4 py-3 rounded-xl">
@@ -2198,18 +2282,52 @@
     // TRANSACTION OPERATIONS
     // =====================================================
 
+    window.setTxType = function(type) {
+        const eb = document.getElementById('typeExpenseBtn');
+        const ib = document.getElementById('typeIncomeBtn');
+        const hi = document.getElementById('txTypeInput');
+        if (!eb || !ib || !hi) return;
+        hi.value = type;
+        if (type === 'expense') {
+            eb.classList.add('bg-white', 'text-slate-700', 'shadow-sm'); eb.classList.remove('text-slate-400');
+            ib.classList.remove('bg-white', 'text-slate-700', 'shadow-sm'); ib.classList.add('text-slate-400');
+        } else {
+            ib.classList.add('bg-white', 'text-slate-700', 'shadow-sm'); ib.classList.remove('text-slate-400');
+            eb.classList.remove('bg-white', 'text-slate-700', 'shadow-sm'); eb.classList.add('text-slate-400');
+        }
+    };
+
+    window.setEditTxType = function(type) {
+        const eb = document.getElementById('editTypeExpenseBtn');
+        const ib = document.getElementById('editTypeIncomeBtn');
+        const hi = document.getElementById('editTxTypeInput');
+        if (!eb || !ib || !hi) return;
+        hi.value = type;
+        if (type === 'expense') {
+            eb.classList.add('bg-white', 'text-slate-700', 'shadow-sm'); eb.classList.remove('text-slate-400');
+            ib.classList.remove('bg-white', 'text-slate-700', 'shadow-sm'); ib.classList.add('text-slate-400');
+        } else {
+            ib.classList.add('bg-white', 'text-slate-700', 'shadow-sm'); ib.classList.remove('text-slate-400');
+            eb.classList.remove('bg-white', 'text-slate-700', 'shadow-sm'); eb.classList.add('text-slate-400');
+        }
+    };
+
     window.handleAddExpense = async function(e) {
         e.preventDefault();
         if (!sbClient || !USER_TOKEN) return window.toggleSettings();
         const aInp = document.getElementById('amountInput');
         const nInp = document.getElementById('nameInput');
         const cSel = document.getElementById('categorySelect');
+        const tInp = document.getElementById('txTypeInput');
         if (!aInp || !nInp) return;
 
-        const amount = safeParseFloat(aInp.value);
+        const rawAmount = safeParseFloat(aInp.value);
+        const type = tInp ? tInp.value : 'expense';
+        const amount = type === 'income' ? -Math.abs(rawAmount) : Math.abs(rawAmount);
+
         const name = nInp.value.trim();
         const category = (cSel ? cSel.value : null) || 'שוטף';
-        if (amount === null || amount === undefined || isNaN(amount) || !name) return;
+        if (rawAmount === null || rawAmount === undefined || isNaN(rawAmount) || !name) return;
 
         setLoading(true, false, true);
         try {
@@ -2244,8 +2362,9 @@
 
             render();
             document.getElementById('expenseFormModal').reset();
+            window.setTxType('expense');
             window.closeAddExpenseModal();
-            window.showToast('הוצאה נרשמה', 'check');
+            window.showToast(type === 'income' ? 'הכנסה נרשמה' : 'הוצאה נרשמה', 'check');
 
             // רענן לקבלת ID אמיתי, ואז בדוק חריגה בקטגוריה מתוכננת
             setTimeout(async () => {
@@ -2256,7 +2375,7 @@
             }, 800);
         } catch (e) {
             console.error(e);
-            window.showToast('שגיאה בהוספת הוצאה: ' + (e.message || e), 'circle-xmark');
+            window.showToast('שגיאה: ' + (e.message || e), 'circle-xmark');
         } finally {
             setLoading(false, false, true);
         }
@@ -2267,10 +2386,13 @@
         // Read all values BEFORE closing modal
         const enInp = document.getElementById('editRowName');
         const eaInp = document.getElementById('editRowAmount');
+        const etInp = document.getElementById('editTxTypeInput');
         const eDateInp = document.getElementById('editRowDate');
         const eCat  = document.getElementById('editRowCategory');
         const name     = enInp?.value || '';
-        const amount   = safeParseFloat(eaInp?.value || '0');
+        const rawAmount = safeParseFloat(eaInp?.value || '0');
+        const type     = etInp?.value || 'expense';
+        const amount   = type === 'income' ? -Math.abs(rawAmount) : Math.abs(rawAmount);
         const category = (eCat?.value) || 'שוטף';
         const dateVal  = eDateInp?.value || '';
         window.closeEditRowModal();
@@ -3003,7 +3125,8 @@
 
     let _editingCatId = null;
     let _editingCatColor = CAT_COLORS[0].id;
-    let _editingCatIcon = CAT_ICONS[0].id;
+    let _editingCatIcon  = CAT_ICONS[0].id;
+    let _selectedPresets = [];
 
     // Fetch categories from Supabase
     window.fetchExpenseCategories = async function() {
@@ -3302,6 +3425,30 @@
         const cat = catId ? getExpCatById(catId) : null;
         _editingCatColor = cat ? cat.color : CAT_COLORS[0].id;
         _editingCatIcon  = cat ? cat.icon  : CAT_ICONS[0].id;
+        _selectedPresets = []; // Reset highlights on open
+        
+        // Clear visually and hide duplicates
+        const existingNames = (state.expenseCategories || []).map(c => c.name);
+        let availablePresetsCount = 0;
+        document.querySelectorAll('[id^="preset-"]').forEach(btn => {
+            const name = btn.querySelector('span').textContent.trim();
+            if (existingNames.includes(name)) {
+                btn.classList.add('hidden');
+            } else {
+                btn.classList.remove('hidden');
+                availablePresetsCount++;
+                btn.classList.remove('bg-blue-50', 'border-blue-500', 'shadow-md');
+                btn.classList.add('bg-slate-50', 'border-slate-100');
+                const check = btn.querySelector('.check-box');
+                if(check) {
+                    check.classList.remove('bg-blue-600', 'border-blue-600');
+                    check.classList.add('border-slate-200');
+                    check.querySelector('i').classList.add('hidden');
+                }
+            }
+        });
+        const addBtn = document.getElementById('addPresetsBtnContainer');
+        if(addBtn) addBtn.classList.add('hidden');
 
         const titleEl = document.getElementById('editCategoryTitle');
         if (titleEl) titleEl.textContent = cat ? 'עריכת קטגוריה' : 'קטגוריה חדשה';
@@ -3312,6 +3459,20 @@
         const delBtn = document.getElementById('deleteCategoryBtn');
         if (delBtn) delBtn.classList.toggle('hidden', !cat);
 
+        // Visibility based on Create vs Edit
+        const presetStep = document.getElementById('catPresetStep');
+        const formStep = document.getElementById('catFormStep');
+        
+        if (catId || availablePresetsCount === 0) {
+            // EDIT MODE or no presets: show form directly
+            if (presetStep) presetStep.classList.add('hidden');
+            if (formStep) formStep.classList.remove('hidden');
+        } else {
+            // CREATE MODE: show presets step first
+            if (presetStep) presetStep.classList.remove('hidden');
+            if (formStep) formStep.classList.add('hidden');
+        }
+
         renderColorPicker();
         renderIconPicker();
         updateCatPreview();
@@ -3319,6 +3480,85 @@
         const o = document.getElementById('editCategoryOverlay');
         if (o) { o.classList.remove('hidden'); setTimeout(() => o.classList.add('opacity-100'), 10); }
     };
+
+    window.selectCatPreset = function(name, colorId, iconId, btnId) {
+        const index = _selectedPresets.findIndex(p => p.btnId === btnId);
+        const btn = document.getElementById(btnId);
+        
+        if (index > -1) {
+            // Unselect
+            _selectedPresets.splice(index, 1);
+            if (btn) {
+                btn.classList.remove('bg-blue-50', 'border-blue-500', 'shadow-md');
+                btn.classList.add('bg-slate-50', 'border-slate-100');
+                const check = btn.querySelector('.check-box');
+                if(check) {
+                    check.classList.remove('bg-blue-600', 'border-blue-600');
+                    check.classList.add('border-slate-200');
+                    check.querySelector('i').classList.add('hidden');
+                }
+            }
+        } else {
+            // Select
+            _selectedPresets.push({ name, colorId, iconId, btnId });
+            if (btn) {
+                btn.classList.add('bg-blue-50', 'border-blue-500', 'shadow-md');
+                btn.classList.remove('bg-slate-50', 'border-slate-100');
+                const check = btn.querySelector('.check-box');
+                if(check) {
+                    check.classList.add('bg-blue-600', 'border-blue-600');
+                    check.classList.remove('border-slate-200');
+                    check.querySelector('i').classList.remove('hidden');
+                }
+            }
+        }
+        
+        const addBtnContainer = document.getElementById('addPresetsBtnContainer');
+        if (addBtnContainer) {
+            addBtnContainer.classList.toggle('hidden', _selectedPresets.length === 0);
+        }
+    };
+
+    window.saveMultiplePresets = async function() {
+        if (_selectedPresets.length === 0 || !sbClient || !USER_TOKEN) return;
+        
+        try {
+            setLoading(true);
+            const toInsert = _selectedPresets.map(preset => ({
+                name: preset.name,
+                color: preset.colorId,
+                icon: preset.iconId,
+                monthly_budget: 0,
+                user_token: USER_TOKEN
+            }));
+
+            const { error } = await sbClient.from('expense_categories').insert(toInsert);
+            if (error) throw error;
+
+            window.closeEditCategoryModal();
+            await window.fetchExpenseCategories();
+            renderCategoriesListModal();
+            render();
+            window.showToast('נשמר', 'check');
+        } catch (e) {
+            console.error("Error saving multiple presets:", e);
+            window.showToast('שגיאה בשמירה', 'circle-xmark');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    window.showCatFormStep = function() {
+        const presetStep = document.getElementById('catPresetStep');
+        const formStep = document.getElementById('catFormStep');
+        if (presetStep) presetStep.classList.add('hidden');
+        if (formStep) formStep.classList.remove('hidden');
+        
+        renderColorPicker();
+        renderIconPicker();
+        updateCatPreview();
+    };
+
     window.closeEditCategoryModal = function() {
         const o = document.getElementById('editCategoryOverlay');
         if (o) { o.classList.remove('opacity-100'); setTimeout(() => o.classList.add('hidden'), 300); }
@@ -3767,6 +4007,10 @@
             }
         }
 
+        const amountValue = safeParseFloat(tx.amount);
+        const isNegative = amountValue < 0;
+        const colorClass = isNegative ? 'text-green-500' : 'text-red-500';
+
         d.innerHTML = `
             <div class="tx-inner">
                 ${catBadgeHtml}
@@ -3778,7 +4022,7 @@
                     ${!hideDate ? `<span class="text-[8px] text-slate-400 font-bold">${tx.date}</span>` : ''}
                 </div>
                 <div class="flex items-center gap-2">
-                    <div class="text-red-500 font-bold text-xs ltr-num">₪${Math.round(formatDisplayAmount(safeParseFloat(tx.amount))).toLocaleString()}</div>
+                    <div class="${colorClass} font-bold text-xs ltr-num">₪${Math.round(Math.abs(formatDisplayAmount(amountValue))).toLocaleString()}</div>
                     ${isSelectMode
                         ? ''
                         : `<button onclick="window.initEditRow('${tx.row}')" class="p-1.5"><i class="fa-solid fa-ellipsis-vertical text-[10px] text-slate-300"></i></button>`
@@ -4418,7 +4662,11 @@
         const eaInp = document.getElementById('editRowAmount');
         const eDateInp = document.getElementById('editRowDate');
         const eCat  = document.getElementById('editRowCategory');
-        if (enInp && eaInp) { enInp.value = tx.name; eaInp.value = safeParseFloat(tx.amount).toString(); }
+        if (enInp && eaInp) { 
+            enInp.value = tx.name; 
+            eaInp.value = Math.abs(safeParseFloat(tx.amount)).toString(); 
+        }
+        window.setEditTxType(safeParseFloat(tx.amount) < 0 ? 'income' : 'expense');
         if (eDateInp && tx.date) {
             const parts = tx.date.split('/');
             if (parts.length === 3) eDateInp.value = `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
@@ -5809,6 +6057,7 @@
         try {
             const eCat = document.getElementById('categorySelect');
             if (eCat) eCat.value = 'שוטף';
+            window.setTxType('expense');
             populateAddExpenseCategoryPicker(null);
         } catch(e) { console.warn('picker init error:', e); }
         const o = document.getElementById('addExpenseOverlay');
