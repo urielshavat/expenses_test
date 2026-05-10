@@ -5778,10 +5778,14 @@
         }
 
         localStorage.setItem('onboarding_seen', '1');
-        // Open wizard for new accounts
-        if (window._isNewAccount) {
+        // Open wizard for new accounts ONLY if the user finished onboarding or didn't click "continue later"
+        // If finished is false, it means they clicked "continue later", so we don't open the wizard.
+        if (window._isNewAccount && finished) {
             window._isNewAccount = false;
             setTimeout(() => window.openWizard(), 400);
+        } else if (window._isNewAccount && !finished) {
+            // User chose to continue later, don't open wizard now.
+            window._isNewAccount = false; 
         }
     };
 
