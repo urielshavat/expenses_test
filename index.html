@@ -691,7 +691,43 @@
         </div>
     </div>
 
-    <!-- Add Expense Modal -->
+    <!-- Car Replacement Calculator Modal -->
+    <div id="carCalcOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[170] flex items-center justify-center p-4 hidden opacity-0 transition-opacity">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
+            <div class="flex justify-between items-center mb-5">
+                <h3 class="text-lg font-bold text-slate-900">מחשבון החלפת רכב</h3>
+                <button onclick="window.closeCarCalc()" class="text-slate-400"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 mr-1">שווי רכב נוכחי (₪)</label>
+                    <input type="number" id="carCalcCurrent" placeholder="40,000" oninput="window.calculateCarSavings()" class="input-field w-full px-4 py-3 rounded-xl font-bold">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 mr-1">שווי רכב רצוי (₪)</label>
+                    <input type="number" id="carCalcTarget" placeholder="50,000" oninput="window.calculateCarSavings()" class="input-field w-full px-4 py-3 rounded-xl font-bold border-blue-100">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 mr-1">בעוד כמה שנים להחליף?</label>
+                    <input type="number" id="carCalcYears" placeholder="3" oninput="window.calculateCarSavings()" class="input-field w-full px-4 py-3 rounded-xl font-bold">
+                </div>
+                
+                <div id="carCalcResult" class="bg-blue-50 border border-blue-100 rounded-2xl p-4 text-center">
+                    <p class="text-[10px] font-bold text-blue-400 uppercase mb-1">הפקדה חודשית מומלצת</p>
+                    <div class="flex items-baseline justify-center gap-1">
+                        <span class="text-xs text-blue-600 font-bold">₪</span>
+                        <span id="carCalcValue" class="text-3xl font-black text-blue-600">0</span>
+                    </div>
+                </div>
+
+                <div class="flex gap-2 pt-2">
+                    <button id="carCalcApplyBtn" onclick="window.applyCarSavings()" class="flex-1 bg-blue-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-blue-200">שמור</button>
+                </div>
+                <p class="text-[9px] text-slate-400 text-center leading-relaxed">החישוב מתבסס על ירידת ערך שנתית של 15% לרכב הקיים.</p>
+            </div>
+        </div>
+    </div>
+
     <div id="addExpenseOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 hidden opacity-0 transition-opacity">
         <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
             <h3 class="text-lg font-bold text-slate-900 mb-6 text-center">תיעוד הוצאה חדשה</h3>
@@ -5724,6 +5760,65 @@
     };
 
     // =====================================================
+    // CAR CALCULATOR
+    // =====================================================
+    let _carCalcIdx = null;
+    let _carCalcCurrentResult = 0;
+
+    window.openCarCalc = function(idx) {
+        _carCalcIdx = idx;
+        const o = document.getElementById('carCalcOverlay');
+        if (o) { o.classList.remove('hidden'); setTimeout(() => o.classList.add('opacity-100'), 10); }
+        document.getElementById('carCalcValue').textContent = '0';
+    };
+    window.closeCarCalc = function() {
+        const o = document.getElementById('carCalcOverlay');
+        if (o) { o.classList.remove('opacity-100'); setTimeout(() => o.classList.add('hidden'), 300); }
+    };
+    window.calculateCarSavings = function() {
+        const curValue = document.getElementById('carCalcCurrent').value;
+        const trgValue = document.getElementById('carCalcTarget').value;
+        const yrsValue = document.getElementById('carCalcYears').value;
+
+        const cur = safeParseFloat(curValue);
+        const trg = safeParseFloat(trgValue);
+        const yrs = safeParseFloat(yrsValue);
+
+        if (!curValue || !trgValue || !yrsValue || !yrs) {
+            document.getElementById('carCalcValue').textContent = '0';
+            _carCalcCurrentResult = 0;
+            return;
+        }
+
+        // Depreciation: 15% per year
+        const depreciatedValue = cur * Math.pow(1 - 0.15, yrs);
+        const sumNeeded = trg - depreciatedValue;
+        const monthly = Math.max(0, Math.round(sumNeeded / (yrs * 12)));
+
+        _carCalcCurrentResult = monthly;
+        document.getElementById('carCalcValue').textContent = monthly.toLocaleString();
+    };
+    window.applyCarSavings = function() {
+        if (_carCalcIdx === null) return;
+        _wizData.savings[_carCalcIdx].amount = _carCalcCurrentResult;
+        _wizData.savings[_carCalcIdx].checked = true;
+        
+        const input = document.getElementById(`wiz_amt_savings_${_carCalcIdx}`);
+        if (input) {
+            input.value = _carCalcCurrentResult;
+            input.disabled = false;
+        }
+        const cb = document.getElementById(`wiz_savings_${_carCalcIdx}`);
+        if (cb) {
+            cb.checked = true;
+            cb.parentElement.classList.add('bg-blue-50');
+        }
+        
+        window.closeCarCalc();
+        window.showToast('התוצאה עודכנה בשורה', 'check');
+    };
+
+    // =====================================================
     // BUDGET WIZARD
     // =====================================================
     let _wizStep = 0;
@@ -5768,10 +5863,8 @@
             subtitle: 'סכום הפקדה חודשי לכל חיסכון — ניתן להפעיל תזכורת חודשית',
             type: 'savings',
             items: [
-                { name: 'קרן חירום', checked: false },
-                { name: 'פנסיה משלימה', checked: false },
-                { name: 'חיסכון לילדים', checked: false },
-                { name: 'חיסכון כללי', checked: false },
+                { name: 'החלפת רכב', checked: false },
+                { name: 'ילדים', checked: false }
             ]
         }
     ];
@@ -5805,12 +5898,6 @@
     };
 
     function renderWizardSavings(container) {
-        // Add note
-        const note = document.createElement('div');
-        note.className = 'bg-purple-50 border border-purple-100 rounded-xl p-3 mb-3 text-xs text-purple-700';
-        note.textContent = 'הסכום שתגדירו כאן יופחת מהתקציב הנותר לשוטף. ניתן להפעיל תזכורת חודשית בעמוד התקציב.';
-        container.appendChild(note);
-
         _wizData.savings.forEach((item, idx) => {
             container.appendChild(makeWizardRow(item, idx, 'savings'));
         });
@@ -5911,19 +5998,33 @@
         row.className = `flex items-center gap-2 py-1.5 px-2 rounded-xl transition-all ${item.checked ? 'bg-blue-50' : ''}`;
         const cbId = `wiz_${type}_${idx}`;
         const isAnnual = type === 'annual';
+        const isSavings = type === 'savings';
         const monthlyVal = isAnnual && item.amount ? Math.round(safeParseFloat(item.amount) / 12) : 0;
         const monthlyHtml = isAnnual
             ? `<span id="wiz_monthly_${type}_${idx}" class="text-[9px] font-bold text-slate-400 ltr-num whitespace-nowrap">${monthlyVal > 0 ? '≈₪' + monthlyVal.toLocaleString() + '/ח' : ''}</span>`
             : '';
+        
+        let extraBtnHtml = '';
+        if (isSavings) {
+            if (item.name === 'החלפת רכב') {
+                extraBtnHtml = `<button onclick="window.openCarCalc(${idx})" class="flex items-center gap-1 px-2 py-1 text-blue-500 hover:bg-white rounded-lg transition-all text-[9px] font-bold border border-blue-100 whitespace-nowrap" title="חישוב אוטומטי"><i class="fa-solid fa-calculator text-[10px]"></i> חישוב</button>`;
+            } else if (item.name === 'ילדים') {
+                extraBtnHtml = `<a href="family-savings.html" target="_blank" class="flex items-center gap-1 px-2 py-1 text-blue-500 hover:bg-white rounded-lg transition-all text-[9px] font-bold border border-blue-100 whitespace-nowrap" title="מחשבון חיסכון לילדים"><i class="fa-solid fa-external-link text-[10px]"></i> חישוב</a>`;
+            }
+        }
+
         row.innerHTML = `
             <input type="checkbox" id="${cbId}" class="w-4 h-4 rounded text-blue-600 flex-shrink-0 cursor-pointer" ${item.checked ? 'checked' : ''}>
-            <input type="text" value="${item.name}" placeholder="שם"
-                class="flex-1 bg-transparent text-xs font-bold text-slate-700 border-b border-transparent focus:border-blue-300 outline-none min-w-0 py-0.5"
-                oninput="window._wizSetName('${type}',${idx},this.value)">
+            <div class="flex-1 flex items-center gap-1 min-w-0">
+                <input type="text" value="${item.name}" placeholder="שם"
+                    class="flex-1 bg-transparent text-xs font-bold text-slate-700 border-b border-transparent focus:border-blue-300 outline-none min-w-0 py-0.5"
+                    oninput="window._wizSetName('${type}',${idx},this.value)">
+                ${extraBtnHtml}
+            </div>
             ${monthlyHtml}
             <div class="flex items-center gap-0.5 flex-shrink-0">
                 <span class="text-[10px] text-slate-400 font-bold">₪</span>
-                <input type="number" inputmode="decimal" value="${item.amount}" placeholder="0"
+                <input type="number" inputmode="decimal" id="wiz_amt_${type}_${idx}" value="${item.amount}" placeholder="0"
                     class="no-spin w-24 text-xs font-bold text-slate-700 text-left bg-slate-100 rounded-lg px-2 py-1 border border-transparent focus:border-blue-300 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     oninput="window._wizSetAmount('${type}',${idx},this.value)${isAnnual ? `; window._wizUpdateMonthly('${type}',${idx},this.value)` : ''}"
                     ${!item.checked ? 'disabled' : ''}>
