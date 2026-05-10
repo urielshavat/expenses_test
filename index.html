@@ -5541,6 +5541,7 @@
         var total = shortcutsSteps.length;
         if (dir === 1 && shortcutsCurrentStep === total - 1) {
             window.closeShortcutsModal();
+            setTimeout(function() { window.openOnboarding(); }, 400);
             return;
         }
         shortcutsCurrentStep = Math.max(0, Math.min(total - 1, shortcutsCurrentStep + dir));
@@ -5715,7 +5716,11 @@
 
     window.androidNav = function(dir) {
         var total = androidSteps.length;
-        if (dir === 1 && androidCurrentStep === total - 1) { window.closeAndroidShortcutsModal(); return; }
+        if (dir === 1 && androidCurrentStep === total - 1) { 
+            window.closeAndroidShortcutsModal(); 
+            setTimeout(function() { window.openOnboarding(); }, 400);
+            return; 
+        }
         androidCurrentStep = Math.max(0, Math.min(total - 1, androidCurrentStep + dir));
         renderAndroidStep();
     };
@@ -5782,9 +5787,10 @@
         if (window._isNewAccount && finished) {
             window._isNewAccount = false;
             setTimeout(() => window.openWizard(), 400);
-        } else if (window._isNewAccount && !finished) {
-            // User chose to continue later, don't open wizard now.
+        } else {
             window._isNewAccount = false; 
+            // Always ensure we are on the main view after closing onboarding if not entering wizard
+            window.setNav('main');
         }
     };
 
