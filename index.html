@@ -511,7 +511,7 @@
                 </div>
             </div>
             <div class="border-t border-slate-100 mx-3"></div>
-            <button onclick="window.closeHamburgerMenu(); window.openOnboarding();" class="w-full flex items-center gap-3 px-4 py-3.5 text-sm font-bold text-slate-700 hover:bg-slate-50 active:bg-slate-100 transition-colors">
+            <button id="menuOnboardingBtn" onclick="window.closeHamburgerMenu(); window.openOnboarding();" class="w-full flex items-center gap-3 px-4 py-3.5 text-sm font-bold text-slate-700 hover:bg-slate-50 active:bg-slate-100 transition-colors">
                 <i class="fa-solid fa-circle-info text-blue-400 w-4 text-center flex-shrink-0"></i>
                 <span>איך מתחילים?</span>
             </button>
@@ -1478,38 +1478,51 @@
             </div>
 
             <div class="space-y-3 mb-6">
+                <!-- Step 1 -->
                 <div class="flex gap-3 items-start bg-blue-50 rounded-2xl p-3 border border-blue-100">
                     <div class="w-7 h-7 bg-blue-600 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
                         <span class="text-white text-xs font-bold">1</span>
                     </div>
-                    <div>
-                        <p class="text-sm font-bold text-slate-800">הגדירו הכנסות והוצאות קבועות</p>
-                        <p class="text-xs text-slate-500 mt-0.5 leading-relaxed">בעמוד <span class="font-bold text-slate-700">תקציב</span> — הכניסו את כל ההכנסות החודשיות שלכם ואת ההוצאות הקבועות: שכר דירה, ביטוחים, חיסכון וכד'.</p>
+                    <div class="flex-1">
+                        <p class="text-sm font-bold text-slate-800">שלב ראשון — בנו תקציב</p>
+                        <p class="text-xs text-slate-500 mt-0.5 leading-relaxed">התקציב יאפשר לכם לדעת כמה כסף נשאר לכם להוצאות השוטפות אחרי כל המחויבויות.</p>
+                        <button onclick="window.closeOnboarding(); window.openWizard();" class="mt-2 text-[10px] font-bold text-blue-600 bg-white border border-blue-200 px-3 py-1 rounded-lg hover:bg-blue-50 transition-colors">בנה תקציב</button>
                     </div>
                 </div>
+                <!-- Step 2 -->
                 <div class="flex gap-3 items-start bg-blue-50 rounded-2xl p-3 border border-blue-100">
                     <div class="w-7 h-7 bg-blue-600 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
                         <span class="text-white text-xs font-bold">2</span>
                     </div>
-                    <div>
-                        <p class="text-sm font-bold text-slate-800">הגדירו הוצאות מתוכננות</p>
-                        <p class="text-xs text-slate-500 mt-0.5 leading-relaxed">בעמוד <span class="font-bold text-slate-700">תקציב</span> — הוסיפו הוצאות גדולות שאינן חודשיות: חופשות, אחזקת רכב, קייטנות. הן מנוהלות בנפרד תחת עמוד <span class="font-bold text-slate-700">מתוכנן</span>.</p>
+                    <div class="flex-1">
+                        <p class="text-sm font-bold text-slate-800">שלב שני — התקנת קיצורים</p>
+                        <p class="text-xs text-slate-500 mt-0.5 leading-relaxed">התקנת קיצורים לטלפון הנייד מאפשרת תיעוד נוח ומהיר של הוצאות ישירות ממסך הבית.</p>
+                        <div class="flex gap-2 mt-2">
+                            <button onclick="window.closeOnboarding(); window.setNav('install'); setTimeout(()=>window.openShortcutsModal(), 100);" class="text-[10px] font-bold text-blue-600 bg-white border border-blue-200 px-3 py-1 rounded-lg hover:bg-blue-50 transition-colors">אייפון</button>
+                            <button onclick="window.closeOnboarding(); window.setNav('install'); setTimeout(()=>window.openAndroidShortcutsModal(), 100);" class="text-[10px] font-bold text-blue-600 bg-white border border-blue-200 px-3 py-1 rounded-lg hover:bg-blue-50 transition-colors">אנדרואיד</button>
+                        </div>
                     </div>
                 </div>
-                <div class="flex gap-3 items-start bg-slate-900 rounded-2xl p-3 border border-slate-800">
-                    <div class="w-7 h-7 bg-white rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <span class="text-slate-900 text-xs font-bold">3</span>
+                <!-- Step 3 -->
+                <div class="flex gap-3 items-start bg-blue-50 rounded-2xl p-3 border border-blue-100">
+                    <div class="w-7 h-7 bg-blue-600 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <span class="text-white text-xs font-bold">3</span>
                     </div>
-                    <div>
-                        <p class="text-sm font-bold text-white">מה שנשאר — זה העו"ש החדש שלכם</p>
-                        <p class="text-xs text-slate-300 mt-0.5 leading-relaxed">הסכום שנותר מחולק ל-30 ומתווסף למאזן כל יום כ<span class="font-bold text-white">הכנסה יומית</span>. כל הוצאה שתרשמו מורידה את המאזן. המטרה: לשמור אותו חיובי תמיד.</p>
+                    <div class="flex-1">
+                        <p class="text-sm font-bold text-slate-800">שלב שלישי — תיעוד ושליטה</p>
+                        <p class="text-xs text-slate-500 mt-0.5 leading-relaxed">תיעוד יומיומי של ההוצאות מאפשר לכם לעקוב אחרי המאזן ולשמור עליו חיובי תמיד.</p>
                     </div>
                 </div>
             </div>
 
-            <button onclick="window.closeOnboarding()" class="w-full bg-blue-600 text-white font-bold py-4 rounded-2xl text-sm shadow-lg shadow-blue-200">
-                הבנתי — נתחיל!
-            </button>
+            <div class="flex gap-3">
+                <button onclick="window.closeOnboarding(true)" class="flex-1 bg-green-600 text-white font-bold py-4 rounded-2xl text-sm shadow-lg shadow-green-200 transition-all active:scale-95">
+                    סיימתי
+                </button>
+                <button onclick="window.closeOnboarding(false)" class="flex-1 bg-slate-100 text-slate-700 font-bold py-4 rounded-2xl text-sm transition-all active:scale-95">
+                    המשך אחר כך
+                </button>
+            </div>
         </div>
     </div>
 
@@ -3925,11 +3938,15 @@
         if (mainHelpBtn) mainHelpBtn.classList.toggle('hidden', state.currentView !== 'main');
         const annualHelpBtn = document.getElementById('annualHelpBtn');
         if (annualHelpBtn) annualHelpBtn.classList.toggle('hidden', state.currentView !== 'annual');
-        // כפתור "איך מתחילים?" — מוצג בכל עמוד כל עוד לא הוגדר תקציב חודשי
+        // כפתור "איך מתחילים?" — מוצג כל עוד לא סומן כסיום ולא הוגדר תקציב חודשי
         const onboardingBtn = document.getElementById('onboardingBtn');
-        if (onboardingBtn) {
+        const menuOnboardingBtn = document.getElementById('menuOnboardingBtn');
+        if (onboardingBtn || menuOnboardingBtn) {
+            const isFinished = localStorage.getItem('onboarding_finished') === 'true';
             const hasG4 = safeParseFloat(state.budget.g4) > 0;
-            onboardingBtn.classList.toggle('hidden', hasG4);
+            const shouldHide = isFinished || hasG4;
+            if (onboardingBtn) onboardingBtn.classList.toggle('hidden', shouldHide);
+            if (menuOnboardingBtn) menuOnboardingBtn.classList.toggle('hidden', shouldHide);
         }
         ['main','budget','annual'].forEach(v => {
             const btn = document.getElementById(v === 'main' ? 'mainSyncBtn' : (v + 'SyncBtn' + (v === 'annual' ? 'Top' : '')));
@@ -5748,9 +5765,18 @@
         const o = document.getElementById('onboardingOverlay');
         if (o) { o.classList.remove('hidden'); setTimeout(() => o.classList.add('opacity-100'), 10); }
     };
-    window.closeOnboarding = function() {
+    window.closeOnboarding = function(finished = false) {
         const o = document.getElementById('onboardingOverlay');
         if (o) { o.classList.remove('opacity-100'); setTimeout(() => o.classList.add('hidden'), 300); }
+        
+        if (finished) {
+            localStorage.setItem('onboarding_finished', 'true');
+            const btn = document.getElementById('onboardingBtn');
+            if (btn) btn.classList.add('hidden');
+            const mBtn = document.getElementById('menuOnboardingBtn');
+            if (mBtn) mBtn.classList.add('hidden');
+        }
+
         localStorage.setItem('onboarding_seen', '1');
         // Open wizard for new accounts
         if (window._isNewAccount) {
@@ -5866,6 +5892,11 @@
                 { name: 'החלפת רכב', checked: false },
                 { name: 'ילדים', checked: false }
             ]
+        },
+        {
+            title: 'סיכום התקציב',
+            subtitle: 'ככה נראה המאזן החדש שלכם',
+            type: 'summary'
         }
     ];
 
@@ -5917,17 +5948,29 @@
         document.getElementById('wizardTitle').textContent = `שלב ${_wizStep + 1} — ${step.title}`;
         document.getElementById('wizardSubtitle').textContent = step.subtitle;
         // Progress bars
-        [0,1,2,3].forEach(i => {
+        [0,1,2,3,4].forEach(i => {
             const el = document.getElementById(`wizProg${i}`);
-            if (el) el.className = `flex-1 h-1 rounded-full ${i <= _wizStep ? (step.type === 'savings' ? 'bg-purple-500' : 'bg-blue-500') : 'bg-slate-200'}`;
+            if (el) {
+                const isActive = i <= _wizStep;
+                let color = 'bg-blue-500';
+                if (WIZARD_STEPS[i]?.type === 'savings') color = 'bg-purple-500';
+                if (WIZARD_STEPS[i]?.type === 'summary') color = 'bg-green-500';
+                el.className = `flex-1 h-1 rounded-full ${isActive ? color : 'bg-slate-200'}`;
+            }
         });
         // Prev/Next buttons
         const prevBtn = document.getElementById('wizPrevBtn');
         const nextBtn = document.getElementById('wizNextBtn');
-        prevBtn.classList.toggle('hidden', _wizStep === 0);
-        nextBtn.textContent = _wizStep === WIZARD_STEPS.length - 1 ? 'צור תקציב ✓' : 'המשך';
-        const isSavings = step.type === 'savings';
-        nextBtn.className = `flex-1 font-bold py-3 rounded-2xl text-sm ${_wizStep === WIZARD_STEPS.length - 1 ? 'bg-green-600 text-white shadow-md shadow-green-200' : (isSavings ? 'bg-purple-600 text-white shadow-md shadow-purple-200' : 'bg-blue-600 text-white shadow-md shadow-blue-200')}`;
+        prevBtn.classList.toggle('hidden', _wizStep === 0 || step.type === 'summary');
+        
+        if (step.type === 'summary') {
+            nextBtn.textContent = 'המשך לשלב הבא';
+            nextBtn.className = 'flex-1 font-bold py-3 rounded-2xl text-sm bg-slate-900 text-white shadow-md shadow-slate-200';
+        } else {
+            nextBtn.textContent = _wizStep === WIZARD_STEPS.length - 2 ? 'צור תקציב ✓' : 'המשך';
+            const isSavings = step.type === 'savings';
+            nextBtn.className = `flex-1 font-bold py-3 rounded-2xl text-sm ${_wizStep === WIZARD_STEPS.length - 2 ? 'bg-green-600 text-white shadow-md shadow-green-200' : (isSavings ? 'bg-purple-600 text-white shadow-md shadow-purple-200' : 'bg-blue-600 text-white shadow-md shadow-blue-200')}`;
+        }
 
         const content = document.getElementById('wizardContent');
         content.innerHTML = '';
@@ -5936,6 +5979,7 @@
         else if (step.type === 'fixed') renderWizardGrouped(content, _wizData.fixed, step.groups);
         else if (step.type === 'annual') renderWizardGrouped(content, _wizData.annual, step.groups, step.standalone);
         else if (step.type === 'savings') renderWizardSavings(content);
+        else if (step.type === 'summary') renderWizardSummary(content);
     }
 
     function renderWizardIncomes(container) {
@@ -6009,7 +6053,7 @@
             if (item.name === 'החלפת רכב') {
                 extraBtnHtml = `<button onclick="window.openCarCalc(${idx})" class="flex items-center gap-1 px-2 py-1 text-blue-500 hover:bg-white rounded-lg transition-all text-[9px] font-bold border border-blue-100 whitespace-nowrap" title="חישוב אוטומטי"><i class="fa-solid fa-calculator text-[10px]"></i> חישוב</button>`;
             } else if (item.name === 'ילדים') {
-                extraBtnHtml = `<a href="family-savings.html" target="_blank" class="flex items-center gap-1 px-2 py-1 text-blue-500 hover:bg-white rounded-lg transition-all text-[9px] font-bold border border-blue-100 whitespace-nowrap" title="מחשבון חיסכון לילדים"><i class="fa-solid fa-external-link text-[10px]"></i> חישוב</a>`;
+                extraBtnHtml = `<a href="family-savings.html" target="_blank" class="flex items-center gap-1 px-2 py-1 text-blue-500 hover:bg-white rounded-lg transition-all text-[9px] font-bold border border-blue-100 whitespace-nowrap" title="מחשבון חיסכון לילדים"><i class="fa-solid fa-piggy-bank text-[10px]"></i> חישוב</a>`;
             }
         }
 
@@ -6069,36 +6113,41 @@
     };
 
     window.wizardNav = function(dir) {
-        if (dir === 1 && _wizStep === WIZARD_STEPS.length - 1) {
-            window.submitWizard();
-            return;
+        const step = WIZARD_STEPS[_wizStep];
+        if (dir === 1) {
+            if (step.type === 'summary') {
+                window.closeWizard();
+                window.openOnboarding();
+                return;
+            }
+            if (_wizStep === WIZARD_STEPS.length - 2) {
+                window.submitWizard();
+                return;
+            }
         }
         _wizStep = Math.max(0, Math.min(WIZARD_STEPS.length - 1, _wizStep + dir));
         document.getElementById('wizardContent').scrollTop = 0;
         renderWizardStep();
     };
 
+    let _wizSummaryData = null;
+
     window.submitWizard = async function() {
         if (!sbClient || !USER_TOKEN) return;
-        window.closeWizard();
-
+        
         const rows = [];
-
         // Incomes
         _wizData.incomes.filter(i => i.checked && i.name.trim()).forEach(i => {
             rows.push({ category_name: i.name.trim(), budget_amount: safeParseFloat(i.amount) || 0, type: 'income', parent_group: null, user_token: USER_TOKEN });
         });
-
         // Fixed
         _wizData.fixed.filter(i => i.checked && i.name.trim()).forEach(i => {
             rows.push({ category_name: i.name.trim(), budget_amount: safeParseFloat(i.amount) || 0, type: 'fixed', parent_group: i.parent || null, user_token: USER_TOKEN });
         });
-
         // Annual
         _wizData.annual.filter(i => i.checked && i.name.trim()).forEach(i => {
             rows.push({ category_name: i.name.trim(), budget_amount: safeParseFloat(i.amount) || 0, type: 'annual', parent_group: i.parent || null, user_token: USER_TOKEN });
         });
-
         // Savings
         (_wizData.savings || []).filter(i => i.checked && i.name.trim()).forEach(i => {
             rows.push({ category_name: i.name.trim(), budget_amount: safeParseFloat(i.amount) || 0, type: 'savings', parent_group: null, user_token: USER_TOKEN });
@@ -6112,7 +6161,7 @@
             await sbClient.from('budget_settings').delete().eq('user_token', USER_TOKEN);
             await sbClient.from('budget_settings').insert(rows);
 
-            // Calculate g4: income - fixed - annual_monthly, rounded down to multiple of 5 divisible by 30
+            // Calculate summary
             const totalIncome = rows.filter(r => r.type === 'income').reduce((s, r) => s + r.budget_amount, 0);
             const totalFixed  = rows.filter(r => r.type === 'fixed').reduce((s, r) => s + r.budget_amount, 0);
             const totalAnnualMonthly = rows.filter(r => r.type === 'annual').reduce((s, r) => s + r.budget_amount / 12, 0);
@@ -6128,8 +6177,18 @@
                 await sbClient.rpc('update_daily_budget', { p_user_token: USER_TOKEN, p_daily_budget: g4 / 30, p_start_date: todayISO });
             }
 
+            _wizSummaryData = {
+                totalIncome,
+                totalFixed,
+                totalAnnualMonthly,
+                totalSavings,
+                monthlyBudget: g4,
+                dailyBudget: g4 / 30
+            };
+
             await window.fetchBudgetData();
-            window.setNav('budget');
+            _wizStep++; // Move to summary
+            renderWizardStep();
             window.showToast('התקציב נוצר בהצלחה!', 'check');
         } catch(e) {
             console.error(e);
@@ -6138,6 +6197,73 @@
             setLoading(false, true);
         }
     };
+
+    function renderWizardSummary(container) {
+        if (!_wizSummaryData) return;
+        const s = _wizSummaryData;
+        
+        container.innerHTML = `
+            <div class="space-y-4">
+                <div class="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm space-y-3">
+                    <div class="flex justify-between items-center px-1">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">הכנסות</span>
+                        <span class="text-sm font-bold text-green-600 ltr-num">+ ₪${s.totalIncome.toLocaleString()}</span>
+                    </div>
+                    <div class="flex justify-between items-center px-1">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">קבועות</span>
+                        <span class="text-sm font-bold text-red-500 ltr-num">- ₪${s.totalFixed.toLocaleString()}</span>
+                    </div>
+                    <div class="flex justify-between items-center px-1">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">מתוכננות (חודשי)</span>
+                        <span class="text-sm font-bold text-orange-500 ltr-num">- ₪${Math.round(s.totalAnnualMonthly).toLocaleString()}</span>
+                    </div>
+                    <div class="flex justify-between items-center px-1">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">חסכונות</span>
+                        <span class="text-sm font-bold text-purple-600 ltr-num">- ₪${s.totalSavings.toLocaleString()}</span>
+                    </div>
+                </div>
+
+                <div class="bg-blue-600 rounded-3xl p-4 text-center shadow-xl shadow-blue-100">
+                    <p class="text-[10px] font-bold text-blue-100 uppercase mb-1">תקציב חודשי להוצאות שוטפות</p>
+                    <div class="flex items-baseline justify-center gap-1 mb-1">
+                        <span class="text-lg text-white font-bold">₪</span>
+                        <span class="text-3xl font-black text-white">${s.monthlyBudget.toLocaleString()}</span>
+                    </div>
+                    <div class="inline-flex items-center gap-1 bg-white/20 px-3 py-1 rounded-full text-white text-[10px] font-bold">
+                        <span>תקציב יומי:</span>
+                        <span>₪${Math.round(s.dailyBudget).toLocaleString()}</span>
+                    </div>
+                </div>
+
+                <div class="bg-blue-50 border border-blue-100 rounded-2xl p-5 space-y-4">
+                    <div class="flex gap-3 items-start">
+                        <div class="w-8 h-8 bg-blue-600 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <i class="fa-solid fa-basket-shopping text-white text-xs"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm font-bold text-slate-800 mb-1">מה הן הוצאות שוטפות?</p>
+                            <p class="text-xs text-slate-600 leading-relaxed">אלו הוצאות הלוואי היומיומיות שלכם: סופר, פארם, בילויים, קניות מזדמנות, טייק-אווי וכל מה שלא הוגדר כהוצאה קבועה.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-3 items-start">
+                        <div class="w-8 h-8 bg-blue-600 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <i class="fa-solid fa-scale-balanced text-white text-xs"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm font-bold text-slate-800 mb-1">איך עובד המאזן?</p>
+                            <div class="text-xs text-slate-600 space-y-1.5 leading-relaxed">
+                                <p>• בכל יום בחצות, התקציב היומי (₪${Math.round(s.dailyBudget)}) מתווסף אוטומטית למאזן שלכם.</p>
+                                <p>• כשאתם מתעדים הוצאה, המאזן יורד בהתאם לסכום שהוצאתם.</p>
+                                <p class="font-bold text-blue-600 bg-white/50 p-2 rounded-lg border border-blue-100 mt-2 italic text-center">
+                                    המטרה שלכם: לשמור על המאזן חיובי תמיד! שמירה על המאזן חיובי תבטיח שיישאר לכם מספיק כסף לשלם על ההוצאות הקבועות, המתוכננות ולחסוך כמו שרציתם.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
     window.openMainHelp = function() {
         const o = document.getElementById('mainHelpOverlay');
         if (o) { o.classList.remove('hidden'); setTimeout(() => o.classList.add('opacity-100'), 10); }
