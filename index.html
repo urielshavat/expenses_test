@@ -3943,8 +3943,7 @@
         const menuOnboardingBtn = document.getElementById('menuOnboardingBtn');
         if (onboardingBtn || menuOnboardingBtn) {
             const isFinished = localStorage.getItem('onboarding_finished') === 'true';
-            const hasG4 = safeParseFloat(state.budget.g4) > 0;
-            const shouldHide = isFinished || hasG4;
+            const shouldHide = isFinished;
             if (onboardingBtn) onboardingBtn.classList.toggle('hidden', shouldHide);
             if (menuOnboardingBtn) menuOnboardingBtn.classList.toggle('hidden', shouldHide);
         }
