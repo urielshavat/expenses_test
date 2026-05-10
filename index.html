@@ -1486,7 +1486,7 @@
                     <div class="flex-1">
                         <p class="text-sm font-bold text-slate-800">שלב ראשון — בנו תקציב</p>
                         <p class="text-xs text-slate-500 mt-0.5 leading-relaxed">התקציב יאפשר לכם לדעת כמה כסף נשאר לכם להוצאות השוטפות אחרי כל המחויבויות.</p>
-                        <button onclick="window.closeOnboarding(); window.openWizard();" class="mt-2 text-[10px] font-bold text-blue-600 bg-white border border-blue-200 px-3 py-1 rounded-lg hover:bg-blue-50 transition-colors">בנה תקציב</button>
+                        <button onclick="window.closeOnboarding(); window.openWizard();" class="mt-2 text-[10px] font-bold text-white bg-blue-600 border border-blue-600 px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors shadow-sm active:scale-95">בנה תקציב</button>
                     </div>
                 </div>
                 <!-- Step 2 -->
@@ -1498,8 +1498,8 @@
                         <p class="text-sm font-bold text-slate-800">שלב שני — התקנת קיצורים</p>
                         <p class="text-xs text-slate-500 mt-0.5 leading-relaxed">התקנת קיצורים לטלפון הנייד מאפשרת תיעוד נוח ומהיר של הוצאות ישירות ממסך הבית.</p>
                         <div class="flex gap-2 mt-2">
-                            <button onclick="window.closeOnboarding(); window.setNav('install'); setTimeout(()=>window.openShortcutsModal(), 100);" class="text-[10px] font-bold text-blue-600 bg-white border border-blue-200 px-3 py-1 rounded-lg hover:bg-blue-50 transition-colors">אייפון</button>
-                            <button onclick="window.closeOnboarding(); window.setNav('install'); setTimeout(()=>window.openAndroidShortcutsModal(), 100);" class="text-[10px] font-bold text-blue-600 bg-white border border-blue-200 px-3 py-1 rounded-lg hover:bg-blue-50 transition-colors">אנדרואיד</button>
+                            <button onclick="window.closeOnboarding(); window.setNav('install'); setTimeout(()=>window.openShortcutsModal(), 100);" class="text-[10px] font-bold text-white bg-blue-600 border border-blue-600 px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors shadow-sm active:scale-95">אייפון</button>
+                            <button onclick="window.closeOnboarding(); window.setNav('install'); setTimeout(()=>window.openAndroidShortcutsModal(), 100);" class="text-[10px] font-bold text-white bg-blue-600 border border-blue-600 px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors shadow-sm active:scale-95">אנדרואיד</button>
                         </div>
                     </div>
                 </div>
@@ -6121,7 +6121,7 @@
         if (dir === 1) {
             if (step.type === 'summary') {
                 window.closeWizard();
-                window.openOnboarding();
+                setTimeout(() => window.openOnboarding(), 400); 
                 return;
             }
             if (_wizStep === WIZARD_STEPS.length - 2) {
