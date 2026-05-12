@@ -4690,13 +4690,38 @@
 
         picker.innerHTML = '';
 
-        let selectedLabel = 'ללא (שוטף)';
+        let selectedLabel = 'ללא';
         if (config.currentTag) {
             const cat = [...activeAnnuals, ...activeFixed].find(c => c.category_name.trim() === config.currentTag.trim());
             if (cat) selectedLabel = (cat.parent_group ? `${cat.parent_group} › ${cat.category_name}` : cat.category_name);
         } else if (config.currentCatId) {
             const cat = ongoingCats.find(c => c.id === config.currentCatId);
-            if (cat) selectedLabel = `שוטף: ${cat.name}`;
+            if (cat) selectedLabel = cat.name;
+        }
+
+        // Hide the whole picker section if no categories exist for this type
+        // and it's not a type that requires a default "None" (only 'current' shows "None" as a fallback, 
+        // but user says if no categories in current/planned - hide)
+        let hasCats = false;
+        if (type === 'current') hasCats = ongoingCats.length > 0;
+        else if (type === 'fixed') hasCats = activeFixed.length > 0;
+        else if (type === 'planned') hasCats = activeAnnuals.length > 0;
+
+        const container = picker.parentElement;
+        // The label is usually the previous sibling of the picker
+        let label = picker.previousElementSibling;
+        if (label && label.tagName !== 'LABEL') {
+            // Fallback: search for label in parent
+            label = container ? Array.from(container.querySelectorAll('label')).find(l => l.textContent.includes('בחירת קטגוריה')) : null;
+        }
+
+        if (!hasCats) {
+            picker.classList.add('hidden');
+            if (label) label.classList.add('hidden');
+            return;
+        } else {
+            picker.classList.remove('hidden');
+            if (label) label.classList.remove('hidden');
         }
 
         const collapsed = document.createElement('div');
@@ -4713,17 +4738,20 @@
         expanded.className = (config.forceOpen ? '' : 'hidden') + ' bg-white rounded-2xl border border-slate-200 shadow-lg overflow-hidden flex flex-col max-h-[260px] overflow-y-auto mb-2';
         if (config.forceOpen) collapsed.classList.add('hidden');
 
-        const noneBtn = document.createElement('button');
-        noneBtn.type = 'button';
-        const isNone = !isSet;
-        noneBtn.className = `w-full flex items-center px-4 py-2.5 text-right transition-colors border-b border-slate-100 flex-shrink-0 ${isNone ? 'bg-blue-50' : 'hover:bg-slate-50'}`;
-        noneBtn.innerHTML = `<span class="text-xs font-bold ${isNone ? 'text-blue-700' : 'text-slate-500'}">${isNone ? '✓ ' : ''}ללא (שוטף)</span>`;
-        noneBtn.onclick = () => { 
-            if (eCat) eCat.value = 'שוטף'; 
-            if (expInp) expInp.value = '';
-            config.onPopulate(null, null, false); 
-        };
-        expanded.appendChild(noneBtn);
+        // Only show "None" for 'current' type per user request
+        if (type === 'current') {
+            const noneBtn = document.createElement('button');
+            noneBtn.type = 'button';
+            const isNone = !isSet;
+            noneBtn.className = `w-full flex items-center px-4 py-2.5 text-right transition-colors border-b border-slate-100 flex-shrink-0 ${isNone ? 'bg-blue-50' : 'hover:bg-slate-50'}`;
+            noneBtn.innerHTML = `<span class="text-xs font-bold ${isNone ? 'text-blue-700' : 'text-slate-500'}">${isNone ? '✓ ' : ''}ללא</span>`;
+            noneBtn.onclick = () => { 
+                if (eCat) eCat.value = 'שוטף'; 
+                if (expInp) expInp.value = '';
+                config.onPopulate(null, null, false); 
+            };
+            expanded.appendChild(noneBtn);
+        }
 
         if (type === 'current') {
             if (ongoingCats.length === 0) {
@@ -4746,22 +4774,35 @@
                 });
             }
         } else if (type === 'fixed') {
+            const groups = {}; const standalone = [];
+            activeFixed.forEach(cat => {
+                if (cat.parent_group) { (groups[cat.parent_group] = groups[cat.parent_group] || []).push(cat); } else standalone.push(cat);
+            });
+
             if (activeFixed.length === 0) {
                 const p = document.createElement('p'); p.className = 'text-[10px] text-slate-400 text-center py-5';
                 p.textContent = 'אין קטגוריות קבועות'; expanded.appendChild(p);
             } else {
-                activeFixed.forEach(cat => {
+                function makeFixedItem(cat, isChild = false) {
                     const isSelected = config.currentTag && config.currentTag.trim() === cat.category_name.trim();
                     const btn = document.createElement('button'); btn.type = 'button';
-                    btn.className = `w-full flex items-center px-4 py-2.5 text-right transition-colors border-b border-slate-50 flex-shrink-0 ${isSelected ? 'bg-blue-50' : 'hover:bg-slate-50'}`;
+                    btn.className = `w-full flex items-center px-4 py-2.5 text-right transition-colors border-b border-slate-50 flex-shrink-0 ${isChild ? 'pr-7' : ''} ${isSelected ? 'bg-blue-50' : 'hover:bg-slate-50'}`;
                     btn.innerHTML = `<span class="text-xs font-bold ${isSelected ? 'text-blue-700' : 'text-slate-700'}">${isSelected ? '✓ ' : ''}${cat.category_name}</span>`;
                     btn.onclick = () => {
                         if (eCat) eCat.value = cat.category_name;
                         if (expInp) expInp.value = '';
                         config.onPopulate(cat.category_name, null, false);
                     };
-                    expanded.appendChild(btn);
+                    return btn;
+                }
+                Object.entries(groups).forEach(([parentName, cats]) => {
+                    const header = document.createElement('div');
+                    header.className = 'px-4 py-1.5 text-[9px] font-bold text-slate-400 bg-slate-50/50 border-b border-slate-50 flex-shrink-0';
+                    header.textContent = parentName;
+                    expanded.appendChild(header);
+                    cats.forEach(cat => expanded.appendChild(makeFixedItem(cat, true)));
                 });
+                standalone.forEach(cat => expanded.appendChild(makeFixedItem(cat)));
             }
         } else if (type === 'planned') {
             const groups = {}; const standalone = [];
