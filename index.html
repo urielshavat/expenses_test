@@ -1101,22 +1101,24 @@
             </div>
             <div class="overflow-y-auto p-6 space-y-4 text-sm text-slate-600 leading-relaxed">
                 <p>כאן תראו את כל ההוצאות השנתיות שהגדרתם בתקציב — כמה הקצבתם לכל קטגוריה וכמה כבר הוצאתם ממנה.</p>
+                
                 <div>
                     <p class="font-bold text-slate-800 mb-1.5">📊 מה רואים לכל קטגוריה?</p>
                     <ul class="text-xs space-y-1 mr-3" style="list-style:disc">
-                        <li>כמה הוצאתם עד כה מתוך התקציב השנתי</li>
-                        <li>פס התקדמות המראה את אחוז הניצול</li>
-                        <li>את ההוצאות הספציפיות ששויכו לאותה קטגוריה</li>
+                        <li>כמה הוצאתם עד כה מתוך התקציב השנתי.</li>
+                        <li>פס התקדמות המראה את אחוז הניצול של התקציב.</li>
                     </ul>
                 </div>
+
                 <div class="bg-slate-50 border border-slate-200 rounded-xl p-3">
-                    <p class="font-bold text-slate-800 mb-1.5">💰 שיריון בצד (יתרה מצטברת)</p>
-                    <p class="text-xs text-slate-600">הסכום שמוצג בחלק העליון ("שיריון בצד") מחושב כך:</p>
-                    <p class="text-xs text-slate-500 mt-1.5">מתחילת השנה, כל חודש "מופרש" חלק מהתקציב השנתי — בהתאם למספר החודשים שעברו. הסכום הזה מייצג כמה <strong>היה צריך להיות מופרש</strong> עד היום, בניכוי מה שכבר הוצא בפועל.</p>
-                    <ul class="text-xs mt-2 space-y-1 mr-3" style="list-style:disc">
-                        <li>מספר חיובי — יש יתרה, ניתן להוציא עוד</li>
-                        <li>מספר שלילי — הוצאתם יותר ממה שצבר התקציב עד כה</li>
-                    </ul>
+                    <p class="font-bold text-slate-800 mb-1.5">💰 שיריון בצד</p>
+                    <p class="text-xs text-slate-600 leading-relaxed">הסכום למעלה מייצג כמה כסף "צברנו" עד היום עבור כלל ההוצאות המתוכננות (בניכוי מה שהוצאנו).
+                    בכל חודש מופרש חלק מהתקציב השנתי, והשריון מראה אם אנחנו עומדים בקצב הצבירה.</p>
+                </div>
+
+                <div>
+                    <p class="font-bold text-slate-800 mb-1.5">🔒 כפתור המנעול (סגירת קטגוריה)</p>
+                    <p class="text-xs text-slate-600 leading-relaxed">סיימתם עם הוצאה מסוימת (למשל חזרתם מחופשה)? לחצו על המנעול. יתרת התקציב שנשארה באותה קטגוריה <strong>תעבור למאזן השוטף שלכם</strong> ותגדיל לכם את התקציב היומי!</p>
                 </div>
             </div>
             <div class="p-4 border-t border-slate-100">
@@ -1129,29 +1131,30 @@
     <div id="mainHelpOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 hidden opacity-0 transition-opacity">
         <div class="bg-white w-full max-w-sm rounded-3xl shadow-2xl flex flex-col max-h-[85vh]">
             <div class="flex justify-between items-center p-6 pb-4 border-b border-slate-100">
-                <h3 class="text-lg font-bold text-slate-900">הוצאות שוטפות</h3>
+                <h3 class="text-lg font-bold text-slate-900">הסבר: ניהול הוצאות</h3>
                 <button onclick="window.closeMainHelp()" class="text-slate-400"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="overflow-y-auto p-6 space-y-4 text-sm text-slate-600 leading-relaxed">
-                <div class="bg-blue-50 border border-blue-100 rounded-xl p-3 text-xs text-blue-800">
-                    <p>לאחר שמילאתם את עמוד התקציב וקבעתם תקציב חודשי לשוטף, הסכום מחולק ב-30 לקבלת <strong>תקציב יומי</strong> — וסכום זה מתווסף למאזן שלכם כל יום.</p>
-                    <p class="mt-2">לדוגמא: תקציב חודשי של ₪3,000 = תקציב יומי של ₪100. בכל יום המאזן גדל ב-₪100.</p>
+                <div>
+                    <p class="font-bold text-slate-800 mb-1">📋 תיעוד הוצאות</p>
+                    <p class="text-xs text-slate-500 italic pb-2 inline-block">כל מה שיוצא מהכיס/אשראי - מתעדים כאן.</p>
+                    <p>כאשר אתם רוכשים משהו (סופר, פארם, בילוי) - לחצו על ה-<b>+</b> הכחול. אם זו הוצאה "רגילה", היא פשוט תרד מהמאזן היומי שלכם.</p>
                 </div>
 
-                <div>
-                    <p class="font-bold text-slate-800 mb-1.5">📋 תיעוד הוצאות</p>
-                    <p>כאן ירשמו ההוצאות שתתעדו. יש לתעד את <strong>כל</strong> ההוצאות שלא ציינתם תחת "הוצאות קבועות" בעמוד התקציב.</p>
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-3">
+                    <p class="font-bold text-slate-800 mb-1">🏷️ קטלוג הוצאות</p>
+                    <p class="text-xs text-slate-600 leading-relaxed">ניתן לשייך כל הוצאה ל<b>קטגוריה שוטפת</b> כדי לעקוב לאן הכסף הולך. 
+                    בנוסף, אם הוספתם הוצאה שהיא דווקא "קבועה" (כמו מנוי שנשכח) - ניתן לסמן אותה כזו (רשות) כדי לשמור על סדר.</p>
                 </div>
 
-                <div>
-                    <p class="font-bold text-slate-800 mb-1.5">➕ כיצד לתעד הוצאה</p>
-                    <p>לחצו על הכפתור <strong>+</strong> הכחול למטה, ציינו שם וסכום. ניתן לתעד בקלות ישירות מהנייד — לחצו על הגדרות לקבלת הסבר.</p>
+                <div class="bg-amber-50 border border-amber-100 rounded-xl p-3">
+                    <p class="font-bold text-amber-800 text-xs mb-1">📅 ומה לגבי הוצאה מתוכננת?</p>
+                    <p class="text-xs text-amber-700 leading-relaxed">אם הוצאתם כסף על משהו שכבר "שמרתם לו כסף" (כמו טסט לרכב או חופשה) - בחרו את הקטגוריה המתאימה בעת התיעוד. הוצאה כזו <strong>לא תפגע במאזן היומי</strong> שלכם, כי הכסף כבר נשמר בצד!</p>
                 </div>
 
-                <div>
-                    <p class="font-bold text-slate-800 mb-1.5">📅 הוצאה מתוכננת</p>
-                    <p>אם ההוצאה שייכת לקטגוריה שתכננתם תחת "הוצאות מתוכננות" — סמנו את הקטגוריה המתאימה. הוצאה זו <strong>לא תרד מהמאזן</strong> אלא מהתקציב שהגדרתם לאותה קטגוריה.</p>
-                    <p class="mt-2 text-xs text-slate-500">הוצאות מתוכננות מוסתרות ברשימה. ללחצו על <strong>"הצג הוצאות מתוכננות"</strong> כדי להציג אותן.</p>
+                <div class="bg-blue-600 rounded-2xl p-4 text-white shadow-lg shadow-blue-100">
+                    <p class="text-xs font-bold opacity-90 mb-1">איך עובד המאזן?</p>
+                    <p class="text-sm font-bold leading-relaxed">בכל יום בחצות, התקציב היומי שלכם מתווסף אוטומטית למאזן. מנגד, כל הוצאה שוטפת שאתם מתעדים מפחיתה את היתרה במאזן. המטרה היא תמיד להישאר מעל ה-0!</p>
                 </div>
             </div>
             <div class="p-4 border-t border-slate-100">
@@ -1164,51 +1167,29 @@
     <div id="budgetHelpOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 hidden opacity-0 transition-opacity">
         <div class="bg-white w-full max-w-sm rounded-3xl shadow-2xl flex flex-col max-h-[85vh]">
             <div class="flex justify-between items-center p-6 pb-4 border-b border-slate-100">
-                <h3 class="text-lg font-bold text-slate-900">איך למלא את התקציב?</h3>
+                <h3 class="text-lg font-bold text-slate-900">איך בונים תקציב?</h3>
                 <button onclick="window.closeBudgetHelp()" class="text-slate-400"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="overflow-y-auto p-6 space-y-5 text-sm text-slate-600 leading-relaxed">
-                <p class="bg-blue-50 border border-blue-100 rounded-xl p-3 text-xs text-blue-700 font-semibold">
-                    כל מה שצריך זה גישה לחשבון העובר ושב ולתדפיסי האשראי של 3 חודשים אחרונים
-                </p>
-
                 <div>
-                    <p class="font-bold text-green-700 mb-1.5 flex items-center gap-1.5"><i class="fa-solid fa-circle-arrow-up text-sm"></i>הכנסות</p>
-                    <p>מלאו את ההכנסות שלכם מתוך חשבון העובר ושב. אם ההכנסות משתנות — סכמו את כל ההכנסות בשנה האחרונה וחלקו ב-12, או שימו את ההכנסה המינימלית שבטוח תהיה.</p>
+                    <p class="font-bold text-green-700 mb-1 flex items-center gap-1.5"><i class="fa-solid fa-circle-arrow-up text-sm"></i>שלב 1: הכנסות</p>
+                    <p class="text-xs">מה נכנס נטו לבנק? משכורות, קצבאות, שכירות. אם זה משתנה - קחו ממוצע שמרני.</p>
                 </div>
 
                 <div>
-                    <p class="font-bold text-red-600 mb-1.5 flex items-center gap-1.5"><i class="fa-solid fa-circle-arrow-down text-sm"></i>הוצאות קבועות</p>
-                    <p>פותחים עובר ושב ואשראי ורושמים אילו תשלומים יורדים כל חודש באופן קבוע.</p>
-                    <ul class="mt-2 space-y-1 text-xs mr-3" style="list-style:disc">
-                        <li>עבור הוצאות שיורדות פעם בחודשיים (חשמל, ארנונה) — רושמים חצי מהסכום</li>
-                        <li>אם יש רכישה שיורדת בתשלומים לאורך זמן — כדאי להוסיף גם אותה</li>
-                        <li class="font-semibold text-slate-700">מוסיפים כאן גם את סכום החיסכון החודשי שאתם מפקידים</li>
-                    </ul>
+                    <p class="font-bold text-red-600 mb-1 flex items-center gap-1.5"><i class="fa-solid fa-circle-arrow-down text-sm"></i>שלב 2: הוצאות קבועות</p>
+                    <p class="text-xs">כל מה שיורד כל חודש בלי שחשבנו על זה: משכנתא/שכירות, חשבונות, חוגים, מנויים. את <b>הפקדות לחסכון</b> מומלץ לרשום תחת קטגוריית "חסכונות".</p>
                 </div>
 
                 <div>
-                    <p class="font-bold text-amber-600 mb-1.5 flex items-center gap-1.5"><i class="fa-solid fa-calendar text-sm"></i>הוצאות מתוכננות</p>
-                    <p>הוסיפו הוצאות גדולות שאתם יודעים שתרצו להוציא אך אינן יוצאות כל חודש:</p>
-                    <ul class="mt-2 space-y-1 text-xs mr-3" style="list-style:disc">
-                        <li>חופשה — הקציבו תקציב שנתי</li>
-                        <li>טיפול ורישוי שנתי לרכב — העריכו כמה זה יעלה בשנה</li>
-                        <li>קייטנות קיץ</li>
-                    </ul>
+                    <p class="font-bold text-amber-600 mb-1 flex items-center gap-1.5"><i class="fa-solid fa-calendar text-sm"></i>שלב 3: הוצאות מתוכננות (שנתי)</p>
+                    <p class="text-xs">כאן שומרים כסף בצד להוצאות גדולות: חופשה, טיפול רכב, טסט, קייטנות. הסכום כאן הוא <strong>שנתי</strong> והמערכת תפרוס אותו לחודשים.</p>
                 </div>
 
-                <div class="bg-slate-50 border border-slate-200 rounded-xl p-3">
-                    <p class="text-xs font-bold text-slate-700 mb-1.5">📱 תקציב נותר לשוטף ותקציב מוגדר</p>
-                    <p class="text-xs text-slate-600">בתחתית הסיכום החודשי מופיעים שני ערכים:</p>
-                    <ul class="text-xs mt-1.5 space-y-1 mr-3 text-slate-600" style="list-style:disc">
-                        <li><strong>תקציב נותר לשוטף</strong> — מחושב אוטומטית: הכנסות פחות הוצאות קבועות פחות חלק החודשי של ההוצאות המתוכננות. זה הסכום שנשאר לכיסוי הוצאות יומיומיות.</li>
-                        <li><strong>תקציב מוגדר לשוטף</strong> — ניתן לשנות ידנית. ברוב המקרים כדאי להשאיר אותו זהה לתקציב הנותר, אך ניתן להקטינו אם רוצים להוסיף חיסכון נוסף. סכום זה מחולק ב-30 לקבלת <strong>התקציב היומי</strong> שמצטבר במאזן כל יום.</li>
-                    </ul>
-                </div>
-
-                <div class="bg-amber-50 border border-amber-100 rounded-xl p-3">
-                    <p class="text-xs font-bold text-amber-700 mb-1.5">💡 טיפ למתקדמים</p>
-                    <p class="text-xs text-amber-800">אם יש הוצאות חינוך קבועות (מעון, צהרון, חוגים) שאינן נגבות בחודשי הקיץ — ניתן "להחזיר" אותן על ידי הוספת הוצאה שנתית <strong>שלילית</strong> בגובה פעמיים אותן הוצאות (עבור יולי ואוגוסט).</p>
+                <div class="bg-blue-600 rounded-2xl p-4 text-white shadow-lg">
+                    <p class="font-bold text-xs mb-1">השלב הכי חשוב: התקציב היומי</p>
+                    <p class="text-xs opacity-90 leading-relaxed">מה שנשאר לכם אחרי כל אלו - זה מה שיש לכם ל"שוטף" (סופר, דלק, בילויים).
+                    הסכום שמוצג ב<b>"תקציב מוגדר לשוטף"</b> הוא זה שיחולק ב-30 ויהפוך ל<b>תקציב היומי</b> שלכם.</p>
                 </div>
             </div>
             <div class="p-4 border-t border-slate-100">
@@ -1360,38 +1341,6 @@
             </div>
 
             <button onclick="window.closeRetroUpdateModal()" class="w-full text-slate-400 text-xs py-2">ביטול</button>
-        </div>
-    </div>
-
-    <!-- Main View Help Modal -->
-    <div id="mainHelpOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 hidden opacity-0 transition-opacity">
-        <div class="bg-white w-full max-w-sm rounded-3xl shadow-2xl flex flex-col max-h-[85vh]">
-            <div class="flex justify-between items-center p-6 pb-4 border-b border-slate-100">
-                <h3 class="text-lg font-bold text-slate-900">הוצאות שוטפות</h3>
-                <button onclick="window.closeMainHelp()" class="text-slate-400"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="overflow-y-auto p-6 space-y-4 text-sm text-slate-600 leading-relaxed">
-                <div class="bg-blue-50 border border-blue-100 rounded-xl p-3 text-xs text-blue-800">
-                    <p>לאחר שמילאתם את עמוד התקציב וקבעתם תקציב חודשי לשוטף, הסכום מחולק ב-30 לקבלת <strong>תקציב יומי</strong> — וסכום זה מתווסף למאזן שלכם כל יום.</p>
-                    <p class="mt-2">לדוגמא: תקציב חודשי של ₪3,000 = תקציב יומי של ₪100. בכל יום המאזן גדל ב-₪100.</p>
-                </div>
-                <div>
-                    <p class="font-bold text-slate-800 mb-1.5">📋 תיעוד הוצאות</p>
-                    <p>כאן ירשמו ההוצאות שתתעדו. יש לתעד את <strong>כל</strong> ההוצאות שלא ציינתם תחת "הוצאות קבועות" בעמוד התקציב.</p>
-                </div>
-                <div>
-                    <p class="font-bold text-slate-800 mb-1.5">➕ כיצד לתעד הוצאה</p>
-                    <p>לחצו על הכפתור <strong>+</strong> הכחול למטה, ציינו שם וסכום. ניתן לתעד בקלות ישירות מהנייד — לחצו על הגדרות לקבלת הסבר.</p>
-                </div>
-                <div>
-                    <p class="font-bold text-slate-800 mb-1.5">📅 הוצאה מתוכננת</p>
-                    <p>אם ההוצאה שייכת לקטגוריה שתכננתם תחת "הוצאות מתוכננות" — סמנו את הקטגוריה המתאימה. הוצאה זו <strong>לא תרד מהמאזן</strong> אלא מהתקציב שהגדרתם לאותה קטגוריה.</p>
-                    <p class="mt-2 text-xs text-slate-500">הוצאות מתוכננות מוסתרות ברשימה. לחצו על <strong>"הצג הוצאות מתוכננות"</strong> כדי להציג אותן.</p>
-                </div>
-            </div>
-            <div class="p-4 border-t border-slate-100">
-                <button onclick="window.closeMainHelp()" class="w-full bg-slate-900 text-white font-bold py-3 rounded-xl text-sm">הבנתי, תודה</button>
-            </div>
         </div>
     </div>
 
