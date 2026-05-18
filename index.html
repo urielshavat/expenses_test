@@ -4284,7 +4284,7 @@
                 if (isZero) hasZeroItems = true;
                 if (!isZero || isShowingZeros) {
                     const div = document.createElement('div');
-                    div.className = `bg-white px-3 py-2 rounded-xl flex justify-between items-center shadow-sm gap-2 animate-fade-in ${isZero ? 'opacity-60 border-dashed border border-slate-200' : ''} ${isChild ? 'ml-4 border-r-2 border-slate-100 rounded-r-none' : ''}`;
+                    div.className = `bg-white px-3 py-2 rounded-xl flex justify-between items-center shadow-sm gap-2 ${isZero ? 'opacity-60 border-dashed border border-slate-200' : ''} ${isChild ? 'ml-4 border-r-2 border-slate-100 rounded-r-none' : ''}`;
                     const numericVal = type === 'annual'
                         ? Math.round(formatDisplayAmount(val / 12))
                         : Math.round(formatDisplayAmount(val, type === 'savings' ? 'general' : type));
@@ -4299,7 +4299,7 @@
                         <div class="flex items-center gap-1.5">
                             ${annualHtml}
                             <span class="text-xs font-bold ltr-num" style="color:${amtColor}">₪${numericVal.toLocaleString()}</span>
-                            <button onclick="window.initBudgetItemEdit('${dbName.replace(/'/g,"\\'")}')"
+                            <button onclick="window.initBudgetItemEdit('${dbName.replace(/'/g,"\\'").replace(/"/g, "&quot;")}')"
                                 class="p-1"><i class="fa-solid fa-ellipsis-vertical text-[10px] text-slate-300"></i></button>
                         </div>`;
                     return div;
@@ -4326,7 +4326,7 @@
                 header.innerHTML = `
                     <span class="font-bold text-slate-800 text-xs flex-1 text-right">${group.name}</span>
                     <div class="flex items-center gap-1 mx-2">
-                        <button onclick="event.stopPropagation(); window.initParentGroupModal('${type}', '${group.name}')" class="text-slate-300 p-1"><i class="fa-solid fa-pen text-[10px]"></i></button>
+                        <button onclick="event.stopPropagation(); window.initParentGroupModal('${type}', '${group.name.replace(/'/g,"\\'").replace(/"/g, "&quot;")}')" class="text-slate-300 p-1"><i class="fa-solid fa-pen text-[10px]"></i></button>
                         <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform p-1 ${isCollapsed ? '-rotate-90' : ''}"></i>
                     </div>
                     ${annualGroupHtml}
@@ -4505,7 +4505,7 @@
                             <p class="text-[10px] text-${color}-600 font-semibold">₪${amount.toLocaleString()} לחודש</p>
                         </div>
                     </div>
-                    <button onclick="window.dismissBudgetReminder('${item._type}','${(item.id || item.category_name).toString().replace(/'/g,"\\'")}')" class="bg-${color}-600 text-white text-[10px] font-bold px-3 py-1.5 rounded-xl">${btnText}</button>
+                    <button onclick="window.dismissBudgetReminder('${item._type}','${(item.id || item.category_name).toString().replace(/'/g,"\\'").replace(/"/g, "&quot;")}')" class="bg-${color}-600 text-white text-[10px] font-bold px-3 py-1.5 rounded-xl">${btnText}</button>
                 </div>`;
             container.appendChild(banner);
         });
@@ -4916,10 +4916,10 @@
             let headerActions = '';
             if (!isGroup) {
                 if (Math.abs(remaining) > 0.1) {
-                    headerActions += `<button onclick="event.stopPropagation(); window.initCloseCategory('${(catName||name).replace(/'/g,"\\'")}', ${spent}, ${totalBudget}, '${catName||name}')" class="btn-close-cat ml-2 text-blue-500"><i class="fa-solid fa-lock text-[10px]"></i></button>`;
+                    headerActions += `<button onclick="event.stopPropagation(); window.initCloseCategory('${(catName||name).replace(/'/g,"\\'").replace(/"/g, "&quot;")}', ${spent}, ${totalBudget}, '${(catName||name).replace(/'/g,"\\'").replace(/"/g, "&quot;")}')" class="btn-close-cat ml-2 text-blue-500"><i class="fa-solid fa-lock text-[10px]"></i></button>`;
                 }
             }
-            headerActions += `<button onclick="window.toggleAnnualCategory('${toggleName.replace(/'/g,"\\'")}'); event.stopPropagation();" class="cat-expand-btn ${isExpanded ? 'expanded' : ''}"><i class="fa-solid fa-chevron-down text-[10px]"></i></button>`;
+            headerActions += `<button onclick="window.toggleAnnualCategory('${toggleName.replace(/'/g,"\\'").replace(/"/g, "&quot;")}'); event.stopPropagation();" class="cat-expand-btn ${isExpanded ? 'expanded' : ''}"><i class="fa-solid fa-chevron-down text-[10px]"></i></button>`;
             const cardHeader = document.createElement('div');
             cardHeader.className = 'p-4 cursor-pointer';
             cardHeader.onclick = () => window.toggleAnnualCategory(toggleName);
@@ -5147,15 +5147,44 @@
         const nameInput = document.getElementById('parentGroupName');
         nameInput.value = existingParent || '';
         container.innerHTML = '';
+
+        const unassigned = list.filter(i => !i.parent_group);
+        const grouped = {};
         list.forEach(item => {
+            if (item.parent_group) {
+                if (!grouped[item.parent_group]) grouped[item.parent_group] = [];
+                grouped[item.parent_group].push(item);
+            }
+        });
+
+        function renderItem(item) {
             const isChecked = existingParent && item.parent_group === existingParent;
             const div = document.createElement('div');
-            div.className = 'flex items-center gap-2 p-2 bg-slate-50 rounded-lg';
+            div.className = 'flex items-center gap-2 p-2 bg-white border border-slate-100 rounded-lg';
             div.innerHTML = `
-                <input type="checkbox" id="chk_${item.id}" value="${item.category_name}" class="w-4 h-4 rounded text-blue-600 border-gray-300" ${isChecked ? 'checked' : ''}>
+                <input type="checkbox" id="chk_${item.id}" value="${item.category_name.replace(/"/g, '&quot;')}" class="w-4 h-4 rounded text-blue-600 border-gray-300" ${isChecked ? 'checked' : ''}>
                 <label for="chk_${item.id}" class="text-xs text-slate-700 font-medium flex-1">${item.category_name}</label>`;
             container.appendChild(div);
+        }
+
+        function renderHeader(name) {
+            const h = document.createElement('div');
+            h.className = 'px-2 py-1 text-[10px] font-bold text-slate-400 border-b border-slate-100 mb-1 mt-3';
+            h.textContent = name;
+            container.appendChild(h);
+        }
+
+        // 1. Unassigned
+        if (unassigned.length > 0) {
+            unassigned.forEach(renderItem);
+        }
+
+        // 2. Grouped
+        Object.entries(grouped).sort().forEach(([parentName, items]) => {
+            renderHeader(parentName);
+            items.forEach(renderItem);
         });
+
         const o = document.getElementById('parentCategoryOverlay');
         o.classList.remove('hidden'); setTimeout(() => o.classList.add('opacity-100'), 10);
     };
@@ -6555,7 +6584,7 @@
         row.innerHTML = `
             <input type="checkbox" id="${cbId}" class="w-4 h-4 rounded text-blue-600 flex-shrink-0 cursor-pointer" ${item.checked ? 'checked' : ''}>
             <div class="flex-1 flex items-center gap-1 min-w-0">
-                <input type="text" value="${item.name}" placeholder="שם"
+                <input type="text" value="${item.name.replace(/"/g, '&quot;')}" placeholder="שם"
                     class="flex-1 bg-transparent text-xs font-bold text-slate-700 border-b border-transparent focus:border-blue-300 outline-none min-w-0 py-0.5"
                     oninput="window._wizSetName('${type}',${idx},this.value)">
                 ${extraBtnHtml}
