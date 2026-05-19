@@ -5504,19 +5504,21 @@
             if (tx.tag) {
                 const foundFixed = state.budget.fixed.find(f => tagMatchesCat(tx.tag, f));
                 if (foundFixed) {
-                    const label = foundFixed.category_name;
-                    totals[label] = (totals[label] || 0) + safeParseFloat(tx.amount);
+                    const key = foundFixed.parent_group || foundFixed.category_name;
+                    totals[key] = (totals[key] || 0) + safeParseFloat(tx.amount);
                 }
             }
         });
 
         const allLabels = [], allData = [], allColors = [];
-        fixedItems.forEach((cat, idx) => {
-            const val = totals[cat.category_name] || 0;
+        const uniqueKeys = [...new Set(fixedItems.map(cat => cat.parent_group || cat.category_name))];
+        uniqueKeys.forEach((key) => {
+            const val = totals[key] || 0;
             if (val > 0) {
-                allLabels.push(cat.category_name);
+                allLabels.push(key);
                 allData.push(Math.round(val));
-                const hue = (idx * 45) % 360; 
+                const keyIdx = uniqueKeys.indexOf(key);
+                const hue = (keyIdx * 45) % 360; 
                 allColors.push(`hsl(${hue}, 80%, 60%)`);
             }
         });
@@ -5601,22 +5603,33 @@
             const allTxs = state.transactions.filter(tx => !!tx.tag && !tx.isAdjustment && state.budget.fixed.some(f => tagMatchesCat(tx.tag, f)));
             const datasets = [];
 
-            fixedItems.forEach((cat, idx) => {
-                const label = cat.category_name;
-                const catColor = `hsl(${(idx * 45) % 360}, 80%, 60%)`;
+            // Group fixed items by parent_group or keep as standalone
+            const groupedFixed = {};
+            fixedItems.forEach((cat) => {
+                const key = cat.parent_group || cat.category_name;
+                if (!groupedFixed[key]) {
+                    const keyIdx = uniqueKeys.indexOf(key);
+                    groupedFixed[key] = { label: key, items: [], hue: (keyIdx * 45) % 360 };
+                }
+                groupedFixed[key].items.push(cat);
+            });
+
+            Object.values(groupedFixed).forEach(group => {
+                const catColor = `hsl(${group.hue}, 80%, 60%)`;
                 const monthlyTotals = months.sorted.map(m => {
                     return allTxs.filter(tx => {
                         const d = parseLocalDate(tx.date);
                         const txMonth = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-                        return txMonth === m && tagMatchesCat(tx.tag, cat);
+                        // Match tx.tag with any item in the group
+                        return txMonth === m && group.items.some(cat => tagMatchesCat(tx.tag, cat));
                     }).reduce((s, tx) => s + safeParseFloat(tx.amount), 0);
                 });
                 
                 if (monthlyTotals.some(v => v > 0)) {
                     datasets.push({
-                        label,
+                        label: group.label,
                         data: monthlyTotals.map(v => Math.round(v)),
-                        allData: monthlyTotals.map(v => Math.round(v)), // keep original
+                        allData: monthlyTotals.map(v => Math.round(v)),
                         borderColor: catColor,
                         backgroundColor: catColor + '22',
                         borderWidth: 2,
@@ -5676,7 +5689,7 @@
                             },
                             scales: {
                                 x: { stacked: true, grid: { display: false }, ticks: { font: { size: 9 }, maxRotation: 45 } },
-                                y: { stacked: true, beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { size: 9 }, callback: v => '₪' + v.toLocaleString() } }
+                                y: { stacked: true, beginAtZero: true, grace: '15%', grid: { color: '#f1f5f9' }, ticks: { font: { size: 9 }, callback: v => '₪' + v.toLocaleString() } }
                             }
                         }
                     });
@@ -5754,16 +5767,24 @@
 
         const totals = {};
         txs.forEach(tx => {
-            if (tx.tag) totals[tx.tag] = (totals[tx.tag] || 0) + safeParseFloat(tx.amount);
+            if (tx.tag) {
+                const cat = annuals.find(a => tagMatchesCat(tx.tag, a));
+                if (cat) {
+                    const key = cat.parent_group || cat.category_name;
+                    totals[key] = (totals[key] || 0) + safeParseFloat(tx.amount);
+                }
+            }
         });
 
         const allLabels = [], allData = [], allColors = [];
-        annuals.forEach((cat, idx) => {
-            const val = totals[cat.category_name] || 0;
+        const uniqueKeys = [...new Set(annuals.map(cat => cat.parent_group || cat.category_name))];
+        uniqueKeys.forEach((key) => {
+            const val = totals[key] || 0;
             if (val > 0) {
-                allLabels.push(cat.category_name);
+                allLabels.push(key);
                 allData.push(Math.round(val));
-                const hue = (idx * 137.5) % 360;
+                const keyIdx = uniqueKeys.indexOf(key);
+                const hue = (keyIdx * 137.5) % 360;
                 allColors.push(`hsl(${hue}, 70%, 50%)`);
             }
         });
@@ -5843,25 +5864,36 @@
             if (!trendCtx) return;
             const months = getTrendMonths();
             if (months.length === 0) return;
-            const allTxs = state.transactions.filter(tx => !!tx.tag && !tx.isAdjustment && state.budget.annual.some(a => a.category_name === tx.tag));
+            const allTxs = state.transactions.filter(tx => !!tx.tag && !tx.isAdjustment && state.budget.annual.some(a => tagMatchesCat(tx.tag, a)));
             const datasets = [];
 
-            annuals.forEach((cat, idx) => {
-                const label = cat.category_name;
-                const catColor = `hsl(${(idx * 137.5) % 360}, 70%, 50%)`;
+            // Group annual items by parent_group or keep as standalone
+            const groupedAnnual = {};
+            annuals.forEach((cat) => {
+                const key = cat.parent_group || cat.category_name;
+                if (!groupedAnnual[key]) {
+                    const keyIdx = uniqueKeys.indexOf(key);
+                    groupedAnnual[key] = { label: key, items: [], hue: (keyIdx * 137.5) % 360 };
+                }
+                groupedAnnual[key].items.push(cat);
+            });
+
+            Object.values(groupedAnnual).forEach(group => {
+                const catColor = `hsl(${group.hue}, 70%, 50%)`;
                 const monthlyTotals = months.sorted.map(m => {
                     return allTxs.filter(tx => {
                         const d = parseLocalDate(tx.date);
                         const txMonth = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-                        return txMonth === m && tx.tag === label;
+                        // Match tx.tag with any item in the group
+                        return txMonth === m && group.items.some(cat => tagMatchesCat(tx.tag, cat));
                     }).reduce((s, tx) => s + safeParseFloat(tx.amount), 0);
                 });
-                
+
                 if (monthlyTotals.some(v => v > 0)) {
                     datasets.push({
-                        label,
+                        label: group.label,
                         data: monthlyTotals.map(v => Math.round(v)),
-                        allData: monthlyTotals.map(v => Math.round(v)), // keep original
+                        allData: monthlyTotals.map(v => Math.round(v)),
                         borderColor: catColor,
                         backgroundColor: catColor + '22',
                         borderWidth: 2,
@@ -5921,7 +5953,7 @@
                             },
                             scales: {
                                 x: { stacked: true, grid: { display: false }, ticks: { font: { size: 9 }, maxRotation: 45 } },
-                                y: { stacked: true, beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { size: 9 }, callback: v => '₪' + v.toLocaleString() } }
+                                y: { stacked: true, beginAtZero: true, grace: '15%', grid: { color: '#f1f5f9' }, ticks: { font: { size: 9 }, callback: v => '₪' + v.toLocaleString() } }
                             }
                         }
                     });
@@ -6024,22 +6056,44 @@
             titleEl.textContent = `הוצאות לפי קטגוריה עבור חודש ${moName}`;
         }
         
-        // Compute totals
+        // Build categories to groups map for all time
+        const allTxs = state.transactions.filter(tx => !tx.tag && !tx.isAdjustment);
+        const groupConfigs = {}; // key -> { label, color, colorHex }
+        
+        cats.forEach(cat => {
+            const budgetItem = [...state.budget.fixed, ...state.budget.annual].find(b => b.category_name === cat.name);
+            const key = (budgetItem && budgetItem.parent_group) ? budgetItem.parent_group : cat.name;
+            if (!groupConfigs[key]) {
+                groupConfigs[key] = { label: key, color: cat.color, colorHex: getCatColor(cat.color).hex };
+            }
+        });
+
+        // Compute current month totals per group
         const totals = {};
         let uncategorized = 0;
         txs.forEach(tx => {
             const cid = tx.expense_category_id;
-            if (cid) totals[cid] = (totals[cid] || 0) + safeParseFloat(tx.amount);
-            else uncategorized += safeParseFloat(tx.amount);
+            if (cid) {
+                const cat = cats.find(c => c.id === cid);
+                if (cat) {
+                    const budgetItem = [...state.budget.fixed, ...state.budget.annual].find(b => b.category_name === cat.name);
+                    const key = (budgetItem && budgetItem.parent_group) ? budgetItem.parent_group : cat.name;
+                    totals[key] = (totals[key] || 0) + safeParseFloat(tx.amount);
+                } else {
+                    uncategorized += safeParseFloat(tx.amount);
+                }
+            } else {
+                uncategorized += safeParseFloat(tx.amount);
+            }
         });
 
         const allLabels = [], allData = [], allColors = [];
-        cats.forEach(cat => {
-            const val = totals[cat.id] || 0;
+        Object.keys(groupConfigs).forEach(key => {
+            const val = totals[key] || 0;
             if (val > 0) {
-                allLabels.push(cat.name);
+                allLabels.push(key);
                 allData.push(Math.round(val));
-                allColors.push(getCatColor(cat.color).hex);
+                allColors.push(groupConfigs[key].colorHex);
             }
         });
         if (uncategorized > 0.5 || (cats.length === 0 && uncategorized > 0)) {
@@ -6161,55 +6215,47 @@
                 return names[parseInt(mo)-1] + ' ' + y.slice(2);
             });
 
-            const allTxs = state.transactions.filter(tx => !tx.tag && !tx.isAdjustment);
             const datasets = [];
             
-            if (cats.length === 0) {
+            // Build datasets for trend based on ALL categories that have data somewhere
+            const trendKeys = Object.keys(groupConfigs);
+            const hasUncategorized = allTxs.some(tx => !tx.expense_category_id);
+            if (hasUncategorized) trendKeys.push('לא מקוטלג');
+
+            trendKeys.forEach(key => {
                 const monthlyTotals = sortedMonths.map(m => {
                     return allTxs.filter(tx => {
                         const d = parseLocalDate(tx.date);
                         const txMonth = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-                        return txMonth === m && !tx.expense_category_id;
+                        if (txMonth !== m) return false;
+                        
+                        if (key === 'לא מקוטלג') return !tx.expense_category_id;
+                        
+                        const cat = cats.find(c => c.id === tx.expense_category_id);
+                        if (!cat) return false;
+                        
+                        const budgetItem = [...state.budget.fixed, ...state.budget.annual].find(b => b.category_name === cat.name);
+                        const txKey = (budgetItem && budgetItem.parent_group) ? budgetItem.parent_group : cat.name;
+                        return txKey === key;
                     }).reduce((s, tx) => s + safeParseFloat(tx.amount), 0);
                 });
-                datasets.push({
-                    label: 'לא מקוטלג',
-                    data: monthlyTotals.map(v => Math.round(v)),
-                    allData: monthlyTotals.map(v => Math.round(v)),
-                    borderColor: '#cbd5e1',
-                    backgroundColor: '#cbd5e122',
-                    borderWidth: 2,
-                    pointRadius: 3,
-                    pointHoverRadius: 5,
-                    tension: 0.3,
-                    fill: false
-                });
-            } else {
-                allLabels.forEach((label, i) => {
-                    const cat = cats.find(c => c.name === label);
-                    const monthlyTotals = sortedMonths.map(m => {
-                        return allTxs.filter(tx => {
-                            const d = parseLocalDate(tx.date);
-                            const txMonth = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-                            if (txMonth !== m) return false;
-                            if (label === 'לא מקוטלג') return !tx.expense_category_id;
-                            return cat && tx.expense_category_id === cat.id;
-                        }).reduce((s, tx) => s + safeParseFloat(tx.amount), 0);
-                    });
+
+                if (monthlyTotals.some(v => v > 0)) {
+                    const color = key === 'לא מקוטלג' ? '#cbd5e1' : groupConfigs[key].colorHex;
                     datasets.push({
-                        label,
+                        label: key,
                         data: monthlyTotals.map(v => Math.round(v)),
                         allData: monthlyTotals.map(v => Math.round(v)),
-                        borderColor: allColors[i],
-                        backgroundColor: allColors[i] + '22',
+                        borderColor: color,
+                        backgroundColor: color + '22',
                         borderWidth: 2,
                         pointRadius: 3,
                         pointHoverRadius: 5,
                         tension: 0.3,
                         fill: false
                     });
-                });
-            }
+                }
+            });
 
             function updateTrendCharts() {
                 const visDatasets = datasets.map((ds, i) => {
@@ -6260,7 +6306,7 @@
                             },
                             scales: {
                                 x: { stacked: true, grid: { display: false }, ticks: { font: { size: 9 }, maxRotation: 45 } },
-                                y: { stacked: true, beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { size: 9 }, callback: v => '₪' + v.toLocaleString() } }
+                                y: { stacked: true, beginAtZero: true, grace: '15%', grid: { color: '#f1f5f9' }, ticks: { font: { size: 9 }, callback: v => '₪' + v.toLocaleString() } }
                             }
                         }
                     });
