@@ -5654,14 +5654,14 @@
                 const stackedCtx = document.getElementById('fixedStackedTrendChart');
                 if (stackedCtx) {
                     if (fixedStackedTrendChartInstance) fixedStackedTrendChartInstance.destroy();
-                    const stackedDatasets = visDatasets.map(ds => ({
+                    const stackedDatasets = visDatasets.map((ds, i) => ({
                         ...ds,
                         type: 'bar',
                         backgroundColor: ds.borderColor,
                         borderColor: '#fff',
                         borderWidth: 1,
                         fill: true,
-                        data: _fixedTrendHidden.has(datasets.indexOf(ds)) ? ds.data.map(() => 0) : ds.allData
+                        data: _fixedTrendHidden.has(i) ? ds.data.map(() => 0) : ds.allData
                     }));
                     const dynamicAvg = calculateDynamicMonthlyAverage(allTxs);
                     fixedStackedTrendChartInstance = new Chart(stackedCtx, {
@@ -5695,21 +5695,39 @@
                     const hidden = _fixedTrendHidden.has(i);
                     const pct = grandTotal > 0 && !hidden ? Math.round(dsTotals[i] / grandTotal * 100) : 0;
                     return `
-                    <button onclick="window.toggleFixedTrendSlice(${i})" class="w-full flex justify-between items-center text-[11px] py-0.5 rounded-lg transition-all ${hidden ? 'opacity-35' : ''}">
-                        <div class="flex items-center gap-2">
-                            <div class="w-2.5 h-2.5 rounded-full flex-shrink-0 transition-all" style="background:${hidden ? '#cbd5e1' : ds.borderColor}"></div>
-                            <span class="font-semibold ${hidden ? 'text-slate-400 line-through' : 'text-slate-600'}">${ds.label}</span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <span class="${hidden ? 'text-slate-300' : 'text-slate-400'} font-bold ltr-num">${hidden ? '—' : pct + '%'}</span>
-                            <span class="font-bold ${hidden ? 'text-slate-300' : 'text-slate-700'} ltr-num">₪${dsTotals[i].toLocaleString()}</span>
-                        </div>
-                    </button>`;
+                    <div class="w-full flex items-center gap-1 group">
+                        <button onclick="window.toggleFixedTrendSlice(${i})" class="p-1 hover:bg-slate-100 rounded transition-colors ${hidden ? 'text-slate-300' : 'text-slate-400 hover:text-slate-600'}" title="הסתר/הצג">
+                            ${hidden ? '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>' : '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>'}
+                        </button>
+                        <button onclick="window.isolateFixedTrendSlice(${i})" class="flex-1 flex justify-between items-center text-[11px] py-1 px-1.5 rounded-lg transition-all hover:bg-slate-50 ${hidden ? 'opacity-35' : ''}">
+                            <div class="flex items-center gap-2">
+                                <div class="w-2.5 h-2.5 rounded-full flex-shrink-0 transition-all" style="background:${hidden ? '#cbd5e1' : ds.borderColor}"></div>
+                                <span class="font-semibold ${hidden ? 'text-slate-400 line-through' : 'text-slate-600'}">${ds.label}</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="${hidden ? 'text-slate-300' : 'text-slate-400'} font-bold ltr-num">${hidden ? '—' : pct + '%'}</span>
+                                <span class="font-bold ${hidden ? 'text-slate-300' : 'text-slate-700'} ltr-num">₪${dsTotals[i].toLocaleString()}</span>
+                            </div>
+                        </button>
+                    </div>`;
                 }).join('');
             }
 
             window.toggleFixedTrendSlice = function(idx) {
                 if (_fixedTrendHidden.has(idx)) _fixedTrendHidden.delete(idx); else _fixedTrendHidden.add(idx);
+                updateTrendCharts();
+            };
+
+            window.isolateFixedTrendSlice = function(idx) {
+                const total = datasets.length;
+                const isOnlyOneVisible = (_fixedTrendHidden.size === total - 1) && !_fixedTrendHidden.has(idx);
+                
+                _fixedTrendHidden.clear();
+                if (!isOnlyOneVisible) {
+                    for (let i = 0; i < total; i++) {
+                        if (i !== idx) _fixedTrendHidden.add(i);
+                    }
+                }
                 updateTrendCharts();
             };
 
@@ -5881,14 +5899,14 @@
                 const stackedCtx = document.getElementById('plannedStackedTrendChart');
                 if (stackedCtx) {
                     if (plannedStackedTrendChartInstance) plannedStackedTrendChartInstance.destroy();
-                    const stackedDatasets = visDatasets.map(ds => ({
+                    const stackedDatasets = visDatasets.map((ds, i) => ({
                         ...ds,
                         type: 'bar',
                         backgroundColor: ds.borderColor,
                         borderColor: '#fff',
                         borderWidth: 1,
                         fill: true,
-                        data: _plannedTrendHidden.has(datasets.indexOf(ds)) ? ds.data.map(() => 0) : ds.allData
+                        data: _plannedTrendHidden.has(i) ? ds.data.map(() => 0) : ds.allData
                     }));
                     const dynamicAvg = calculateDynamicMonthlyAverage(allTxs);
                     plannedStackedTrendChartInstance = new Chart(stackedCtx, {
@@ -5922,21 +5940,39 @@
                     const hidden = _plannedTrendHidden.has(i);
                     const pct = grandTotal > 0 && !hidden ? Math.round(dsTotals[i] / grandTotal * 100) : 0;
                     return `
-                    <button onclick="window.togglePlannedTrendSlice(${i})" class="w-full flex justify-between items-center text-[11px] py-0.5 rounded-lg transition-all ${hidden ? 'opacity-35' : ''}">
-                        <div class="flex items-center gap-2">
-                            <div class="w-2.5 h-2.5 rounded-full flex-shrink-0 transition-all" style="background:${hidden ? '#cbd5e1' : ds.borderColor}"></div>
-                            <span class="font-semibold ${hidden ? 'text-slate-400 line-through' : 'text-slate-600'}">${ds.label}</span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <span class="${hidden ? 'text-slate-300' : 'text-slate-400'} font-bold ltr-num">${hidden ? '—' : pct + '%'}</span>
-                            <span class="font-bold ${hidden ? 'text-slate-300' : 'text-slate-700'} ltr-num">₪${dsTotals[i].toLocaleString()}</span>
-                        </div>
-                    </button>`;
+                    <div class="w-full flex items-center gap-1 group">
+                        <button onclick="window.togglePlannedTrendSlice(${i})" class="p-1 hover:bg-slate-100 rounded transition-colors ${hidden ? 'text-slate-300' : 'text-slate-400 hover:text-slate-600'}" title="הסתר/הצג">
+                            ${hidden ? '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>' : '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>'}
+                        </button>
+                        <button onclick="window.isolatePlannedTrendSlice(${i})" class="flex-1 flex justify-between items-center text-[11px] py-1 px-1.5 rounded-lg transition-all hover:bg-slate-50 ${hidden ? 'opacity-35' : ''}">
+                            <div class="flex items-center gap-2">
+                                <div class="w-2.5 h-2.5 rounded-full flex-shrink-0 transition-all" style="background:${hidden ? '#cbd5e1' : ds.borderColor}"></div>
+                                <span class="font-semibold ${hidden ? 'text-slate-400 line-through' : 'text-slate-600'}">${ds.label}</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="${hidden ? 'text-slate-300' : 'text-slate-400'} font-bold ltr-num">${hidden ? '—' : pct + '%'}</span>
+                                <span class="font-bold ${hidden ? 'text-slate-300' : 'text-slate-700'} ltr-num">₪${dsTotals[i].toLocaleString()}</span>
+                            </div>
+                        </button>
+                    </div>`;
                 }).join('');
             }
 
             window.togglePlannedTrendSlice = function(idx) {
                 if (_plannedTrendHidden.has(idx)) _plannedTrendHidden.delete(idx); else _plannedTrendHidden.add(idx);
+                updateTrendCharts();
+            };
+
+            window.isolatePlannedTrendSlice = function(idx) {
+                const total = datasets.length;
+                const isOnlyOneVisible = (_plannedTrendHidden.size === total - 1) && !_plannedTrendHidden.has(idx);
+                
+                _plannedTrendHidden.clear();
+                if (!isOnlyOneVisible) {
+                    for (let i = 0; i < total; i++) {
+                        if (i !== idx) _plannedTrendHidden.add(i);
+                    }
+                }
                 updateTrendCharts();
             };
 
@@ -6202,14 +6238,14 @@
                 const stackedCtx = document.getElementById('catStackedTrendChart');
                 if (stackedCtx) {
                     if (window._catStackedTrendChartInstance) window._catStackedTrendChartInstance.destroy();
-                    const stackedDatasets = visDatasets.map(ds => ({
+                    const stackedDatasets = visDatasets.map((ds, i) => ({
                         ...ds,
                         type: 'bar',
                         backgroundColor: ds.borderColor,
                         borderColor: '#fff',
                         borderWidth: 1,
                         fill: true,
-                        data: _catTrendHidden.has(datasets.indexOf(ds)) ? ds.data.map(() => 0) : ds.allData
+                        data: _catTrendHidden.has(i) ? ds.data.map(() => 0) : ds.allData
                     }));
                     const dynamicAvg = calculateDynamicMonthlyAverage(allTxs);
                     window._catStackedTrendChartInstance = new Chart(stackedCtx, {
@@ -6243,21 +6279,39 @@
                     const hidden = _catTrendHidden.has(i);
                     const pct = grandTotal > 0 && !hidden ? Math.round(dsTotals[i] / grandTotal * 100) : 0;
                     return `
-                    <button onclick="window.toggleCatTrendSlice(${i})" class="w-full flex justify-between items-center text-[11px] py-0.5 rounded-lg transition-all ${hidden ? 'opacity-35' : ''}">
-                        <div class="flex items-center gap-2">
-                            <div class="w-2.5 h-2.5 rounded-full flex-shrink-0 transition-all" style="background:${hidden ? '#cbd5e1' : ds.borderColor}"></div>
-                            <span class="font-semibold ${hidden ? 'text-slate-400 line-through' : 'text-slate-600'}">${ds.label}</span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <span class="${hidden ? 'text-slate-300' : 'text-slate-400'} font-bold ltr-num">${hidden ? '—' : pct + '%'}</span>
-                            <span class="font-bold ${hidden ? 'text-slate-300' : 'text-slate-700'} ltr-num">₪${dsTotals[i].toLocaleString()}</span>
-                        </div>
-                    </button>`;
+                    <div class="w-full flex items-center gap-1 group">
+                        <button onclick="window.toggleCatTrendSlice(${i})" class="p-1 hover:bg-slate-100 rounded transition-colors ${hidden ? 'text-slate-300' : 'text-slate-400 hover:text-slate-600'}" title="הסתר/הצג">
+                            ${hidden ? '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>' : '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>'}
+                        </button>
+                        <button onclick="window.isolateCatTrendSlice(${i})" class="flex-1 flex justify-between items-center text-[11px] py-1 px-1.5 rounded-lg transition-all hover:bg-slate-50 ${hidden ? 'opacity-35' : ''}">
+                            <div class="flex items-center gap-2">
+                                <div class="w-2.5 h-2.5 rounded-full flex-shrink-0 transition-all" style="background:${hidden ? '#cbd5e1' : ds.borderColor}"></div>
+                                <span class="font-semibold ${hidden ? 'text-slate-400 line-through' : 'text-slate-600'}">${ds.label}</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="${hidden ? 'text-slate-300' : 'text-slate-400'} font-bold ltr-num">${hidden ? '—' : pct + '%'}</span>
+                                <span class="font-bold ${hidden ? 'text-slate-300' : 'text-slate-700'} ltr-num">₪${dsTotals[i].toLocaleString()}</span>
+                            </div>
+                        </button>
+                    </div>`;
                 }).join('');
             }
 
             window.toggleCatTrendSlice = function(idx) {
                 if (_catTrendHidden.has(idx)) _catTrendHidden.delete(idx); else _catTrendHidden.add(idx);
+                updateTrendCharts();
+            };
+
+            window.isolateCatTrendSlice = function(idx) {
+                const total = datasets.length;
+                const isOnlyOneVisible = (_catTrendHidden.size === total - 1) && !_catTrendHidden.has(idx);
+                
+                _catTrendHidden.clear();
+                if (!isOnlyOneVisible) {
+                    for (let i = 0; i < total; i++) {
+                        if (i !== idx) _catTrendHidden.add(i);
+                    }
+                }
                 updateTrendCharts();
             };
 
