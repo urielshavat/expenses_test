@@ -288,12 +288,8 @@
                 </div>
                 <!-- Shared legend used by both charts -->
                 <div id="catChartLegend" class="w-full space-y-1 mb-4"></div>
-                <!-- Monthly trend line chart -->
-                <h3 class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-3 self-start w-full border-t border-slate-100 pt-4">מגמה חודשית</h3>
-                <div class="w-full relative mb-4" style="height:220px">
-                    <canvas id="catTrendChart"></canvas>
-                </div>
                 <!-- Monthly trend stacked bar chart -->
+                <h3 class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-3 self-start w-full border-t border-slate-100 pt-4">מגמה חודשית</h3>
                 <div class="w-full relative mb-4" style="height:240px">
                     <canvas id="catStackedTrendChart"></canvas>
                 </div>
@@ -307,12 +303,8 @@
                     <canvas id="plannedCatStatsChart"></canvas>
                 </div>
                 <div id="plannedCatChartLegend" class="w-full space-y-1 mb-4"></div>
-                <!-- Monthly trend chart for planned -->
-                <h3 class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-3 self-start w-full border-t border-slate-100 pt-4">מגמה חודשית (מתוכננות)</h3>
-                <div class="w-full relative mb-4" style="height:220px">
-                    <canvas id="plannedTrendChart"></canvas>
-                </div>
                 <!-- Monthly trend stacked bar chart for planned -->
+                <h3 class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-3 self-start w-full border-t border-slate-100 pt-4">מגמה חודשית</h3>
                 <div class="w-full relative mb-4" style="height:240px">
                     <canvas id="plannedStackedTrendChart"></canvas>
                 </div>
@@ -326,12 +318,8 @@
                     <canvas id="fixedCatStatsChart"></canvas>
                 </div>
                 <div id="fixedCatChartLegend" class="w-full space-y-1 mb-4"></div>
-                <!-- Monthly trend chart for fixed -->
-                <h3 class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-3 self-start w-full border-t border-slate-100 pt-4">מגמה חודשית (קבועות)</h3>
-                <div class="w-full relative mb-4" style="height:220px">
-                    <canvas id="fixedTrendChart"></canvas>
-                </div>
                 <!-- Monthly trend stacked bar chart for fixed -->
+                <h3 class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-3 self-start w-full border-t border-slate-100 pt-4">מגמה חודשית</h3>
                 <div class="w-full relative mb-4" style="height:240px">
                     <canvas id="fixedStackedTrendChart"></canvas>
                 </div>
@@ -5404,11 +5392,8 @@
     let plannedCatStatsChartInstance = null;
     let fixedCatStatsChartInstance = null;
     let catStatsChartInstance = null;
-    let plannedTrendChartInstance = null;
     let plannedStackedTrendChartInstance = null;
-    let fixedTrendChartInstance = null;
     let fixedStackedTrendChartInstance = null;
-    let _catTrendChartInstance = null;
     let _catStackedTrendChartInstance = null;
     const _stackedTotalPlugin = {
         id: 'stackedTotal',
@@ -5614,7 +5599,7 @@
         renderTrendChart();
 
         function renderTrendChart() {
-            const trendCtx = document.getElementById('fixedTrendChart');
+            const trendCtx = document.getElementById('fixedStackedTrendChart');
             if (!trendCtx) return;
             const months = getTrendMonths();
             if (months.length === 0) return;
@@ -5666,20 +5651,6 @@
                         data: hidden ? ds.data.map(() => null) : ds.allData,
                         pointRadius: hidden ? 0 : 3
                     };
-                });
-
-                if (fixedTrendChartInstance) fixedTrendChartInstance.destroy();
-                fixedTrendChartInstance = new Chart(trendCtx, {
-                    type: 'line',
-                    data: { labels: months.labels, datasets: visDatasets },
-                    options: {
-                        responsive: true, maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
-                        scales: {
-                            x: { grid: { display: false }, ticks: { font: { size: 9 }, maxRotation: 45 } },
-                            y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { size: 9 }, callback: v => '₪' + v.toLocaleString() } }
-                        }
-                    }
                 });
 
                 const stackedCtx = document.getElementById('fixedStackedTrendChart');
@@ -5878,7 +5849,7 @@
         renderTrendChart();
 
         function renderTrendChart() {
-            const trendCtx = document.getElementById('plannedTrendChart');
+            const trendCtx = document.getElementById('plannedStackedTrendChart');
             if (!trendCtx) return;
             const months = getTrendMonths();
             if (months.length === 0) return;
@@ -5930,20 +5901,6 @@
                         data: hidden ? ds.data.map(() => null) : ds.allData,
                         pointRadius: hidden ? 0 : 3
                     };
-                });
-
-                if (plannedTrendChartInstance) plannedTrendChartInstance.destroy();
-                plannedTrendChartInstance = new Chart(trendCtx, {
-                    type: 'line',
-                    data: { labels: months.labels, datasets: visDatasets },
-                    options: {
-                        responsive: true, maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
-                        scales: {
-                            x: { grid: { display: false }, ticks: { font: { size: 9 }, maxRotation: 45 } },
-                            y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { size: 9 }, callback: v => '₪' + v.toLocaleString() } }
-                        }
-                    }
                 });
 
                 const stackedCtx = document.getElementById('plannedStackedTrendChart');
@@ -6202,7 +6159,7 @@
         renderTrendChart();
 
         function renderTrendChart() {
-            const trendCtx = document.getElementById('catTrendChart');
+            const trendCtx = document.getElementById('catStackedTrendChart');
             if (!trendCtx) return;
 
             // Build months from startDate to today
@@ -6283,20 +6240,6 @@
                         data: hidden ? ds.data.map(() => null) : ds.allData,
                         pointRadius: hidden ? 0 : 3
                     };
-                });
-
-                if (window._catTrendChartInstance) window._catTrendChartInstance.destroy();
-                window._catTrendChartInstance = new Chart(trendCtx, {
-                    type: 'line',
-                    data: { labels: monthLabels, datasets: visDatasets },
-                    options: {
-                        responsive: true, maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
-                        scales: {
-                            x: { grid: { display: false }, ticks: { font: { size: 9 }, maxRotation: 45 } },
-                            y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { size: 9 }, callback: v => '₪' + v.toLocaleString() } }
-                        }
-                    }
                 });
 
                 const stackedCtx = document.getElementById('catStackedTrendChart');
