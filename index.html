@@ -2258,10 +2258,28 @@
                         } else {
                             created_at = new Date().toISOString();
                         }
+
+                        const tagName = (tx.tag || '').trim();
+                        let expense_category_id = null;
+                        let category = tagName || 'שוטף';
+
+                        // 1. בדוק אם זה קטגוריה תקציבית (מתוכננת או קבועה)
+                        const isBudgetItem = [...state.budget.fixed, ...state.budget.annual].some(b => tagMatchesCat(category, b));
+                        
+                        // 2. אם לא מופיע בתקציב, בדוק אם זה מופיע בקטגוריות השוטפות המוגדרות באפליקציה
+                        if (!isBudgetItem && category !== 'שוטף') {
+                            const matchedOngoing = state.expenseCategories.find(c => c.name === category);
+                            if (matchedOngoing) {
+                                expense_category_id = matchedOngoing.id;
+                                category = 'שוטף'; // "שוטף" בבסיס הנתונים מציין תנועה ללא תג תקציבי
+                            }
+                        }
+
                         return {
                             name: tx.name,
                             amount: safeParseFloat(tx.amount),
-                            category: tx.tag || 'שוטף',
+                            category: category,
+                            expense_category_id: expense_category_id,
                             created_at,
                             external_id: `gas_row_${tx.row}_${USER_TOKEN}`,
                             user_token: USER_TOKEN
