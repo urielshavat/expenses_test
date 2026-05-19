@@ -290,8 +290,12 @@
                 <div id="catChartLegend" class="w-full space-y-1 mb-4"></div>
                 <!-- Monthly trend line chart -->
                 <h3 class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-3 self-start w-full border-t border-slate-100 pt-4">מגמה חודשית</h3>
-                <div class="w-full relative" style="height:220px">
+                <div class="w-full relative mb-6" style="height:220px">
                     <canvas id="catTrendChart"></canvas>
+                </div>
+                <!-- Monthly trend stacked bar chart -->
+                <div class="w-full relative" style="height:240px">
+                    <canvas id="catStackedTrendChart"></canvas>
                 </div>
             </div>
 
@@ -304,8 +308,12 @@
                 <div id="plannedCatChartLegend" class="w-full space-y-1 mb-4"></div>
                 <!-- Monthly trend chart for planned -->
                 <h3 class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-3 self-start w-full border-t border-slate-100 pt-4">מגמה חודשית (מתוכננות)</h3>
-                <div class="w-full relative" style="height:220px">
+                <div class="w-full relative mb-6" style="height:220px">
                     <canvas id="plannedTrendChart"></canvas>
+                </div>
+                <!-- Monthly trend stacked bar chart for planned -->
+                <div class="w-full relative" style="height:240px">
+                    <canvas id="plannedStackedTrendChart"></canvas>
                 </div>
             </div>
 
@@ -318,8 +326,12 @@
                 <div id="fixedCatChartLegend" class="w-full space-y-1 mb-4"></div>
                 <!-- Monthly trend chart for fixed -->
                 <h3 class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-3 self-start w-full border-t border-slate-100 pt-4">מגמה חודשית (קבועות)</h3>
-                <div class="w-full relative" style="height:220px">
+                <div class="w-full relative mb-6" style="height:220px">
                     <canvas id="fixedTrendChart"></canvas>
+                </div>
+                <!-- Monthly trend stacked bar chart for fixed -->
+                <div class="w-full relative" style="height:240px">
+                    <canvas id="fixedStackedTrendChart"></canvas>
                 </div>
             </div>
             <!-- Export section -->
@@ -5372,15 +5384,88 @@
     let fixedCatStatsChartInstance = null;
     let catStatsChartInstance = null;
     let plannedTrendChartInstance = null;
+    let plannedStackedTrendChartInstance = null;
     let fixedTrendChartInstance = null;
+    let fixedStackedTrendChartInstance = null;
     let _catTrendChartInstance = null;
+    let _catStackedTrendChartInstance = null;
+    const _stackedTotalPlugin = {
+        id: 'stackedTotal',
+        afterDraw: (chart) => {
+            const { ctx, data, scales: { x, y } } = chart;
+            if (!data.datasets.length) return;
+            ctx.save();
+            ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+            ctx.font = 'bold 9px Assistant, sans-serif'; ctx.fillStyle = '#64748b';
+            data.labels.forEach((label, i) => {
+                let total = 0;
+                data.datasets.forEach(ds => { total += (ds.data[i] || 0); });
+                if (total > 0) {
+                    const xPos = x.getPixelForValue(label);
+                    const yPos = y.getPixelForValue(total);
+                    ctx.fillText('₪' + Math.round(total).toLocaleString(), xPos, yPos - 5);
+                }
+            });
+            ctx.restore();
+        }
+    };
+
+    const _averageLinePlugin = {
+        id: 'averageLine',
+        afterDraw: (chart) => {
+            const { ctx, data, scales: { x, y } } = chart;
+            if (!data.datasets.length) return;
+            
+            const options = chart.config.options.plugins.averageLine;
+            let avg = 0;
+            if (options && typeof options.overrideValue === 'number') {
+                avg = options.overrideValue;
+            } else {
+                const totals = data.labels.map((_, i) => {
+                    let t = 0;
+                    data.datasets.forEach(ds => { t += (ds.data[i] || 0); });
+                    return t;
+                }).filter(t => t > 0);
+                if (totals.length === 0) return;
+                avg = totals.reduce((a, b) => a + b, 0) / totals.length;
+            }
+
+            if (avg <= 0) return;
+            const yPos = y.getPixelForValue(avg);
+
+            ctx.save();
+            ctx.setLineDash([5, 5]);
+            ctx.strokeStyle = '#ef4444';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(x.left, yPos);
+            ctx.lineTo(x.right, yPos);
+            ctx.stroke();
+
+            ctx.fillStyle = '#ef4444';
+            ctx.font = 'bold 9px Assistant, sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText('ממוצע: ₪' + Math.round(avg).toLocaleString(), x.left + 5, yPos - 5);
+            ctx.restore();
+        }
+    };
+
+    function calculateDynamicMonthlyAverage(txs) {
+        if (!txs || txs.length === 0) return 0;
+        const sorted = [...txs].sort((a,b) => parseLocalDate(a.date) - parseLocalDate(b.date));
+        const start = parseLocalDate(sorted[0].date);
+        const end = parseLocalDate(sorted[sorted.length - 1].date);
+        const diffMs = end - start;
+        const diffDays = Math.max(1, diffMs / (1000 * 60 * 60 * 24) + 1);
+        const total = sorted.reduce((sum, tx) => sum + safeParseFloat(tx.amount), 0);
+        return (total / diffDays) * 30.4375;
+    }
 
     function renderFixedCategoryStatsChart(txs) {
-        const fixedItems = state.budget.fixed.filter(f => safeParseFloat(f.budget_amount) > 0);
+        const fixedItems = (state.budget && state.budget.fixed) ? state.budget.fixed.filter(f => safeParseFloat(f.budget_amount) > 0) : [];
         const card = document.getElementById('fixedCatStatsCard');
         if (!card) return;
         
-        if (fixedItems.length === 0) { card.classList.add('hidden'); return; }
         card.classList.remove('hidden');
         card.classList.add('flex');
 
@@ -5412,7 +5497,7 @@
         
         if (data.length === 0) {
             pieContainer.classList.add('hidden');
-            legend.innerHTML = `<div class="text-slate-400 text-xs py-10 text-center w-full">אין הוצאות קבועות בחודש זה</div>`;
+            legend.innerHTML = `<div class="text-slate-400 text-xs py-10 text-center w-full">${fixedItems.length === 0 ? 'לא הוגדרו קטגוריות' : 'אין הוצאות קבועות בחודש זה'}</div>`;
             if (fixedCatStatsChartInstance) fixedCatStatsChartInstance.destroy();
         } else {
             pieContainer.classList.remove('hidden');
@@ -5497,6 +5582,36 @@
                     }
                 }
             });
+
+            const stackedCtx = document.getElementById('fixedStackedTrendChart');
+            if (stackedCtx) {
+                if (fixedStackedTrendChartInstance) fixedStackedTrendChartInstance.destroy();
+                const stackedDatasets = datasets.map(ds => ({
+                    ...ds,
+                    type: 'bar',
+                    backgroundColor: ds.borderColor,
+                    borderColor: '#fff',
+                    borderWidth: 1,
+                    fill: true
+                }));
+                const dynamicAvg = calculateDynamicMonthlyAverage(allTxs);
+                fixedStackedTrendChartInstance = new Chart(stackedCtx, {
+                    type: 'bar',
+                    plugins: [_stackedTotalPlugin, _averageLinePlugin],
+                    data: { labels: months.labels, datasets: stackedDatasets },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { 
+                            legend: { display: false },
+                            averageLine: { overrideValue: dynamicAvg }
+                        },
+                        scales: {
+                            x: { stacked: true, grid: { display: false }, ticks: { font: { size: 9 }, maxRotation: 45 } },
+                            y: { stacked: true, beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { size: 9 }, callback: v => '₪' + v.toLocaleString() } }
+                        }
+                    }
+                });
+            }
         }
     }
 
@@ -5613,6 +5728,36 @@
                     }
                 }
             });
+
+            const stackedCtx = document.getElementById('plannedStackedTrendChart');
+            if (stackedCtx) {
+                if (plannedStackedTrendChartInstance) plannedStackedTrendChartInstance.destroy();
+                const stackedDatasets = datasets.map(ds => ({
+                    ...ds,
+                    type: 'bar',
+                    backgroundColor: ds.borderColor,
+                    borderColor: '#fff',
+                    borderWidth: 1,
+                    fill: true
+                }));
+                const dynamicAvg = calculateDynamicMonthlyAverage(allTxs);
+                plannedStackedTrendChartInstance = new Chart(stackedCtx, {
+                    type: 'bar',
+                    plugins: [_stackedTotalPlugin, _averageLinePlugin],
+                    data: { labels: months.labels, datasets: stackedDatasets },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { 
+                            legend: { display: false },
+                            averageLine: { overrideValue: dynamicAvg }
+                        },
+                        scales: {
+                            x: { stacked: true, grid: { display: false }, ticks: { font: { size: 9 }, maxRotation: 45 } },
+                            y: { stacked: true, beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { size: 9 }, callback: v => '₪' + v.toLocaleString() } }
+                        }
+                    }
+                });
+            }
         }
     }
 
@@ -5650,7 +5795,6 @@
         const cats = state.expenseCategories;
         const card = document.getElementById('catStatsCard');
         if (!card) return;
-        if (cats.length === 0) { card.classList.add('hidden'); return; }
         card.classList.remove('hidden');
         card.classList.add('flex');
 
@@ -5674,13 +5818,31 @@
                 allColors.push(getCatColor(cat.color).hex);
             }
         });
-        if (uncategorized > 0.5) {
+        if (uncategorized > 0.5 || (cats.length === 0 && uncategorized > 0)) {
             allLabels.push('לא מקוטלג');
             allData.push(Math.round(uncategorized));
             allColors.push('#cbd5e1');
         }
 
-        if (allData.length === 0) { card.classList.add('hidden'); return; }
+        const totalSum = allData.reduce((a, b) => a + b, 0);
+
+        if (cats.length === 0 || totalSum === 0) {
+            const legend = document.getElementById('catChartLegend');
+            const pieContainer = document.getElementById('catChartContainer');
+            if (pieContainer) pieContainer.classList.add('hidden');
+            if (legend) {
+                if (cats.length === 0) {
+                    legend.innerHTML = `<div class="text-slate-400 text-xs py-10 text-center w-full">לא הוגדרו קטגוריות</div>`;
+                } else if (totalSum === 0) {
+                    legend.innerHTML = `<div class="text-slate-400 text-xs py-10 text-center w-full">אין נתוני הוצאות לחודש זה</div>`;
+                }
+            }
+            if (catStatsChartInstance) catStatsChartInstance.destroy();
+            
+            // Still render trend chart if there's any data in history
+            renderTrendChart();
+            return;
+        }
 
         // Reset hidden if segments changed
         if (_catHidden.size > 0) {
@@ -5780,30 +5942,52 @@
             // Use ALL transactions (not just the selected month) for the trend
             const allTxs = state.transactions.filter(tx => !tx.tag && !tx.isAdjustment);
             const datasets = [];
-            allLabels.forEach((label, i) => {
-                if (_catHidden.has(i)) return;
-                const cat = cats.find(c => c.name === label);
+            
+            if (cats.length === 0) {
                 const monthlyTotals = sortedMonths.map(m => {
                     return allTxs.filter(tx => {
                         const d = parseLocalDate(tx.date);
                         const txMonth = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-                        if (txMonth !== m) return false;
-                        if (label === 'לא מקוטלג') return !tx.expense_category_id;
-                        return cat && tx.expense_category_id === cat.id;
+                        return txMonth === m && !tx.expense_category_id;
                     }).reduce((s, tx) => s + safeParseFloat(tx.amount), 0);
                 });
                 datasets.push({
-                    label,
+                    label: 'לא מקוטלג',
                     data: monthlyTotals.map(v => Math.round(v)),
-                    borderColor: allColors[i],
-                    backgroundColor: allColors[i] + '22',
+                    borderColor: '#cbd5e1',
+                    backgroundColor: '#cbd5e122',
                     borderWidth: 2,
                     pointRadius: 3,
                     pointHoverRadius: 5,
                     tension: 0.3,
                     fill: false
                 });
-            });
+            } else {
+                allLabels.forEach((label, i) => {
+                    if (_catHidden.has(i)) return;
+                    const cat = cats.find(c => c.name === label);
+                    const monthlyTotals = sortedMonths.map(m => {
+                        return allTxs.filter(tx => {
+                            const d = parseLocalDate(tx.date);
+                            const txMonth = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+                            if (txMonth !== m) return false;
+                            if (label === 'לא מקוטלג') return !tx.expense_category_id;
+                            return cat && tx.expense_category_id === cat.id;
+                        }).reduce((s, tx) => s + safeParseFloat(tx.amount), 0);
+                    });
+                    datasets.push({
+                        label,
+                        data: monthlyTotals.map(v => Math.round(v)),
+                        borderColor: allColors[i],
+                        backgroundColor: allColors[i] + '22',
+                        borderWidth: 2,
+                        pointRadius: 3,
+                        pointHoverRadius: 5,
+                        tension: 0.3,
+                        fill: false
+                    });
+                });
+            }
 
             if (window._catTrendChartInstance) window._catTrendChartInstance.destroy();
             window._catTrendChartInstance = new Chart(trendCtx, {
@@ -5818,6 +6002,40 @@
                     }
                 }
             });
+
+            // Stacked Bar Chart
+            const stackedCtx = document.getElementById('catStackedTrendChart');
+            if (stackedCtx) {
+                if (window._catStackedTrendChartInstance) window._catStackedTrendChartInstance.destroy();
+                
+                // Deep copy datasets for stacked bar as we might want different styles
+                const stackedDatasets = datasets.map(ds => ({
+                    ...ds,
+                    type: 'bar',
+                    backgroundColor: ds.borderColor, // Use solid colors for stacked bars
+                    borderColor: '#fff',
+                    borderWidth: 1,
+                    fill: true
+                }));
+
+                const dynamicAvg = calculateDynamicMonthlyAverage(allTxs);
+                window._catStackedTrendChartInstance = new Chart(stackedCtx, {
+                    type: 'bar',
+                    plugins: [_stackedTotalPlugin, _averageLinePlugin],
+                    data: { labels: monthLabels, datasets: stackedDatasets },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { 
+                            legend: { display: false },
+                            averageLine: { overrideValue: dynamicAvg }
+                        },
+                        scales: {
+                            x: { stacked: true, grid: { display: false }, ticks: { font: { size: 9 }, maxRotation: 45 } },
+                            y: { stacked: true, beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { size: 9 }, callback: v => '₪' + v.toLocaleString() } }
+                        }
+                    }
+                });
+            }
         }
     }
 
