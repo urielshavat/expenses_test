@@ -220,18 +220,18 @@
             <div id="savingsRemindersContainer"></div>
 
             <!-- View Switcher -->
-            <div class="mb-1.5 px-1">
+            <div class="mb-3 px-1">
                 <div class="flex bg-slate-100 p-1 rounded-xl">
-                    <button onclick="window.setMainViewFilter('current')" id="filterCurrentBtn" class="flex-1 py-2 text-[10px] font-bold rounded-lg transition-all bg-white text-slate-700 shadow-sm">שוטף</button>
-                    <button onclick="window.setMainViewFilter('planned')" id="filterPlannedBtn" class="flex-1 py-2 text-[10px] font-bold rounded-lg transition-all text-slate-400">מתוכנן</button>
-                    <button onclick="window.setMainViewFilter('fixed')" id="filterFixedBtn" class="flex-1 py-2 text-[10px] font-bold rounded-lg transition-all text-slate-400">קבוע</button>
-                    <button onclick="window.setMainViewFilter('all')" id="filterAllBtn" class="flex-1 py-2 text-[10px] font-bold rounded-lg transition-all text-slate-400">הכל</button>
+                    <button onclick="window.setMainViewFilter('current')" id="filterCurrentBtn" class="flex-1 py-1.5 text-[10px] font-bold rounded-lg transition-all bg-white text-slate-700 shadow-sm">שוטף</button>
+                    <button onclick="window.setMainViewFilter('planned')" id="filterPlannedBtn" class="flex-1 py-1.5 text-[10px] font-bold rounded-lg transition-all text-slate-400">מתוכנן</button>
+                    <button onclick="window.setMainViewFilter('fixed')" id="filterFixedBtn" class="flex-1 py-1.5 text-[10px] font-bold rounded-lg transition-all text-slate-400">קבוע</button>
+                    <button onclick="window.setMainViewFilter('all')" id="filterAllBtn" class="flex-1 py-1.5 text-[10px] font-bold rounded-lg transition-all text-slate-400">הכל</button>
                 </div>
             </div>
 
-            <!-- Category summary strip -->
-            <div id="categorySummarySection" class="mb-1.5 hidden">
-                <div id="categorySummaryStrip" class="flex gap-2 overflow-x-auto pb-1 no-scrollbar"></div>
+            <!-- Category summary list -->
+            <div id="categorySummarySection" class="mb-4 hidden">
+                <div id="categorySummaryStrip" class="flex flex-col bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm"></div>
             </div>
 
             <section class="flex flex-col pb-6">
@@ -1875,7 +1875,7 @@
         dirtyBudgetItems: {},
         isDirty: true,
         showAnnualInMain: false,
-        mainViewFilter: 'current', // 'all', 'current', 'fixed', 'planned'
+        mainViewFilter: 'all', // 'all', 'current', 'fixed', 'planned'
         statsFilter: 'current',    // 'current', 'fixed', 'planned'
         isPrivacyMode: localStorage.getItem('isPrivacyMode') === 'true',
         showZeroSections: { income: false, fixed: false, annual: false, savings: false },
@@ -2021,14 +2021,21 @@
         if (bySep !== -1) {
             const parent = t.slice(0, bySep).trim();
             const child  = t.slice(bySep + 3).trim();
-            const found = state.budget.annual.find(a =>
+            const foundAnnual = state.budget.annual.find(a =>
                 (a.category_name||'').trim() === child &&
                 (a.parent_group||'').trim() === parent
             );
-            if (found) return found;
+            if (foundAnnual) return foundAnnual;
+            
+            const foundFixed = state.budget.fixed.find(f =>
+                (f.category_name||'').trim() === child &&
+                (f.parent_group||'').trim() === parent
+            );
+            if (foundFixed) return foundFixed;
         }
         // חיפוש לפי שם קצר בלבד
-        return state.budget.annual.find(a => (a.category_name||'').trim() === t) || null;
+        return state.budget.annual.find(a => (a.category_name||'').trim() === t) || 
+               state.budget.fixed.find(f => (f.category_name||'').trim() === t) || null;
     }
 
     // מחזיר את ה-category_name המפורסר (השם הקצר) שמשמש להשוואה
@@ -3195,9 +3202,23 @@
         { id: 'yellow',  hex: '#eab308', bg: '#fefce8' },
         { id: 'lime',    hex: '#84cc16', bg: '#f7fee7' },
         { id: 'green',   hex: '#22c55e', bg: '#f0fdf4' },
+        { id: 'emerald', hex: '#10b981', bg: '#ecfdf5' },
         { id: 'teal',    hex: '#14b8a6', bg: '#f0fdfa' },
         { id: 'cyan',    hex: '#06b6d4', bg: '#ecfeff' },
-        { id: 'slate',   hex: '#64748b', bg: '#f8fafc' },
+        { id: 'sky',     hex: '#0ea5e9', bg: '#f0f9ff' },
+        { id: 'slate',   hex: '#64748b', bg: '#f1f5f9' },
+        { id: 'rose',    hex: '#f43f5e', bg: '#fff1f2' }
+    ];
+
+    const BUDGET_COLORS = [
+        { hex: '#3b82f6', bg: '#eff6ff' }, // כחול (Blue)
+        { hex: '#f97316', bg: '#fff7ed' }, // כתום (Orange)
+        { hex: '#22c55e', bg: '#f0fdf4' }, // ירוק (Green)
+        { hex: '#ec4899', bg: '#fdf2f8' }, // ורוד (Pink)
+        { hex: '#06b6d4', bg: '#ecfeff' }, // תכלת (Cyan)
+        { hex: '#eab308', bg: '#fefce8' }, // צהוב (Yellow)
+        { hex: '#a855f7', bg: '#faf5ff' }, // סגול (Purple)
+        { hex: '#92400e', bg: '#fffbeb' }  // חום (Brown)
     ];
 
     const CAT_ICONS = [
@@ -3210,7 +3231,7 @@
         { id: 'bolt',             fa: 'fa-bolt',                label: 'חשמל' },
         { id: 'droplet',          fa: 'fa-droplet',             label: 'מים' },
         { id: 'wifi',             fa: 'fa-wifi',                label: 'תקשורת' },
-        { id: 'mobile-screen',    fa: 'fa-mobile-screen',       label: 'סלולר' },
+        { id: 'box',              fa: 'fa-box',                 label: 'חבילות' },
         { id: 'pills',            fa: 'fa-pills',               label: 'תרופות' },
         { id: 'heart-pulse',      fa: 'fa-heart-pulse',         label: 'בריאות' },
         { id: 'face-smile',       fa: 'fa-face-smile',          label: 'קוסמטיקה' },
@@ -3279,101 +3300,115 @@
         return new Date(now.getFullYear(), 0, 1);
     }
 
-    // Render category summary strip
+    // Render category summary list (Single-line redesign)
     function renderCategorySummary() {
         const summarySection = document.getElementById('categorySummarySection');
         const strip = document.getElementById('categorySummaryStrip');
         if (!summarySection || !strip) return;
+        strip.innerHTML = '';
 
         const filter = state.mainViewFilter;
+
+        // Requirement: Categories should not appear when the selector is on "All"
+        if (filter === 'all') {
+            summarySection.classList.add('hidden');
+            return;
+        }
+
         let catsShown = [];
-        let txsToShow = [];
         const monthStart = currentMonthStart();
+        const yearStart = currentYearStart();
 
-        const isBudgetFilter = filter === 'fixed' || filter === 'planned';
-
-        if (filter === 'fixed') {
-             catsShown = state.budget.fixed;
-             txsToShow = state.transactions.filter(tx => {
-                if (!tx.tag || tx.isAdjustment) return false;
-                const d = parseLocalDate(tx.date);
-                return d >= monthStart && state.budget.fixed.some(f => tagMatchesCat(tx.tag, f));
-             });
+        // 1. Collect and filter categories based on state.mainViewFilter
+        if (filter === 'current') {
+            catsShown.push(...state.expenseCategories.map(c => ({ ...c, $type: 'current' })));
+        } else if (filter === 'fixed') {
+            catsShown.push(...state.budget.fixed.map(c => ({ ...c, $type: 'fixed' })));
         } else if (filter === 'planned') {
-             catsShown = state.budget.annual;
-             const yearStart = currentYearStart();
-             txsToShow = state.transactions.filter(tx => {
-                if (!tx.tag || tx.isAdjustment) return false;
-                const d = parseLocalDate(tx.date);
-                return d >= yearStart && state.budget.annual.some(a => tagMatchesCat(tx.tag, a));
-             });
-        } else {
-             // current or all - show expenseCategories (original behavior)
-             catsShown = state.expenseCategories;
-             txsToShow = state.transactions.filter(tx => {
-                const d = parseLocalDate(tx.date);
-                return d >= monthStart && !tx.tag && !tx.isAdjustment;
-             });
+            catsShown.push(...state.budget.annual.map(c => ({ ...c, $type: 'planned' })));
         }
 
         if (catsShown.length === 0) {
             summarySection.classList.add('hidden');
             const nudge = document.getElementById('noCategoriesNudge');
-            if (nudge && (filter === 'current' || filter === 'all')) nudge.classList.remove('hidden');
+            if (nudge) nudge.classList.remove('hidden');
             return;
         }
+
         summarySection.classList.remove('hidden');
         const nudge = document.getElementById('noCategoriesNudge');
         if (nudge) nudge.classList.add('hidden');
 
-        // Compute totals per category
-        const totals = {};
-        txsToShow.forEach(tx => {
-            if (isBudgetFilter) {
-                // Group by the actual budget category name
-                const cat = catsShown.find(c => tagMatchesCat(tx.tag, c));
-                if (cat) {
-                    const key = cat.id || cat.category_name;
-                    totals[key] = (totals[key] || 0) + safeParseFloat(tx.amount);
+        // 2. Update View Switcher Button Appearances
+        ['current', 'planned', 'fixed', 'all'].forEach(f => {
+            const btn = document.getElementById(`filter${f.charAt(0).toUpperCase() + f.slice(1)}Btn`);
+            if (btn) {
+                if (filter === f) {
+                    btn.classList.add('bg-white', 'text-slate-700', 'shadow-sm');
+                    btn.classList.remove('text-slate-400');
+                } else {
+                    btn.classList.remove('bg-white', 'text-slate-700', 'shadow-sm');
+                    btn.classList.add('text-slate-400');
                 }
-            } else {
-                const cid = tx.expense_category_id || null;
-                if (cid) totals[cid] = (totals[cid] || 0) + safeParseFloat(tx.amount);
-                else totals['__none__'] = (totals['__none__'] || 0) + safeParseFloat(tx.amount);
             }
         });
 
-        strip.innerHTML = '';
-
-        const budgetDefaultColors = [
-            { hex: '#3b82f6', bg: '#eff6ff' }, // Blue
-            { hex: '#8b5cf6', bg: '#f5f3ff' }, // Violet
-            { hex: '#ec4899', bg: '#fdf2f8' }, // Pink
-            { hex: '#f59e0b', bg: '#fffbeb' }, // Amber
-            { hex: '#ef4444', bg: '#fef2f2' }, // Red
-            { hex: '#10b981', bg: '#ecfdf5' }, // Emerald
-        ];
-
-        // Category cards
-        catsShown.forEach((cat, idx) => {
+        // 3. Prepare totals for categorization
+        const totals = {};
+        state.transactions.forEach(tx => {
+            if (tx.isAdjustment) return;
+            const d = parseLocalDate(tx.date);
+            const amt = safeParseFloat(tx.amount);
+            
+            if (!tx.tag) {
+                if (d >= monthStart) {
+                    const cid = tx.expense_category_id || '__none__';
+                    totals['current:' + cid] = (totals['current:' + cid] || 0) + amt;
+                }
+            } else {
+                // Check if it's fixed
+                const fixed = state.budget.fixed.find(f => tagMatchesCat(tx.tag, f));
+                if (fixed && d >= monthStart) {
+                    const key = 'fixed:' + (fixed.id || fixed.category_name);
+                    totals[key] = (totals[key] || 0) + amt;
+                } else {
+                    // Check if it's planned
+                    const planned = state.budget.annual.find(a => tagMatchesCat(tx.tag, a));
+                    if (planned && d >= yearStart) {
+                        const key = 'planned:' + (planned.id || planned.category_name);
+                        totals[key] = (totals[key] || 0) + amt;
+                    }
+                }
+            }
+        });
+        // 4. Render category rows
+        state.viewCategoryColors = {}; 
+        let visibleIdx = 0;
+        catsShown.forEach((cat) => {
+            const type = cat.$type;
             const catId = cat.id || cat.category_name;
-            const spent = Math.round(totals[catId] || 0);
+            const key = type + ':' + catId;
+            const spent = Math.round(totals[key] || 0);
 
-            // User requirement: Do not show categories with 0 spent in "Fixed" view
-            if (isBudgetFilter && spent === 0) return;
+            // Hide 0-spent categories (Planned should always show, Fixed and Current hide if 0)
+            if ((type === 'current' || type === 'fixed') && spent === 0) return;
 
             let color, icon;
-            if (isBudgetFilter) {
-                color = budgetDefaultColors[idx % budgetDefaultColors.length];
-                icon = { fa: filter === 'fixed' ? 'fa-lock' : 'fa-calendar-check' };
-            } else {
+            if (type === 'current') {
                 color = getCatColor(cat.color);
                 icon = getCatIcon(cat.icon);
+            } else {
+                // Color distribution based on visible index as requested (cycling among shown items)
+                const colorIdx = visibleIdx % BUDGET_COLORS.length;
+                color = BUDGET_COLORS[colorIdx];
+                icon = { fa: type === 'fixed' ? 'fa-circle-arrow-down' : 'fa-calendar-check' };
+                state.viewCategoryColors[key] = colorIdx;
+                visibleIdx++;
             }
 
-            const budget = isBudgetFilter 
-                ? (filter === 'planned' ? safeParseFloat(cat.budget_amount) : safeParseFloat(cat.budget_amount))
-                : safeParseFloat(cat.monthly_budget || 0);
+            const budget = type === 'current' 
+                ? safeParseFloat(cat.monthly_budget || 0)
+                : safeParseFloat(cat.budget_amount || 0);
             
             const hasBudget = budget > 0;
             const remaining = budget - spent;
@@ -3381,72 +3416,92 @@
             const barPct = Math.min(100, pct);
             const isOver = hasBudget && spent > budget;
             
-            const filterId = isBudgetFilter ? 'budget:' + catId : catId;
+            const filterId = type === 'current' ? catId : 'budget:' + catId;
             const isActive = state.activeCategoryFilter === filterId;
 
-            const card = document.createElement('button');
-            card.type = 'button';
-            card.className = `flex-shrink-0 flex flex-col gap-1.5 p-3 rounded-2xl border transition-all text-right ${isActive ? 'shadow-md' : 'bg-white border-slate-100'}`;
-            card.style.borderColor = isActive ? color.hex : '';
-            card.style.background = isActive ? color.bg : '';
-            card.style.minWidth = '130px';
+            const row = document.createElement('div');
+            row.className = `flex items-center gap-3 p-3 border-b border-slate-50 last:border-0 transition-colors cursor-pointer ${isActive ? 'bg-blue-50/50' : 'hover:bg-slate-50'}`;
+            
+            // Show only child category for fixed
+            const displayName = (type === 'fixed') 
+                ? cat.category_name 
+                : (cat.parent_group ? `${cat.parent_group} > ${cat.category_name}` : (cat.name || cat.category_name));
+            
+            const iconHtml = (type === 'current')
+                ? `<div class="w-6 h-6 flex items-center justify-center flex-shrink-0">
+                        <i class="fa-solid ${icon.fa} text-[11px]" style="color:${color.hex}"></i>
+                   </div>`
+                : `<div class="w-6 h-6 flex items-center justify-center flex-shrink-0">
+                        <i class="fa-solid ${icon.fa} text-[11px]" style="color:${color.hex}"></i>
+                   </div>`;
 
-            const barHtml = hasBudget ? `
-                <div class="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
-                    <div class="h-full rounded-full transition-all duration-500" style="width:${barPct}%; background:${isOver ? '#ef4444' : color.hex}"></div>
+            const showBarAndRemaining = type !== 'current' || hasBudget;
+
+            // Layout (Single Line): Icon+Name (35%) | Spent/Budget (20%) | Bar (25%) | Remaining/Over (20%)
+            row.innerHTML = `
+                <div class="flex items-center gap-2 min-w-[30%] max-w-[40%]">
+                    ${iconHtml}
+                    <span class="text-[10px] sm:text-xs font-bold text-slate-700 truncate">${displayName}</span>
                 </div>
-                <div class="flex justify-between items-center w-full">
-                    <span class="text-[9px] font-bold ${isOver ? 'text-red-500' : 'text-slate-500'}">${isOver ? 'חריגה ₪' + Math.abs(Math.round(remaining)).toLocaleString() : 'נותר ₪' + Math.round(remaining).toLocaleString()}</span>
-                    <span class="text-[9px] font-bold ${isOver ? 'text-red-500' : 'text-slate-500'} ltr-num">${pct}%</span>
-                </div>` : '';
-
-            const displayName = cat.parent_group ? `${cat.parent_group} > ${cat.category_name}` : (cat.name || cat.category_name);
-            card.innerHTML = `
-                <div class="flex items-center gap-1.5 w-full">
-                    <div class="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0" style="background:${color.hex}">
-                        <i class="fa-solid ${icon.fa} text-white text-[9px]"></i>
+                
+                <div class="flex flex-col items-center justify-center px-1">
+                    <div class="flex items-baseline gap-0.5" dir="ltr">
+                        <span class="text-[10px] sm:text-xs font-black ltr-num" style="color:${color.hex}">₪${spent.toLocaleString()}</span>
+                        ${hasBudget ? `<span class="text-[8px] font-bold text-slate-400">/₪${Math.round(budget).toLocaleString()}</span>` : ''}
                     </div>
-                    <span class="text-[10px] font-bold text-slate-700 truncate flex-1">${displayName}</span>
                 </div>
-                <div class="flex items-baseline gap-1 w-full justify-end" dir="ltr">
-                    <span class="text-sm font-black ltr-num" style="color:${color.hex}">₪${spent.toLocaleString()}</span>
-                    ${hasBudget ? `<span class="text-[9px] font-bold text-slate-500">/ ₪${Math.round(budget).toLocaleString()}</span>` : ''}
+                
+                <div class="flex-1 px-1">
+                    ${showBarAndRemaining ? `
+                    <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                        <div class="h-full rounded-full transition-all duration-500" style="width:${barPct}%; background:${isOver ? '#ef4444' : color.hex}"></div>
+                    </div>
+                    ` : ''}
                 </div>
-                ${barHtml}`;
-            card.onclick = () => window.toggleCategoryFilter(filterId);
-            strip.appendChild(card);
+
+                <div class="flex flex-col items-end min-w-[55px]">
+                    ${showBarAndRemaining ? `
+                    <span class="text-[9px] font-bold ${isOver ? 'text-red-500' : 'text-slate-400'} whitespace-nowrap">
+                        ${isOver ? 'חריגה ₪' + Math.abs(Math.round(remaining)).toLocaleString() : 'נותר ₪' + Math.round(remaining).toLocaleString()}
+                    </span>
+                    ` : ''}
+                </div>
+            `;
+            
+            row.onclick = () => window.toggleCategoryFilter(filterId);
+            strip.appendChild(row);
         });
 
-        // Uncategorized chip
-        if (!isBudgetFilter) {
-            const noneTotal = Math.round(totals['__none__'] || 0);
-            const isNoneActive = state.activeCategoryFilter === '__none__';
-            const noneChip = document.createElement('button');
-            noneChip.className = `flex-shrink-0 flex flex-col gap-1.5 p-3 rounded-2xl border transition-all text-right ${isNoneActive ? 'border-slate-400 bg-slate-50 shadow-md' : 'bg-white border-slate-100'}`;
-            noneChip.style.minWidth = '110px';
-            noneChip.innerHTML = `
-                <div class="flex items-center gap-1.5 w-full">
-                    <div class="w-6 h-6 rounded-lg bg-slate-200 flex items-center justify-center flex-shrink-0">
-                        <i class="fa-solid fa-tag text-slate-400 text-[9px]"></i>
+        // 5. Uncategorized and Management items
+        if (filter === 'current') {
+            const noneTotal = Math.round(totals['current:__none__'] || 0);
+            if (noneTotal > 0 || state.expenseCategories.length === 0) {
+                const isNoneActive = state.activeCategoryFilter === '__none__';
+                const noneRow = document.createElement('div');
+                noneRow.className = `flex items-center justify-between p-3 border-b border-slate-50 last:border-0 cursor-pointer transition-colors ${isNoneActive ? 'bg-slate-100' : 'hover:bg-slate-50'}`;
+                noneRow.innerHTML = `
+                    <div class="flex items-center gap-2.5 flex-1">
+                        <div class="w-6 h-6 rounded-lg bg-slate-200 flex items-center justify-center flex-shrink-0">
+                            <i class="fa-solid fa-tag text-slate-400 text-[9px]"></i>
+                        </div>
+                        <span class="text-[10px] sm:text-xs font-bold text-slate-400">לא מקוטלג</span>
                     </div>
-                    <span class="text-[10px] font-bold text-slate-400 flex-1">${isNoneActive ? 'לחץ לסימון' : 'לא מקוטלג'}</span>
-                </div>
-                <span class="text-sm font-black text-slate-400 ltr-num">₪${noneTotal.toLocaleString()}</span>`;
-            noneChip.onclick = () => window.toggleCategoryFilter('__none__');
-            strip.appendChild(noneChip);
+                    <span class="text-xs font-black text-slate-400 ltr-num">₪${noneTotal.toLocaleString()}</span>
+                `;
+                noneRow.onclick = () => window.toggleCategoryFilter('__none__');
+                strip.appendChild(noneRow);
+            }
 
-            // Manage categories chip
-            const manageChip = document.createElement('button');
-            manageChip.type = 'button';
-            manageChip.className = "flex-shrink-0 flex flex-col gap-1.5 p-3 rounded-2xl border border-dashed border-slate-200 bg-slate-50/50 transition-all text-right items-center justify-center";
-            manageChip.style.minWidth = '110px';
-            manageChip.innerHTML = `
-                <div class="w-7 h-7 rounded-lg bg-white border border-slate-100 flex items-center justify-center mb-1 shadow-sm">
-                    <i class="fa-solid fa-sliders text-blue-500 text-[11px]"></i>
+            const manageRow = document.createElement('div');
+            manageRow.className = "p-3 flex items-center justify-center cursor-pointer hover:bg-slate-50 transition-colors border-t border-slate-100";
+            manageRow.innerHTML = `
+                <div class="flex items-center gap-2 text-blue-600">
+                    <i class="fa-solid fa-sliders text-[11px]"></i>
+                    <span class="text-[10px] font-bold">נהל קטגוריות</span>
                 </div>
-                <span class="text-[10px] font-bold text-blue-600">נהל קטגוריות</span>`;
-            manageChip.onclick = () => window.openManageCategoriesModal();
-            strip.appendChild(manageChip);
+            `;
+            manageRow.onclick = () => window.openManageCategoriesModal();
+            strip.appendChild(manageRow);
         }
     }
 
@@ -4182,7 +4237,7 @@
             if (cat) {
                 const color = getCatColor(cat.color);
                 const icon  = getCatIcon(cat.icon);
-                catBadgeHtml = `<div class="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 ml-1" style="background:${color.hex}" title="${cat.name}"><i class="fa-solid ${icon.fa} text-white text-[9px]"></i></div>`;
+                catBadgeHtml = `<div class="w-6 h-6 flex items-center justify-center flex-shrink-0 ml-1" title="${cat.name}"><i class="fa-solid ${icon.fa} text-[11px]" style="color:${color.hex}"></i></div>`;
             }
         }
 
@@ -4190,13 +4245,50 @@
         const isNegative = amountValue < 0;
         const colorClass = isNegative ? 'text-green-500' : 'text-red-500';
 
+        let tagHtml = '';
+        if (tx.tag && !hideTag) {
+            const cat = findCatByTag(tx.tag);
+            const filter = state.mainViewFilter;
+            
+            let displayName = tx.tag;
+            if (cat) {
+                const isFixed = state.budget.fixed.some(f => (f.id && f.id === cat.id) || f.category_name === cat.category_name);
+                displayName = (isFixed) ? cat.category_name : (cat.parent_group ? cat.parent_group + ' > ' + cat.category_name : cat.category_name);
+            }
+
+            let style = '';
+            if (filter === 'all') {
+                // All view: dark gray tags
+                style = `style="background:#f1f5f9; color:#475569; border: 1px solid #e2e8f0"`;
+            } else if (cat) {
+                 // Use mapping from summary rendering for consistent coloring based on visible order
+                 const categoryType = state.budget.fixed.some(f => (f.id && f.id === cat.id) || f.category_name === cat.category_name) ? 'fixed' : 'planned';
+                 const key = categoryType + ':' + (cat.id || cat.category_name);
+                 const idx = state.viewCategoryColors ? state.viewCategoryColors[key] : undefined;
+                 
+                 if (idx !== undefined) {
+                     const c = BUDGET_COLORS[idx % BUDGET_COLORS.length];
+                     style = `style="background:${c.bg}; color:${c.hex}; border: 1px solid ${c.hex}20"`;
+                 } else {
+                     // Fallback to static index if not found in current visible summary
+                     let listToSearch = (categoryType === 'fixed') ? state.budget.fixed : state.budget.annual;
+                     let fallbackIdx = listToSearch.findIndex(item => (item.id && item.id === cat.id) || item.category_name === cat.category_name);
+                     if (fallbackIdx !== -1) {
+                         const c = BUDGET_COLORS[fallbackIdx % BUDGET_COLORS.length];
+                         style = `style="background:${c.bg}; color:${c.hex}; border: 1px solid ${c.hex}20"`;
+                     }
+                 }
+            }
+            tagHtml = `<span class="tag-badge" ${style}>${displayName}</span>`;
+        }
+
         d.innerHTML = `
             <div class="tx-inner">
                 ${catBadgeHtml}
                 <div class="flex-1 flex flex-col">
                     <div class="flex items-center">
                         <span class="font-bold text-slate-800 text-xs">${tx.name}</span>
-                        ${tx.tag && !hideTag ? `<span class="tag-badge">${(() => { const cat = findCatByTag(tx.tag); return cat && cat.parent_group ? cat.parent_group + ' > ' + cat.category_name : tx.tag; })()}</span>` : ''}
+                        ${tagHtml}
                     </div>
                     ${!hideDate ? `<span class="text-[8px] text-slate-400 font-bold">${tx.date}</span>` : ''}
                 </div>
@@ -6198,20 +6290,20 @@
             if (hasUncategorized) trendKeys.push('לא מקוטלג');
 
             trendKeys.forEach(key => {
+                const groupTxs = allTxs.filter(tx => {
+                    if (key === 'לא מקוטלג') return !tx.expense_category_id;
+                    const cat = cats.find(c => c.id === tx.expense_category_id);
+                    if (!cat) return false;
+                    const budgetItem = [...state.budget.fixed, ...state.budget.annual].find(b => b.category_name === cat.name);
+                    const txKey = (budgetItem && budgetItem.parent_group) ? budgetItem.parent_group : cat.name;
+                    return txKey === key;
+                });
+
                 const monthlyTotals = sortedMonths.map(m => {
-                    return allTxs.filter(tx => {
+                    return groupTxs.filter(tx => {
                         const d = parseLocalDate(tx.date);
                         const txMonth = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-                        if (txMonth !== m) return false;
-                        
-                        if (key === 'לא מקוטלג') return !tx.expense_category_id;
-                        
-                        const cat = cats.find(c => c.id === tx.expense_category_id);
-                        if (!cat) return false;
-                        
-                        const budgetItem = [...state.budget.fixed, ...state.budget.annual].find(b => b.category_name === cat.name);
-                        const txKey = (budgetItem && budgetItem.parent_group) ? budgetItem.parent_group : cat.name;
-                        return txKey === key;
+                        return txMonth === m;
                     }).reduce((s, tx) => s + safeParseFloat(tx.amount), 0);
                 });
 
@@ -6227,7 +6319,8 @@
                         pointRadius: 3,
                         pointHoverRadius: 5,
                         tension: 0.3,
-                        fill: false
+                        fill: false,
+                        avg: calculateDynamicMonthlyAverage(groupTxs)
                     });
                 }
             });
@@ -6297,7 +6390,10 @@
                             </div>
                             <div class="flex items-center gap-2">
                                 <span class="${hidden ? 'text-slate-300' : 'text-slate-400'} font-bold ltr-num">${hidden ? '—' : pct + '%'}</span>
-                                <span class="font-bold ${hidden ? 'text-slate-300' : 'text-slate-700'} ltr-num">₪${dsTotals[i].toLocaleString()}</span>
+                                <div class="flex items-baseline gap-1.5">
+                                    <span class="font-bold ${hidden ? 'text-slate-300' : 'text-slate-700'} ltr-num">₪${dsTotals[i].toLocaleString()}</span>
+                                    <span class="${hidden ? 'text-slate-200' : 'text-slate-400'} text-[8px] font-bold ltr-num whitespace-nowrap">ממוצע ₪${Math.round(ds.avg).toLocaleString()}</span>
+                                </div>
                             </div>
                         </button>
                     </div>`;
