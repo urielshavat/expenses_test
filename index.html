@@ -198,15 +198,6 @@
         </div>
 
         <div id="mainView" class="view-content">
-            <header class="mb-2">
-                <div id="statsHeaderRow" class="bg-white px-2 py-3 rounded-3xl shadow-sm border border-slate-100 flex items-center transition-all min-h-[85px]">
-                    <!-- Content populated by renderCategorySummary() -->
-                </div>
-            </header>
-
-            <!-- Savings reminders -->
-            <div id="savingsRemindersContainer"></div>
-
             <!-- View Switcher -->
             <div class="mb-3 px-1">
                 <div class="flex bg-slate-100 p-1 rounded-xl">
@@ -217,10 +208,23 @@
                 </div>
             </div>
 
-            <!-- Category summary list -->
-            <div id="categorySummarySection" class="mb-4 hidden">
-                <div id="categorySummaryStrip" class="flex flex-col bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm"></div>
+            <!-- Unified Stats & Categories Card -->
+            <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden mb-4">
+                <header>
+                    <div id="statsHeaderRow" class="px-2 py-3 flex items-center transition-all min-h-[85px]">
+                        <!-- Content populated by renderCategorySummary() -->
+                    </div>
+                </header>
+
+                <!-- Category summary list -->
+                <div id="categorySummarySection" class="hidden">
+                    <div class="border-t border-slate-300"></div>
+                    <div id="categorySummaryStrip" class="flex flex-col"></div>
+                </div>
             </div>
+
+            <!-- Savings reminders -->
+            <div id="savingsRemindersContainer"></div>
 
             <section class="flex flex-col pb-6">
                 <div class="flex justify-between items-center mb-1 px-1">
@@ -3433,6 +3437,11 @@
                                 <span class="text-[10px] sm:text-xs font-black ltr-num" style="color:${color.hex}">₪${group.spent.toLocaleString()}</span>
                                 ${hasBudget ? `<span class="text-[8px] font-bold text-slate-400">/₪${Math.round(group.budget).toLocaleString()}</span>` : ''}
                             </div>
+                            ${hasBudget ? `
+                            <span class="text-[8px] font-bold ${isOver ? 'text-red-500' : 'text-slate-400'} whitespace-nowrap mt-0.5">
+                                ${isOver ? 'חריגה ₪' + Math.abs(Math.round(remaining)).toLocaleString() : 'נותר ₪' + Math.round(remaining).toLocaleString()}
+                            </span>
+                            ` : ''}
                         </div>
                         
                         <div class="flex-1 px-1">
@@ -3440,14 +3449,6 @@
                             <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
                                 <div class="h-full rounded-full transition-all duration-500" style="width:${progressPct}%; background:${isOver ? '#ef4444' : color.hex}"></div>
                             </div>
-                            ` : ''}
-                        </div>
-
-                        <div class="flex flex-col items-end min-w-[55px]">
-                            ${hasBudget ? `
-                            <span class="text-[9px] font-bold ${isOver ? 'text-red-500' : 'text-slate-400'} whitespace-nowrap">
-                                ${isOver ? 'חריגה ₪' + Math.abs(Math.round(remaining)).toLocaleString() : 'נותר ₪' + Math.round(remaining).toLocaleString()}
-                            </span>
                             ` : ''}
                         </div>
                     </div>
@@ -3471,7 +3472,9 @@
                                 <div class="w-6 h-6 flex items-center justify-center flex-shrink-0">
                                     <div class="w-1.5 h-1.5 rounded-full" style="background:${color.hex}"></div>
                                 </div>
-                                <span class="text-[10px] sm:text-xs font-medium text-slate-500 truncate">${c.category_name}</span>
+                                <div class="flex items-center gap-1 min-w-0">
+                                    <span class="text-[10px] sm:text-xs font-medium text-slate-500 truncate">${c.category_name}</span>
+                                </div>
                             </div>
                             
                             <div class="flex flex-col items-center justify-center px-1">
@@ -3479,19 +3482,23 @@
                                     <span class="text-[10px] sm:text-xs font-black ltr-num text-slate-400">₪${c.spent.toLocaleString()}</span>
                                     ${c.budget > 0 ? `<span class="text-[8px] font-bold text-slate-300">/₪${Math.round(c.budget).toLocaleString()}</span>` : ''}
                                 </div>
-                            </div>
-                            
-                            <div class="flex-1 px-1">
-                                <div class="w-full h-1 bg-slate-100 rounded-full overflow-hidden">
-                                    <div class="h-full rounded-full transition-all duration-500" style="width:${cBarPct}%; background:${cIsOver ? '#ef4444' : color.hex}"></div>
-                                </div>
-                            </div>
-
-                            <div class="flex flex-col items-end min-w-[55px]">
                                 ${c.budget > 0 ? `
-                                <span class="text-[8px] font-bold ${cIsOver ? 'text-red-400' : 'text-slate-400'} whitespace-nowrap">
+                                <span class="text-[8px] font-bold ${cIsOver ? 'text-red-400' : 'text-slate-400'} whitespace-nowrap mt-0.5">
                                     ${cIsOver ? 'חריגה ₪' + Math.abs(Math.round(cRemaining)).toLocaleString() : 'נותר ₪' + Math.round(cRemaining).toLocaleString()}
                                 </span>
+                                ` : ''}
+                            </div>
+                            
+                            <div class="flex-1 px-1 flex items-center gap-1.5">
+                                <div class="flex-1 h-1 bg-slate-100 rounded-full overflow-hidden">
+                                    <div class="h-full rounded-full transition-all duration-500" style="width:${cBarPct}%; background:${cIsOver ? '#ef4444' : color.hex}"></div>
+                                </div>
+                                ${Math.abs(c.budget - c.spent) > 0.1 ? `
+                                    <button onclick="event.stopPropagation(); window.initCloseCategory('${c.category_name.replace(/'/g,"\\'").replace(/"/g, "&quot;")}', ${c.spent}, ${c.budget}, '${c.category_name.replace(/'/g,"\\'").replace(/"/g, "&quot;")}')" class="text-blue-500 hover:text-blue-700 transition-colors flex-shrink-0">
+                                        <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"></path>
+                                        </svg>
+                                    </button>
                                 ` : ''}
                             </div>
                         `;
@@ -3532,7 +3539,9 @@
                         <div class="w-6 h-6 flex items-center justify-center flex-shrink-0">
                             <i class="fa-solid fa-calendar-check text-[11px]" style="color:${color.hex}"></i>
                         </div>
-                        <span class="text-[10px] sm:text-xs font-bold text-slate-700 truncate">${cat.category_name}</span>
+                        <div class="flex items-center gap-1 min-w-0">
+                            <span class="text-[10px] sm:text-xs font-bold text-slate-700 truncate">${cat.category_name}</span>
+                        </div>
                     </div>
                     
                     <div class="flex flex-col items-center justify-center px-1">
@@ -3540,18 +3549,24 @@
                             <span class="text-[10px] sm:text-xs font-black ltr-num" style="color:${color.hex}">₪${spent.toLocaleString()}</span>
                             ${hasBudget ? `<span class="text-[8px] font-bold text-slate-400">/₪${Math.round(budget).toLocaleString()}</span>` : ''}
                         </div>
-                    </div>
-                    
-                    <div class="flex-1 px-1">
-                        <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                            <div class="h-full rounded-full transition-all duration-500" style="width:${barPct}%; background:${isOver ? '#ef4444' : color.hex}"></div>
-                        </div>
-                    </div>
-
-                    <div class="flex flex-col items-end min-w-[55px]">
-                        <span class="text-[9px] font-bold ${isOver ? 'text-red-500' : 'text-slate-400'} whitespace-nowrap">
+                        ${hasBudget ? `
+                        <span class="text-[8px] font-bold ${isOver ? 'text-red-500' : 'text-slate-400'} whitespace-nowrap mt-0.5">
                             ${isOver ? 'חריגה ₪' + Math.abs(Math.round(remaining)).toLocaleString() : 'נותר ₪' + Math.round(remaining).toLocaleString()}
                         </span>
+                        ` : ''}
+                    </div>
+                    
+                    <div class="flex-1 px-1 flex items-center gap-1.5">
+                        <div class="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                            <div class="h-full rounded-full transition-all duration-500" style="width:${barPct}%; background:${isOver ? '#ef4444' : color.hex}"></div>
+                        </div>
+                        ${Math.abs(budget - spent) > 0.1 ? `
+                            <button onclick="event.stopPropagation(); window.initCloseCategory('${cat.category_name.replace(/'/g,"\\'").replace(/"/g, "&quot;")}', ${spent}, ${budget}, '${cat.category_name.replace(/'/g,"\\'").replace(/"/g, "&quot;")}')" class="text-blue-500 hover:text-blue-700 transition-colors flex-shrink-0">
+                                <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"></path>
+                                </svg>
+                            </button>
+                        ` : ''}
                     </div>
                 `;
                 
@@ -3624,6 +3639,11 @@
                             <span class="text-[10px] sm:text-xs font-black ltr-num" style="color:${color.hex}">₪${spent.toLocaleString()}</span>
                             ${hasBudget ? `<span class="text-[8px] font-bold text-slate-400">/₪${Math.round(budget).toLocaleString()}</span>` : ''}
                         </div>
+                        ${showBarAndRemaining ? `
+                        <span class="text-[8px] font-bold ${isOver ? 'text-red-500' : 'text-slate-400'} whitespace-nowrap mt-0.5">
+                            ${isOver ? 'חריגה ₪' + Math.abs(Math.round(remaining)).toLocaleString() : 'נותר ₪' + Math.round(remaining).toLocaleString()}
+                        </span>
+                        ` : ''}
                     </div>
                     
                     <div class="flex-1 px-1">
@@ -3631,14 +3651,6 @@
                         <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
                             <div class="h-full rounded-full transition-all duration-500" style="width:${barPct}%; background:${isOver ? '#ef4444' : color.hex}"></div>
                         </div>
-                        ` : ''}
-                    </div>
-
-                    <div class="flex flex-col items-end min-w-[55px]">
-                        ${showBarAndRemaining ? `
-                        <span class="text-[9px] font-bold ${isOver ? 'text-red-500' : 'text-slate-400'} whitespace-nowrap">
-                            ${isOver ? 'חריגה ₪' + Math.abs(Math.round(remaining)).toLocaleString() : 'נותר ₪' + Math.round(remaining).toLocaleString()}
-                        </span>
                         ` : ''}
                     </div>
                 `;
@@ -5336,13 +5348,17 @@
             const safeId = getSafeId(toggleName);
             const card = document.createElement('div');
             card.className = isGroup ? 'card transition-all mb-3' : 'card border border-slate-100 shadow-none mb-2 bg-slate-50';
-            let headerActions = '';
-            if (!isGroup) {
-                if (Math.abs(remaining) > 0.1) {
-                    headerActions += `<button onclick="event.stopPropagation(); window.initCloseCategory('${(catName||name).replace(/'/g,"\\'").replace(/"/g, "&quot;")}', ${spent}, ${totalBudget}, '${(catName||name).replace(/'/g,"\\'").replace(/"/g, "&quot;")}')" class="btn-close-cat ml-2 text-blue-500"><i class="fa-solid fa-lock text-[10px]"></i></button>`;
-                }
+            
+            let lockAction = '';
+            if (!isGroup && Math.abs(remaining) > 0.1) {
+                lockAction = `<button onclick="event.stopPropagation(); window.initCloseCategory('${(catName||name).replace(/'/g,"\\'").replace(/"/g, "&quot;")}', ${spent}, ${totalBudget}, '${(catName||name).replace(/'/g,"\\'").replace(/"/g, "&quot;")}')" class="btn-close-cat ml-2 text-blue-500 flex items-center justify-center">
+                    <svg class="w-[10px] h-[10px]" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"></path>
+                    </svg>
+                </button>`;
             }
-            headerActions += `<button onclick="window.toggleAnnualCategory('${toggleName.replace(/'/g,"\\'").replace(/"/g, "&quot;")}'); event.stopPropagation();" class="cat-expand-btn ${isExpanded ? 'expanded' : ''}"><i class="fa-solid fa-chevron-down text-[10px]"></i></button>`;
+            const expandAction = `<button onclick="window.toggleAnnualCategory('${toggleName.replace(/'/g,"\\'").replace(/"/g, "&quot;")}'); event.stopPropagation();" class="cat-expand-btn ${isExpanded ? 'expanded' : ''}"><i class="fa-solid fa-chevron-down text-[10px]"></i></button>`;
+
             const cardHeader = document.createElement('div');
             cardHeader.className = 'p-4 cursor-pointer';
             cardHeader.onclick = () => window.toggleAnnualCategory(toggleName);
@@ -5351,7 +5367,7 @@
                     <div class="flex-1">
                         <div class="flex items-center gap-2">
                             <h4 class="font-bold text-slate-800 text-sm">${name}</h4>
-                            <div class="flex" onclick="event.stopPropagation()">${headerActions}</div>
+                            <div class="flex" onclick="event.stopPropagation()">${expandAction}</div>
                         </div>
                         <div class="text-[10px] font-bold text-slate-400">₪<span class="ltr-num">${Math.round(formatDisplayAmount(spent)).toLocaleString()}</span> מתוך ₪<span class="ltr-num">${Math.round(formatDisplayAmount(totalBudget)).toLocaleString()}</span></div>
                     </div>
@@ -5360,7 +5376,10 @@
                         <p class="text-[8px] text-slate-300 font-bold uppercase">נותר</p>
                     </div>
                 </div>
-                <div class="progress-bar"><div class="progress-fill ${spent > totalBudget ? 'bg-red-500' : 'bg-blue-500'}" style="width: ${percent}%"></div></div>`;
+                <div class="flex items-center gap-2">
+                    <div class="flex-1 progress-bar h-1.5"><div class="progress-fill ${spent > totalBudget ? 'bg-red-500' : 'bg-blue-500'}" style="width: ${percent}%"></div></div>
+                    <div class="flex items-center" onclick="event.stopPropagation()">${lockAction}</div>
+                </div>`;
             const cardDetails = document.createElement('div');
             cardDetails.id = `annual-details-${safeId}`;
             cardDetails.className = `bg-slate-50 border-t border-slate-100 p-2 space-y-1 ${isExpanded ? '' : 'hidden'}`;
