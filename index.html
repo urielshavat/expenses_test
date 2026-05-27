@@ -39,7 +39,7 @@
         .name-input { background: transparent; border: none; width: 100%; font-weight: 600; color: #334155; padding: 1px 0; }
         .btn-sync { background: #eff6ff; color: #2563eb; font-size: 0.7rem; font-weight: 700; padding: 0.4rem 0.8rem; border-radius: 9999px; display: flex; align-items: center; gap: 0.4rem; transition: all 0.2s; }
         .ltr-num { direction: ltr; display: inline-block; }
-        .compact-tx { padding: 0.4rem 0.75rem !important; margin-bottom: 0.25rem !important; overflow: hidden; position: relative; }
+        .compact-tx { padding: 0.25rem 0.6rem !important; margin-bottom: 0.15rem !important; overflow: hidden; position: relative; }
         .tx-inner { display: flex; align-items: center; width: 100%; transition: transform 0.3s ease; }
         .tx-actions-panel { position: absolute; left: 0; top: 0; bottom: 0; width: 210px; background: #ffffff; display: flex; align-items: center; justify-content: space-around; transform: translateX(-100%); transition: transform 0.3s ease; padding-left: 8px; }
         .row-active .tx-inner { transform: translateX(210px); }
@@ -235,7 +235,7 @@
                     </div>
                 </div>
                 <div id="transactionContainer" class="relative">
-                    <div id="transactionList" class="space-y-1"></div>
+                    <div id="transactionList" class="space-y-0.5"></div>
                     <button id="loadMoreBtn" onclick="window.loadMoreTransactions()" class="w-full py-3 mt-2 text-blue-600 font-bold text-xs bg-white rounded-xl shadow-sm border border-slate-100 hidden">
                         <span id="loadMoreText">טען הכל</span>
                     </button>
@@ -3421,7 +3421,7 @@
                 pRow.className = `flex flex-col border-b border-slate-50 transition-colors ${isActive ? 'bg-blue-50/50' : ''}`;
                 
                 pRow.innerHTML = `
-                    <div class="flex items-center gap-3 p-3 cursor-pointer hover:bg-slate-50" onclick="window.toggleCategoryFilter('${filterId}')">
+                    <div class="flex items-center gap-3 py-1 px-3 cursor-pointer hover:bg-slate-50" onclick="window.toggleCategoryFilter('${filterId}')">
                         <div class="flex items-center gap-2 min-w-[30%] max-w-[40%]">
                             <div class="w-6 h-6 flex items-center justify-center flex-shrink-0">
                                 <i class="fa-solid fa-calendar-check text-[11px]" style="color:${color.hex}"></i>
@@ -3466,7 +3466,7 @@
                         const cIsOver = c.budget > 0 && c.spent > c.budget;
 
                         const cRow = document.createElement('div');
-                        cRow.className = `flex items-center gap-3 p-3 border-b border-slate-50 transition-colors cursor-pointer ${isCActive ? 'bg-blue-50/50' : 'hover:bg-slate-50'}`;
+                        cRow.className = `flex items-center gap-3 py-1 px-3 border-b border-slate-50 transition-colors cursor-pointer ${isCActive ? 'bg-blue-50/50' : 'hover:bg-slate-50'}`;
                         cRow.innerHTML = `
                             <div class="flex items-center gap-2 min-w-[30%] max-w-[40%]">
                                 <div class="w-6 h-6 flex items-center justify-center flex-shrink-0">
@@ -3532,7 +3532,7 @@
                 const isActive = state.activeCategoryFilter === filterId;
 
                 const row = document.createElement('div');
-                row.className = `flex items-center gap-3 p-3 border-b border-slate-50 last:border-0 transition-colors cursor-pointer ${isActive ? 'bg-blue-50/50' : 'hover:bg-slate-50'}`;
+                row.className = `flex items-center gap-3 py-1 px-3 border-b border-slate-50 last:border-0 transition-colors cursor-pointer ${isActive ? 'bg-blue-50/50' : 'hover:bg-slate-50'}`;
                 
                 row.innerHTML = `
                     <div class="flex items-center gap-2 min-w-[30%] max-w-[40%]">
@@ -3610,7 +3610,7 @@
                 const isActive = state.activeCategoryFilter === filterId;
 
                 const row = document.createElement('div');
-                row.className = `flex items-center gap-3 p-3 border-b border-slate-50 last:border-0 transition-colors cursor-pointer ${isActive ? 'bg-blue-50/50' : 'hover:bg-slate-50'}`;
+                row.className = `flex items-center gap-3 py-1 px-3 border-b border-slate-50 last:border-0 transition-colors cursor-pointer ${isActive ? 'bg-blue-50/50' : 'hover:bg-slate-50'}`;
                 
                 // Show only child category for fixed
                 const displayName = (type === 'fixed') 
@@ -3663,42 +3663,32 @@
         // 5. Uncategorized and Management items
         if (filter === 'current') {
             const noneTotal = Math.round(totals['current:__none__'] || 0);
-            if (noneTotal > 0 || state.expenseCategories.length === 0) {
-                const isNoneActive = state.activeCategoryFilter === '__none__';
-                const noneRow = document.createElement('div');
-                noneRow.className = `flex items-center gap-3 p-3 border-b border-slate-50 last:border-0 cursor-pointer transition-colors ${isNoneActive ? 'bg-blue-50/50' : 'hover:bg-slate-50'}`;
+            const isNoneActive = state.activeCategoryFilter === '__none__';
+            const noneRow = document.createElement('div');
+            noneRow.className = `flex items-center gap-3 py-1 px-3 transition-colors ${isNoneActive ? 'bg-blue-50/50' : 'hover:bg-slate-50'}`;
+            
+            noneRow.innerHTML = `
+                <div class="flex items-center gap-2 min-w-[30%] max-w-[40%] cursor-pointer" onclick="window.toggleCategoryFilter('__none__')">
+                    <div class="w-6 h-6 flex items-center justify-center flex-shrink-0">
+                        <i class="fa-solid fa-tag text-[11px] text-slate-400"></i>
+                    </div>
+                    <span class="text-[10px] sm:text-xs font-bold text-slate-400 truncate">לא מקוטלג</span>
+                </div>
                 
-                noneRow.innerHTML = `
-                    <div class="flex items-center gap-2 min-w-[30%] max-w-[40%]">
-                        <div class="w-6 h-6 flex items-center justify-center flex-shrink-0">
-                            <i class="fa-solid fa-tag text-[11px] text-slate-400"></i>
-                        </div>
-                        <span class="text-[10px] sm:text-xs font-bold text-slate-400 truncate">לא מקוטלג</span>
+                <div class="flex flex-col items-center justify-center px-1 cursor-pointer" onclick="window.toggleCategoryFilter('__none__')">
+                    <div class="flex items-baseline gap-0.5" dir="ltr">
+                        <span class="text-[10px] sm:text-xs font-black text-slate-400 ltr-num">₪${noneTotal.toLocaleString()}</span>
                     </div>
-                    
-                    <div class="flex flex-col items-center justify-center px-1">
-                        <div class="flex items-baseline gap-0.5" dir="ltr">
-                            <span class="text-[10px] sm:text-xs font-black text-slate-400 ltr-num">₪${noneTotal.toLocaleString()}</span>
-                        </div>
-                    </div>
-                    
-                    <div class="flex-1 px-1"></div>
-                    <div class="flex flex-col items-end min-w-[55px]"></div>
-                `;
-                noneRow.onclick = () => window.toggleCategoryFilter('__none__');
-                strip.appendChild(noneRow);
-            }
-
-            const manageRow = document.createElement('div');
-            manageRow.className = "p-3 flex items-center justify-center cursor-pointer hover:bg-slate-50 transition-colors border-t border-slate-100";
-            manageRow.innerHTML = `
-                <div class="flex items-center gap-2 text-blue-600">
-                    <i class="fa-solid fa-sliders text-[11px]"></i>
-                    <span class="text-[10px] font-bold">נהל קטגוריות</span>
+                </div>
+                
+                <div class="flex-1 flex justify-center">
+                    <button onclick="event.stopPropagation(); window.openManageCategoriesModal()" class="flex items-center gap-1.5 text-blue-600 hover:text-blue-700 transition-colors">
+                        <i class="fa-solid fa-sliders text-[10px]"></i>
+                        <span class="text-[10px] font-bold">ניהול קטגוריות</span>
+                    </button>
                 </div>
             `;
-            manageRow.onclick = () => window.openManageCategoriesModal();
-            strip.appendChild(manageRow);
+            strip.appendChild(noneRow);
         }
     }
 
@@ -4375,8 +4365,13 @@
 
         // UI Elements
         const headerRow = document.getElementById('statsHeaderRow');
+        const summarySection = document.getElementById('categorySummarySection');
+        const sep = summarySection ? summarySection.querySelector('.border-t') : null;
+
         if (headerRow) {
             if (filter === 'planned') {
+                headerRow.classList.remove('hidden');
+                if (sep) sep.classList.remove('hidden');
                 const spending = reserveDetails ? reserveDetails.actualSpent : 0;
                 const budget = reserveDetails ? reserveDetails.annualTotal : 0;
                 const remaining = budget - spending;
@@ -4416,7 +4411,9 @@
                         </div>
                     </div>
                 `;
-            } else {
+            } else if (filter === 'current') {
+                headerRow.classList.remove('hidden');
+                if (sep) sep.classList.remove('hidden');
                 const spending = currentSpent;
                 const budget = monthlyBudget;
                 const remaining = budget - spending;
@@ -4457,6 +4454,11 @@
                         </div>
                     </div>
                 `;
+            } else {
+                // fixed or all
+                headerRow.innerHTML = '';
+                headerRow.classList.add('hidden');
+                if (sep) sep.classList.add('hidden');
             }
         }
 
@@ -4530,7 +4532,7 @@
             Object.keys(grouped).sort((a,b) => parseLocalDate(b) - parseLocalDate(a)).forEach(date => {
                 const g = grouped[date];
                 const h = document.createElement('div');
-                h.className = 'sticky-header py-1 px-1 text-[9px] font-bold text-slate-400 flex justify-between tracking-wider';
+                h.className = 'sticky-header py-0.5 px-1 text-[9px] font-bold text-slate-400 flex justify-between tracking-wider border-b border-slate-100';
                 h.innerHTML = `<span>${date}</span><span>₪${Math.round(formatDisplayAmount(g.total)).toLocaleString()}</span>`;
                 fragment.appendChild(h);
                 g.items.forEach((tx, idx) => {
@@ -4559,7 +4561,7 @@
             if (cat) {
                 const color = getCatColor(cat.color);
                 const icon  = getCatIcon(cat.icon);
-                catBadgeHtml = `<div class="w-6 h-6 flex items-center justify-center flex-shrink-0 ml-1" title="${cat.name}"><i class="fa-solid ${icon.fa} text-[11px]" style="color:${color.hex}"></i></div>`;
+                catBadgeHtml = `<div class="w-4 h-4 flex items-center justify-center flex-shrink-0 ml-1" title="${cat.name}"><i class="fa-solid ${icon.fa} text-[9px]" style="color:${color.hex}"></i></div>`;
             }
         }
 
@@ -4618,7 +4620,7 @@
                     <div class="${colorClass} font-bold text-xs ltr-num">₪${Math.round(Math.abs(formatDisplayAmount(amountValue))).toLocaleString()}</div>
                     ${isSelectMode
                         ? ''
-                        : `<button onclick="window.initEditRow('${tx.row}')" class="p-1.5"><i class="fa-solid fa-ellipsis-vertical text-[10px] text-slate-300"></i></button>`
+                        : `<button onclick="window.initEditRow('${tx.row}')" class="p-1"><i class="fa-solid fa-ellipsis-vertical text-[10px] text-slate-300"></i></button>`
                     }
                 </div>
             </div>`;
