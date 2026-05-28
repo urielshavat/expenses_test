@@ -273,11 +273,11 @@
             <!-- Category breakdown pie -->
             <div id="catStatsCard" class="card p-4 sm:p-6 mb-4 border border-slate-200 bg-white shadow-sm flex flex-col items-center hidden">
                 <h3 id="catStatsTitle" class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-4 self-start w-full">הוצאות לפי קטגוריה</h3>
-                <div class="flex items-center gap-2 sm:gap-4 w-full mb-6">
-                    <div id="catChartLegend" class="flex-1 min-w-0 space-y-1"></div>
+                <div class="flex items-center gap-2 sm:gap-4 w-full mb-6 overflow-hidden">
                     <div id="catChartContainer" class="w-24 h-24 sm:w-32 sm:h-32 relative flex-shrink-0">
                         <canvas id="catStatsChart"></canvas>
                     </div>
+                    <div id="catChartLegend" class="flex-1 min-w-0 space-y-1"></div>
                 </div>
                 <!-- Monthly trend stacked bar chart -->
                 <h3 class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-3 self-start w-full border-t border-slate-100 pt-4">מגמה חודשית</h3>
@@ -290,11 +290,11 @@
             <!-- Planned Category breakdown pie -->
             <div id="plannedCatStatsCard" class="card p-4 sm:p-6 mb-4 border border-slate-200 bg-white shadow-sm flex flex-col items-center hidden">
                 <h3 id="plannedCatStatsTitle" class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-4 self-start w-full">הוצאות מתוכננות לפי קטגוריה</h3>
-                <div class="flex items-center gap-2 sm:gap-4 w-full mb-6">
-                    <div id="plannedCatChartLegend" class="flex-1 min-w-0 space-y-1"></div>
+                <div class="flex items-center gap-2 sm:gap-4 w-full mb-6 overflow-hidden">
                     <div id="plannedCatChartContainer" class="w-24 h-24 sm:w-32 sm:h-32 relative flex-shrink-0">
                         <canvas id="plannedCatStatsChart"></canvas>
                     </div>
+                    <div id="plannedCatChartLegend" class="flex-1 min-w-0 space-y-1"></div>
                 </div>
                 <!-- Monthly trend stacked bar chart for planned -->
                 <h3 class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-3 self-start w-full border-t border-slate-100 pt-4">מגמה חודשית</h3>
@@ -307,11 +307,11 @@
             <!-- Fixed Category breakdown pie -->
             <div id="fixedCatStatsCard" class="card p-4 sm:p-6 mb-4 border border-slate-200 bg-white shadow-sm flex flex-col items-center hidden">
                 <h3 id="fixedCatStatsTitle" class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-4 self-start w-full">הוצאות קבועות לפי קטגוריה</h3>
-                <div class="flex items-center gap-2 sm:gap-4 w-full mb-6">
-                    <div id="fixedCatChartLegend" class="flex-1 min-w-0 space-y-1"></div>
+                <div class="flex items-center gap-2 sm:gap-4 w-full mb-6 overflow-hidden">
                     <div id="fixedCatChartContainer" class="w-24 h-24 sm:w-32 sm:h-32 relative flex-shrink-0">
                         <canvas id="fixedCatStatsChart"></canvas>
                     </div>
+                    <div id="fixedCatChartLegend" class="flex-1 min-w-0 space-y-1"></div>
                 </div>
                 <!-- Monthly trend stacked bar chart for fixed -->
                 <h3 class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-3 self-start w-full border-t border-slate-100 pt-4">מגמה חודשית</h3>
