@@ -271,11 +271,11 @@
                 <button onclick="window.setStatsFilter('planned')" id="statsFilterPlannedBtn" class="flex-1 py-1.5 text-[10px] font-bold rounded-lg transition-all text-slate-400">מתוכנן</button>
             </div>
             <!-- Category breakdown pie -->
-            <div id="catStatsCard" class="card p-6 mb-4 border border-slate-200 bg-white shadow-sm flex flex-col items-center hidden">
+            <div id="catStatsCard" class="card p-3 sm:p-6 mb-4 border border-slate-200 bg-white shadow-sm flex flex-col items-center hidden">
                 <h3 id="catStatsTitle" class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-4 self-start w-full">הוצאות לפי קטגוריה</h3>
-                <div class="flex items-start gap-3 w-full mb-6 overflow-hidden">
-                    <div id="catChartLegend" class="flex-1 min-w-0 space-y-1"></div>
-                    <div id="catChartContainer" class="w-28 h-28 relative flex-shrink-0">
+                <div class="flex items-center gap-4 w-full mb-6 overflow-hidden justify-between">
+                    <div id="catChartLegend" class="flex-none max-w-[65%]"></div>
+                    <div id="catChartContainer" class="w-24 h-24 sm:w-32 sm:h-32 relative flex-shrink-0">
                         <canvas id="catStatsChart"></canvas>
                     </div>
                 </div>
@@ -288,11 +288,11 @@
             </div>
 
             <!-- Planned Category breakdown pie -->
-            <div id="plannedCatStatsCard" class="card p-6 mb-4 border border-slate-200 bg-white shadow-sm flex flex-col items-center hidden">
+            <div id="plannedCatStatsCard" class="card p-3 sm:p-6 mb-4 border border-slate-200 bg-white shadow-sm flex flex-col items-center hidden">
                 <h3 id="plannedCatStatsTitle" class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-4 self-start w-full">הוצאות מתוכננות לפי קטגוריה</h3>
-                <div class="flex items-start gap-3 w-full mb-6 overflow-hidden">
-                    <div id="plannedCatChartLegend" class="flex-1 min-w-0 space-y-1"></div>
-                    <div id="plannedCatChartContainer" class="w-28 h-28 relative flex-shrink-0">
+                <div class="flex items-center gap-4 w-full mb-6 overflow-hidden justify-between">
+                    <div id="plannedCatChartLegend" class="flex-none max-w-[65%]"></div>
+                    <div id="plannedCatChartContainer" class="w-24 h-24 sm:w-32 sm:h-32 relative flex-shrink-0">
                         <canvas id="plannedCatStatsChart"></canvas>
                     </div>
                 </div>
@@ -305,11 +305,11 @@
             </div>
 
             <!-- Fixed Category breakdown pie -->
-            <div id="fixedCatStatsCard" class="card p-6 mb-4 border border-slate-200 bg-white shadow-sm flex flex-col items-center hidden">
+            <div id="fixedCatStatsCard" class="card p-3 sm:p-6 mb-4 border border-slate-200 bg-white shadow-sm flex flex-col items-center hidden">
                 <h3 id="fixedCatStatsTitle" class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-4 self-start w-full">הוצאות קבועות לפי קטגוריה</h3>
-                <div class="flex items-start gap-3 w-full mb-6 overflow-hidden">
-                    <div id="fixedCatChartLegend" class="flex-1 min-w-0 space-y-1"></div>
-                    <div id="fixedCatChartContainer" class="w-28 h-28 relative flex-shrink-0">
+                <div class="flex items-center gap-4 w-full mb-6 overflow-hidden justify-between">
+                    <div id="fixedCatChartLegend" class="flex-none max-w-[65%]"></div>
+                    <div id="fixedCatChartContainer" class="w-24 h-24 sm:w-32 sm:h-32 relative flex-shrink-0">
                         <canvas id="fixedCatStatsChart"></canvas>
                     </div>
                 </div>
@@ -6454,19 +6454,17 @@
 
         function renderPieLegend() {
             const visTotal = allData.reduce((s, v, i) => _fixedHidden.has(i) ? s : s + v, 0);
-            legend.innerHTML = `<div class="space-y-2 w-full">` +
+            legend.innerHTML = `<div class="space-y-1 w-full">` +
                 allLabels.map((label, i) => {
                     const hidden = _fixedHidden.has(i);
                     const pct = visTotal > 0 && !hidden ? Math.round(allData[i] / visTotal * 100) : 0;
                     return `
-                    <button onclick="window.toggleFixedChartSlice(${i})" class="w-full flex justify-between items-center text-[11px] py-0.5 rounded-lg transition-all ${hidden ? 'opacity-35' : ''}">
-                        <div class="flex items-center gap-2">
-                            <div class="w-2.5 h-2.5 rounded-full flex-shrink-0 transition-all" style="background:${hidden ? '#cbd5e1' : allColors[i]}"></div>
-                            <span class="font-semibold ${hidden ? 'text-slate-400 line-through' : 'text-slate-600'}">${label}</span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <span class="${hidden ? 'text-slate-300' : 'text-slate-400'} font-bold ltr-num">${hidden ? '—' : pct + '%'}</span>
-                            <span class="font-bold ${hidden ? 'text-slate-300' : 'text-slate-700'} ltr-num">₪${allData[i].toLocaleString()}</span>
+                    <button onclick="window.toggleFixedChartSlice(${i})" class="flex items-center text-[10px] leading-tight py-0.5 rounded-lg transition-all ${hidden ? 'opacity-35' : ''}">
+                        <div class="w-1.5 h-1.5 rounded-full flex-shrink-0 transition-all ml-1" style="background:${hidden ? '#cbd5e1' : allColors[i]}"></div>
+                        <span class="font-bold truncate max-w-[100px] ml-2 ${hidden ? 'text-slate-400 line-through' : 'text-slate-600'}">${label}</span>
+                        <div class="flex items-center gap-1.5 flex-shrink-0">
+                            <span class="${hidden ? 'text-slate-300' : 'text-slate-400'} font-bold ltr-num text-[9px]">${hidden ? '—' : pct + '%'}</span>
+                            <span class="font-bold ${hidden ? 'text-slate-300' : 'text-slate-700'} ltr-num whitespace-nowrap">₪${allData[i].toLocaleString()}</span>
                         </div>
                     </button>`; }).join('') + `</div>`;
         }
@@ -6710,19 +6708,17 @@
 
         function renderPieLegend() {
             const visTotal = allData.reduce((s, v, i) => _plannedHidden.has(i) ? s : s + v, 0);
-            legend.innerHTML = `<div class="space-y-2 w-full">` +
+            legend.innerHTML = `<div class="space-y-1 w-full">` +
                 allLabels.map((label, i) => {
                     const hidden = _plannedHidden.has(i);
                     const pct = visTotal > 0 && !hidden ? Math.round(allData[i] / visTotal * 100) : 0;
                     return `
-                    <button onclick="window.togglePlannedChartSlice(${i})" class="w-full flex justify-between items-center text-[11px] py-0.5 rounded-lg transition-all ${hidden ? 'opacity-35' : ''}">
-                        <div class="flex items-center gap-2">
-                            <div class="w-2.5 h-2.5 rounded-full flex-shrink-0 transition-all" style="background:${hidden ? '#cbd5e1' : allColors[i]}"></div>
-                            <span class="font-semibold ${hidden ? 'text-slate-400 line-through' : 'text-slate-600'}">${label}</span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <span class="${hidden ? 'text-slate-300' : 'text-slate-400'} font-bold ltr-num">${hidden ? '—' : pct + '%'}</span>
-                            <span class="font-bold ${hidden ? 'text-slate-300' : 'text-slate-700'} ltr-num">₪${allData[i].toLocaleString()}</span>
+                    <button onclick="window.togglePlannedChartSlice(${i})" class="flex items-center text-[10px] leading-tight py-0.5 rounded-lg transition-all ${hidden ? 'opacity-35' : ''}">
+                        <div class="w-1.5 h-1.5 rounded-full flex-shrink-0 transition-all ml-1" style="background:${hidden ? '#cbd5e1' : allColors[i]}"></div>
+                        <span class="font-bold truncate max-w-[100px] ml-2 ${hidden ? 'text-slate-400 line-through' : 'text-slate-600'}">${label}</span>
+                        <div class="flex items-center gap-1.5 flex-shrink-0">
+                            <span class="${hidden ? 'text-slate-300' : 'text-slate-400'} font-bold ltr-num text-[9px]">${hidden ? '—' : pct + '%'}</span>
+                            <span class="font-bold ${hidden ? 'text-slate-300' : 'text-slate-700'} ltr-num whitespace-nowrap">₪${allData[i].toLocaleString()}</span>
                         </div>
                     </button>`; }).join('') + `</div>`;
         }
@@ -7022,19 +7018,17 @@
 
         function renderLegend() {
             const visTotal = allData.reduce((s, v, i) => _catHidden.has(i) ? s : s + v, 0);
-            document.getElementById('catChartLegend').innerHTML = `<div class="space-y-2 w-full">` +
+            document.getElementById('catChartLegend').innerHTML = `<div class="space-y-1 w-full">` +
                 allLabels.map((label, i) => {
                     const hidden = _catHidden.has(i);
                     const pct = visTotal > 0 && !hidden ? Math.round(allData[i] / visTotal * 100) : 0;
                     return `
-                    <button onclick="window.toggleCatChartSlice(${i})" class="w-full flex justify-between items-center text-[11px] py-0.5 rounded-lg transition-all ${hidden ? 'opacity-35' : ''}">
-                        <div class="flex items-center gap-2">
-                            <div class="w-2.5 h-2.5 rounded-full flex-shrink-0 transition-all" style="background:${hidden ? '#cbd5e1' : allColors[i]}"></div>
-                            <span class="font-semibold ${hidden ? 'text-slate-400 line-through' : 'text-slate-600'}">${label}</span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <span class="${hidden ? 'text-slate-300' : 'text-slate-400'} font-bold ltr-num">${hidden ? '—' : pct + '%'}</span>
-                            <span class="font-bold ${hidden ? 'text-slate-300' : 'text-slate-700'} ltr-num">₪${allData[i].toLocaleString()}</span>
+                    <button onclick="window.toggleCatChartSlice(${i})" class="flex items-center text-[10px] leading-tight py-0.5 rounded-lg transition-all ${hidden ? 'opacity-35' : ''}">
+                        <div class="w-1.5 h-1.5 rounded-full flex-shrink-0 transition-all ml-1" style="background:${hidden ? '#cbd5e1' : allColors[i]}"></div>
+                        <span class="font-bold truncate max-w-[100px] ml-2 ${hidden ? 'text-slate-400 line-through' : 'text-slate-600'}">${label}</span>
+                        <div class="flex items-center gap-1.5 flex-shrink-0">
+                            <span class="${hidden ? 'text-slate-300' : 'text-slate-400'} font-bold ltr-num text-[9px]">${hidden ? '—' : pct + '%'}</span>
+                            <span class="font-bold ${hidden ? 'text-slate-300' : 'text-slate-700'} ltr-num whitespace-nowrap">₪${allData[i].toLocaleString()}</span>
                         </div>
                     </button>`; }).join('') + `</div>`;
         }
