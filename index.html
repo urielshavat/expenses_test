@@ -271,14 +271,13 @@
                 <button onclick="window.setStatsFilter('planned')" id="statsFilterPlannedBtn" class="flex-1 py-1.5 text-[10px] font-bold rounded-lg transition-all text-slate-400">מתוכנן</button>
             </div>
             <!-- Category breakdown pie -->
-            <div id="catStatsCard" class="card p-3 sm:p-6 mb-4 border border-slate-200 bg-white shadow-sm flex flex-col items-center hidden">
+            <div id="catStatsCard" class="card p-6 mb-4 border border-slate-200 bg-white shadow-sm flex-col items-center hidden">
                 <h3 id="catStatsTitle" class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-4 self-start w-full">הוצאות לפי קטגוריה</h3>
-                <div class="flex items-center gap-4 w-full mb-6 overflow-hidden justify-between">
-                    <div id="catChartLegend" class="flex-none max-w-[65%]"></div>
-                    <div id="catChartContainer" class="w-24 h-24 sm:w-32 sm:h-32 relative flex-shrink-0">
-                        <canvas id="catStatsChart"></canvas>
-                    </div>
+                <div id="catChartContainer" class="w-full aspect-square max-w-[240px] landscape:max-w-[320px] md:max-w-[400px] lg:max-w-[500px] relative mb-4 mx-auto">
+                    <canvas id="catStatsChart"></canvas>
                 </div>
+                <!-- Shared legend used by both charts -->
+                <div id="catChartLegend" class="w-full space-y-1 mb-4"></div>
                 <!-- Monthly trend stacked bar chart -->
                 <h3 class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-3 self-start w-full border-t border-slate-100 pt-4">מגמה חודשית</h3>
                 <div class="w-full relative mb-4" style="height:240px">
@@ -288,14 +287,12 @@
             </div>
 
             <!-- Planned Category breakdown pie -->
-            <div id="plannedCatStatsCard" class="card p-3 sm:p-6 mb-4 border border-slate-200 bg-white shadow-sm flex flex-col items-center hidden">
+            <div id="plannedCatStatsCard" class="card p-6 mb-4 border border-slate-200 bg-white shadow-sm flex-col items-center hidden">
                 <h3 id="plannedCatStatsTitle" class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-4 self-start w-full">הוצאות מתוכננות לפי קטגוריה</h3>
-                <div class="flex items-center gap-4 w-full mb-6 overflow-hidden justify-between">
-                    <div id="plannedCatChartLegend" class="flex-none max-w-[65%]"></div>
-                    <div id="plannedCatChartContainer" class="w-24 h-24 sm:w-32 sm:h-32 relative flex-shrink-0">
-                        <canvas id="plannedCatStatsChart"></canvas>
-                    </div>
+                <div id="plannedCatChartContainer" class="w-full aspect-square max-w-[240px] landscape:max-w-[320px] md:max-w-[400px] lg:max-w-[500px] relative mb-4 mx-auto">
+                    <canvas id="plannedCatStatsChart"></canvas>
                 </div>
+                <div id="plannedCatChartLegend" class="w-full space-y-1 mb-4"></div>
                 <!-- Monthly trend stacked bar chart for planned -->
                 <h3 class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-3 self-start w-full border-t border-slate-100 pt-4">מגמה חודשית</h3>
                 <div class="w-full relative mb-4" style="height:240px">
@@ -305,14 +302,12 @@
             </div>
 
             <!-- Fixed Category breakdown pie -->
-            <div id="fixedCatStatsCard" class="card p-3 sm:p-6 mb-4 border border-slate-200 bg-white shadow-sm flex flex-col items-center hidden">
+            <div id="fixedCatStatsCard" class="card p-6 mb-4 border border-slate-200 bg-white shadow-sm flex-col items-center hidden">
                 <h3 id="fixedCatStatsTitle" class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-4 self-start w-full">הוצאות קבועות לפי קטגוריה</h3>
-                <div class="flex items-center gap-4 w-full mb-6 overflow-hidden justify-between">
-                    <div id="fixedCatChartLegend" class="flex-none max-w-[65%]"></div>
-                    <div id="fixedCatChartContainer" class="w-24 h-24 sm:w-32 sm:h-32 relative flex-shrink-0">
-                        <canvas id="fixedCatStatsChart"></canvas>
-                    </div>
+                <div id="fixedCatChartContainer" class="w-full aspect-square max-w-[240px] landscape:max-w-[320px] md:max-w-[400px] lg:max-w-[500px] relative mb-4 mx-auto">
+                    <canvas id="fixedCatStatsChart"></canvas>
                 </div>
+                <div id="fixedCatChartLegend" class="w-full space-y-1 mb-4"></div>
                 <!-- Monthly trend stacked bar chart for fixed -->
                 <h3 class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-3 self-start w-full border-t border-slate-100 pt-4">מגמה חודשית</h3>
                 <div class="w-full relative mb-4" style="height:240px">
@@ -3502,7 +3497,7 @@
 
                         <!-- Left Part: Data/Bar -->
                         <div class="flex-1 min-w-0 flex flex-col justify-center px-1">
-                            <div class="flex items-center justify-between text-[12px] sm:text-[13px] ${hasBudget ? 'mb-0.5' : ''}">
+                            <div class="flex items-center justify-between text-[11px] sm:text-xs ${hasBudget ? 'mb-0.5' : ''}">
                                 <span class="font-black ltr-num" style="color:${color.hex}">₪${group.spent.toLocaleString()}</span>
                                 ${hasBudget ? `
                                     <span class="font-bold ${isOver ? 'text-red-500' : 'text-slate-400'} ltr-num">
@@ -3551,7 +3546,7 @@
 
                             <!-- Left Part: Data/Bar -->
                             <div class="flex-1 min-w-0 flex flex-col justify-center px-1">
-                                <div class="flex items-center justify-between text-[12px] sm:text-[13px] ${c.budget > 0 ? 'mb-0.5' : ''}">
+                                <div class="flex items-center justify-between text-[11px] sm:text-xs ${c.budget > 0 ? 'mb-0.5' : ''}">
                                     <span class="font-black ltr-num text-slate-400">₪${c.spent.toLocaleString()}</span>
                                     ${c.budget > 0 ? `
                                         <span class="font-bold ${cIsOver ? 'text-red-400' : 'text-slate-300'} ltr-num">
@@ -3617,7 +3612,7 @@
                     </div>
                     <!-- Left Part: Data/Bar -->
                     <div class="flex-1 min-w-0 flex flex-col justify-center px-1">
-                        <div class="flex items-center justify-between text-[12px] sm:text-[13px] ${hasBudget ? 'mb-0.5' : ''}">
+                        <div class="flex items-center justify-between text-[11px] sm:text-xs ${hasBudget ? 'mb-0.5' : ''}">
                             <span class="font-black ltr-num" style="color:${color.hex}">₪${spent.toLocaleString()}</span>
                             ${hasBudget ? `
                                 <span class="font-bold ${isOver ? 'text-red-500' : 'text-slate-400'} ltr-num">
@@ -3702,7 +3697,7 @@
 
                     <!-- Left Part: Data/Bar -->
                     <div class="flex-1 min-w-0 flex flex-col justify-center px-1">
-                        <div class="flex items-center justify-between text-[12px] sm:text-[13px] ${showBarAndRemaining && hasBudget ? 'mb-0.5' : ''}">
+                        <div class="flex items-center justify-between text-[11px] sm:text-xs ${showBarAndRemaining && hasBudget ? 'mb-0.5' : ''}">
                             <span class="font-black ltr-num" style="color:${color.hex}">₪${spent.toLocaleString()}</span>
                             ${showBarAndRemaining && hasBudget ? `
                                 <span class="font-bold ${isOver ? 'text-red-500' : 'text-slate-400'} ltr-num">
@@ -3741,7 +3736,7 @@
 
                 <!-- Left: Total and Management -->
                 <div class="flex-1 min-w-0 flex flex-col justify-center px-1 cursor-pointer" onclick="window.toggleCategoryFilter('__none__')">
-                    <div class="flex items-center justify-between text-[12px] sm:text-[13px]">
+                    <div class="flex items-center justify-between text-[11px] sm:text-xs">
                         <span class="font-black text-slate-400 ltr-num">₪${noneTotal.toLocaleString()}</span>
                         <button onclick="event.stopPropagation(); window.openManageCategoriesModal()" class="flex items-center gap-1 text-blue-600 hover:text-blue-700 transition-colors flex-shrink-0">
                             <i class="fa-solid fa-sliders text-[10px]"></i>
@@ -4860,13 +4855,13 @@
                         <p class="text-slate-400 text-[9px] font-bold uppercase tracking-widest mb-1">ניצול שנתי</p>
                         <div class="w-full flex flex-col items-center max-w-[140px]">
                             <div class="flex items-baseline gap-1 mb-0.5" dir="ltr">
-                                <span class="text-[13px] font-black text-slate-900 ltr-num">₪${Math.round(spending).toLocaleString()}</span>
-                                <span class="text-[13px] font-bold text-slate-400">/ ₪${Math.round(budget).toLocaleString()}</span>
+                                <span class="text-[12px] font-black text-slate-900 ltr-num">₪${Math.round(spending).toLocaleString()}</span>
+                                <span class="text-[12px] font-bold text-slate-400">/ ₪${Math.round(budget).toLocaleString()}</span>
                             </div>
                             <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden mb-1">
                                 <div class="h-full rounded-full transition-all duration-500" style="width:${barPct}%; background:${over ? '#ef4444' : '#3b82f6'}"></div>
                             </div>
-                            <span class="text-[13px] font-bold ${over ? 'text-red-500' : 'text-slate-500'}">
+                            <span class="text-[12px] font-bold ${over ? 'text-red-500' : 'text-slate-500'}">
                                 ${over ? 'חריגה ₪' + Math.abs(Math.round(remaining)).toLocaleString() : 'נותר ₪' + Math.round(remaining).toLocaleString()}
                             </span>
                         </div>
@@ -4903,13 +4898,13 @@
                         <p class="text-slate-400 text-[9px] font-bold uppercase tracking-widest mb-1">ניצול חודשי</p>
                         <div class="w-full flex flex-col items-center">
                              <div class="flex items-baseline gap-0.5 mb-0.5" dir="ltr">
-                                <span class="text-[13px] font-black text-slate-900 ltr-num">₪${Math.round(spending).toLocaleString()}</span>
-                                <span class="text-[13px] font-bold text-slate-400">/ ₪${Math.round(budget).toLocaleString()}</span>
+                                <span class="text-[12px] font-black text-slate-900 ltr-num">₪${Math.round(spending).toLocaleString()}</span>
+                                <span class="text-[12px] font-bold text-slate-400">/ ₪${Math.round(budget).toLocaleString()}</span>
                             </div>
                             <div class="w-full h-1 bg-slate-100 rounded-full overflow-hidden mb-1">
                                 <div class="h-full rounded-full transition-all duration-500" style="width:${barPct}%; background:${over ? '#ef4444' : '#3b82f6'}"></div>
                             </div>
-                            <span class="text-[13px] font-bold ${over ? 'text-red-500' : 'text-slate-500'} whitespace-nowrap">
+                            <span class="text-[12px] font-bold ${over ? 'text-red-500' : 'text-slate-500'} whitespace-nowrap">
                                 ${over ? 'חריגה ₪' + Math.abs(Math.round(remaining)).toLocaleString() : 'נותר ₪' + Math.round(remaining).toLocaleString()}
                             </span>
                         </div>
@@ -6382,11 +6377,7 @@
         const titleEl = document.getElementById('fixedCatStatsTitle');
         if (titleEl) {
             const sel = document.getElementById('specificMonthSelect');
-            let moName = sel ? sel.options[sel.selectedIndex].text : '';
-            if (moName.includes('-')) {
-                const parts = moName.split('-');
-                moName = `${parts[1]}-${parts[0]}`;
-            }
+            const moName = sel ? sel.options[sel.selectedIndex].text : '';
             titleEl.textContent = `חודש ${moName}`;
         }
 
@@ -6454,17 +6445,19 @@
 
         function renderPieLegend() {
             const visTotal = allData.reduce((s, v, i) => _fixedHidden.has(i) ? s : s + v, 0);
-            legend.innerHTML = `<div class="space-y-1 w-full">` +
+            legend.innerHTML = `<div class="space-y-2 w-full">` +
                 allLabels.map((label, i) => {
                     const hidden = _fixedHidden.has(i);
                     const pct = visTotal > 0 && !hidden ? Math.round(allData[i] / visTotal * 100) : 0;
                     return `
-                    <button onclick="window.toggleFixedChartSlice(${i})" class="flex items-center text-[10px] leading-tight py-0.5 rounded-lg transition-all ${hidden ? 'opacity-35' : ''}">
-                        <div class="w-1.5 h-1.5 rounded-full flex-shrink-0 transition-all ml-1" style="background:${hidden ? '#cbd5e1' : allColors[i]}"></div>
-                        <span class="font-bold truncate max-w-[100px] ml-2 ${hidden ? 'text-slate-400 line-through' : 'text-slate-600'}">${label}</span>
-                        <div class="flex items-center gap-1.5 flex-shrink-0">
-                            <span class="${hidden ? 'text-slate-300' : 'text-slate-400'} font-bold ltr-num text-[9px]">${hidden ? '—' : pct + '%'}</span>
-                            <span class="font-bold ${hidden ? 'text-slate-300' : 'text-slate-700'} ltr-num whitespace-nowrap">₪${allData[i].toLocaleString()}</span>
+                    <button onclick="window.toggleFixedChartSlice(${i})" class="w-full flex justify-between items-center text-[11px] py-0.5 rounded-lg transition-all ${hidden ? 'opacity-35' : ''}">
+                        <div class="flex items-center gap-2">
+                            <div class="w-2.5 h-2.5 rounded-full flex-shrink-0 transition-all" style="background:${hidden ? '#cbd5e1' : allColors[i]}"></div>
+                            <span class="font-semibold ${hidden ? 'text-slate-400 line-through' : 'text-slate-600'}">${label}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="${hidden ? 'text-slate-300' : 'text-slate-400'} font-bold ltr-num">${hidden ? '—' : pct + '%'}</span>
+                            <span class="font-bold ${hidden ? 'text-slate-300' : 'text-slate-700'} ltr-num">₪${allData[i].toLocaleString()}</span>
                         </div>
                     </button>`; }).join('') + `</div>`;
         }
@@ -6636,11 +6629,7 @@
         const titleEl = document.getElementById('plannedCatStatsTitle');
         if (titleEl) {
             const sel = document.getElementById('specificMonthSelect');
-            let moName = sel ? sel.options[sel.selectedIndex].text : '';
-            if (moName.includes('-')) {
-                const parts = moName.split('-');
-                moName = `${parts[1]}-${parts[0]}`;
-            }
+            const moName = sel ? sel.options[sel.selectedIndex].text : '';
             titleEl.textContent = `חודש ${moName}`;
         }
 
@@ -6708,17 +6697,19 @@
 
         function renderPieLegend() {
             const visTotal = allData.reduce((s, v, i) => _plannedHidden.has(i) ? s : s + v, 0);
-            legend.innerHTML = `<div class="space-y-1 w-full">` +
+            legend.innerHTML = `<div class="space-y-2 w-full">` +
                 allLabels.map((label, i) => {
                     const hidden = _plannedHidden.has(i);
                     const pct = visTotal > 0 && !hidden ? Math.round(allData[i] / visTotal * 100) : 0;
                     return `
-                    <button onclick="window.togglePlannedChartSlice(${i})" class="flex items-center text-[10px] leading-tight py-0.5 rounded-lg transition-all ${hidden ? 'opacity-35' : ''}">
-                        <div class="w-1.5 h-1.5 rounded-full flex-shrink-0 transition-all ml-1" style="background:${hidden ? '#cbd5e1' : allColors[i]}"></div>
-                        <span class="font-bold truncate max-w-[100px] ml-2 ${hidden ? 'text-slate-400 line-through' : 'text-slate-600'}">${label}</span>
-                        <div class="flex items-center gap-1.5 flex-shrink-0">
-                            <span class="${hidden ? 'text-slate-300' : 'text-slate-400'} font-bold ltr-num text-[9px]">${hidden ? '—' : pct + '%'}</span>
-                            <span class="font-bold ${hidden ? 'text-slate-300' : 'text-slate-700'} ltr-num whitespace-nowrap">₪${allData[i].toLocaleString()}</span>
+                    <button onclick="window.togglePlannedChartSlice(${i})" class="w-full flex justify-between items-center text-[11px] py-0.5 rounded-lg transition-all ${hidden ? 'opacity-35' : ''}">
+                        <div class="flex items-center gap-2">
+                            <div class="w-2.5 h-2.5 rounded-full flex-shrink-0 transition-all" style="background:${hidden ? '#cbd5e1' : allColors[i]}"></div>
+                            <span class="font-semibold ${hidden ? 'text-slate-400 line-through' : 'text-slate-600'}">${label}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="${hidden ? 'text-slate-300' : 'text-slate-400'} font-bold ltr-num">${hidden ? '—' : pct + '%'}</span>
+                            <span class="font-bold ${hidden ? 'text-slate-300' : 'text-slate-700'} ltr-num">₪${allData[i].toLocaleString()}</span>
                         </div>
                     </button>`; }).join('') + `</div>`;
         }
@@ -6915,11 +6906,7 @@
         const titleEl = document.getElementById('catStatsTitle');
         if (titleEl) {
             const sel = document.getElementById('specificMonthSelect');
-            let moName = sel ? sel.options[sel.selectedIndex].text : '';
-            if (moName.includes('-')) {
-                const parts = moName.split('-');
-                moName = `${parts[1]}-${parts[0]}`;
-            }
+            const moName = sel ? sel.options[sel.selectedIndex].text : '';
             titleEl.textContent = `חודש ${moName}`;
         }
         
@@ -7018,17 +7005,19 @@
 
         function renderLegend() {
             const visTotal = allData.reduce((s, v, i) => _catHidden.has(i) ? s : s + v, 0);
-            document.getElementById('catChartLegend').innerHTML = `<div class="space-y-1 w-full">` +
+            document.getElementById('catChartLegend').innerHTML = `<div class="space-y-2 w-full">` +
                 allLabels.map((label, i) => {
                     const hidden = _catHidden.has(i);
                     const pct = visTotal > 0 && !hidden ? Math.round(allData[i] / visTotal * 100) : 0;
                     return `
-                    <button onclick="window.toggleCatChartSlice(${i})" class="flex items-center text-[10px] leading-tight py-0.5 rounded-lg transition-all ${hidden ? 'opacity-35' : ''}">
-                        <div class="w-1.5 h-1.5 rounded-full flex-shrink-0 transition-all ml-1" style="background:${hidden ? '#cbd5e1' : allColors[i]}"></div>
-                        <span class="font-bold truncate max-w-[100px] ml-2 ${hidden ? 'text-slate-400 line-through' : 'text-slate-600'}">${label}</span>
-                        <div class="flex items-center gap-1.5 flex-shrink-0">
-                            <span class="${hidden ? 'text-slate-300' : 'text-slate-400'} font-bold ltr-num text-[9px]">${hidden ? '—' : pct + '%'}</span>
-                            <span class="font-bold ${hidden ? 'text-slate-300' : 'text-slate-700'} ltr-num whitespace-nowrap">₪${allData[i].toLocaleString()}</span>
+                    <button onclick="window.toggleCatChartSlice(${i})" class="w-full flex justify-between items-center text-[11px] py-0.5 rounded-lg transition-all ${hidden ? 'opacity-35' : ''}">
+                        <div class="flex items-center gap-2">
+                            <div class="w-2.5 h-2.5 rounded-full flex-shrink-0 transition-all" style="background:${hidden ? '#cbd5e1' : allColors[i]}"></div>
+                            <span class="font-semibold ${hidden ? 'text-slate-400 line-through' : 'text-slate-600'}">${label}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="${hidden ? 'text-slate-300' : 'text-slate-400'} font-bold ltr-num">${hidden ? '—' : pct + '%'}</span>
+                            <span class="font-bold ${hidden ? 'text-slate-300' : 'text-slate-700'} ltr-num">₪${allData[i].toLocaleString()}</span>
                         </div>
                     </button>`; }).join('') + `</div>`;
         }
@@ -7251,7 +7240,10 @@
                     x: { 
                         stacked: true, 
                         grid: { display: false }, 
-                        ticks: { font: { size: 14, weight: 'bold' } } 
+                        ticks: { 
+                            autoSkip: false,
+                            font: { size: 14, weight: 'bold' } 
+                        } 
                     }
                 }
             },
