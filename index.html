@@ -257,7 +257,7 @@
                 </div>
             </div>
             
-            <div class="card p-4 sm:p-6 mb-4 border border-slate-200 bg-white shadow-sm flex flex-col items-center">
+            <div class="card p-6 mb-4 border border-slate-200 bg-white shadow-sm flex flex-col items-center">
                 <div id="chartContainer" class="w-full aspect-square max-w-[240px] landscape:max-w-[320px] md:max-w-[400px] lg:max-w-[500px] relative mb-6 mx-auto">
                     <canvas id="statsChart"></canvas>
                 </div>
@@ -271,13 +271,13 @@
                 <button onclick="window.setStatsFilter('planned')" id="statsFilterPlannedBtn" class="flex-1 py-1.5 text-[10px] font-bold rounded-lg transition-all text-slate-400">מתוכנן</button>
             </div>
             <!-- Category breakdown pie -->
-            <div id="catStatsCard" class="card p-4 sm:p-6 mb-4 border border-slate-200 bg-white shadow-sm flex flex-col items-center hidden">
+            <div id="catStatsCard" class="card p-6 mb-4 border border-slate-200 bg-white shadow-sm flex flex-col items-center hidden">
                 <h3 id="catStatsTitle" class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-4 self-start w-full">הוצאות לפי קטגוריה</h3>
-                <div class="flex items-center gap-2 sm:gap-4 w-full mb-6 overflow-hidden">
-                    <div id="catChartContainer" class="w-24 h-24 sm:w-32 sm:h-32 relative flex-shrink-0">
+                <div class="flex items-start gap-3 w-full mb-6 overflow-hidden">
+                    <div id="catChartLegend" class="flex-1 min-w-0 space-y-1"></div>
+                    <div id="catChartContainer" class="w-28 h-28 relative flex-shrink-0">
                         <canvas id="catStatsChart"></canvas>
                     </div>
-                    <div id="catChartLegend" class="flex-1 min-w-0 space-y-1"></div>
                 </div>
                 <!-- Monthly trend stacked bar chart -->
                 <h3 class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-3 self-start w-full border-t border-slate-100 pt-4">מגמה חודשית</h3>
@@ -288,13 +288,13 @@
             </div>
 
             <!-- Planned Category breakdown pie -->
-            <div id="plannedCatStatsCard" class="card p-4 sm:p-6 mb-4 border border-slate-200 bg-white shadow-sm flex flex-col items-center hidden">
+            <div id="plannedCatStatsCard" class="card p-6 mb-4 border border-slate-200 bg-white shadow-sm flex flex-col items-center hidden">
                 <h3 id="plannedCatStatsTitle" class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-4 self-start w-full">הוצאות מתוכננות לפי קטגוריה</h3>
-                <div class="flex items-center gap-2 sm:gap-4 w-full mb-6 overflow-hidden">
-                    <div id="plannedCatChartContainer" class="w-24 h-24 sm:w-32 sm:h-32 relative flex-shrink-0">
+                <div class="flex items-start gap-3 w-full mb-6 overflow-hidden">
+                    <div id="plannedCatChartLegend" class="flex-1 min-w-0 space-y-1"></div>
+                    <div id="plannedCatChartContainer" class="w-28 h-28 relative flex-shrink-0">
                         <canvas id="plannedCatStatsChart"></canvas>
                     </div>
-                    <div id="plannedCatChartLegend" class="flex-1 min-w-0 space-y-1"></div>
                 </div>
                 <!-- Monthly trend stacked bar chart for planned -->
                 <h3 class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-3 self-start w-full border-t border-slate-100 pt-4">מגמה חודשית</h3>
@@ -305,13 +305,13 @@
             </div>
 
             <!-- Fixed Category breakdown pie -->
-            <div id="fixedCatStatsCard" class="card p-4 sm:p-6 mb-4 border border-slate-200 bg-white shadow-sm flex flex-col items-center hidden">
+            <div id="fixedCatStatsCard" class="card p-6 mb-4 border border-slate-200 bg-white shadow-sm flex flex-col items-center hidden">
                 <h3 id="fixedCatStatsTitle" class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-4 self-start w-full">הוצאות קבועות לפי קטגוריה</h3>
-                <div class="flex items-center gap-2 sm:gap-4 w-full mb-6 overflow-hidden">
-                    <div id="fixedCatChartContainer" class="w-24 h-24 sm:w-32 sm:h-32 relative flex-shrink-0">
+                <div class="flex items-start gap-3 w-full mb-6 overflow-hidden">
+                    <div id="fixedCatChartLegend" class="flex-1 min-w-0 space-y-1"></div>
+                    <div id="fixedCatChartContainer" class="w-28 h-28 relative flex-shrink-0">
                         <canvas id="fixedCatStatsChart"></canvas>
                     </div>
-                    <div id="fixedCatChartLegend" class="flex-1 min-w-0 space-y-1"></div>
                 </div>
                 <!-- Monthly trend stacked bar chart for fixed -->
                 <h3 class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-3 self-start w-full border-t border-slate-100 pt-4">מגמה חודשית</h3>
@@ -6454,17 +6454,17 @@
 
         function renderPieLegend() {
             const visTotal = allData.reduce((s, v, i) => _fixedHidden.has(i) ? s : s + v, 0);
-            legend.innerHTML = `<div class="space-y-2 w-full min-w-0">` +
+            legend.innerHTML = `<div class="space-y-2 w-full">` +
                 allLabels.map((label, i) => {
                     const hidden = _fixedHidden.has(i);
                     const pct = visTotal > 0 && !hidden ? Math.round(allData[i] / visTotal * 100) : 0;
                     return `
                     <button onclick="window.toggleFixedChartSlice(${i})" class="w-full flex justify-between items-center text-[11px] py-0.5 rounded-lg transition-all ${hidden ? 'opacity-35' : ''}">
-                        <div class="flex items-center gap-2 min-w-0 flex-1">
+                        <div class="flex items-center gap-2">
                             <div class="w-2.5 h-2.5 rounded-full flex-shrink-0 transition-all" style="background:${hidden ? '#cbd5e1' : allColors[i]}"></div>
-                            <span class="font-semibold ${hidden ? 'text-slate-400 line-through' : 'text-slate-600'} truncate">${label}</span>
+                            <span class="font-semibold ${hidden ? 'text-slate-400 line-through' : 'text-slate-600'}">${label}</span>
                         </div>
-                        <div class="flex items-center gap-2 flex-shrink-0 mr-2">
+                        <div class="flex items-center gap-2">
                             <span class="${hidden ? 'text-slate-300' : 'text-slate-400'} font-bold ltr-num">${hidden ? '—' : pct + '%'}</span>
                             <span class="font-bold ${hidden ? 'text-slate-300' : 'text-slate-700'} ltr-num">₪${allData[i].toLocaleString()}</span>
                         </div>
@@ -6710,17 +6710,17 @@
 
         function renderPieLegend() {
             const visTotal = allData.reduce((s, v, i) => _plannedHidden.has(i) ? s : s + v, 0);
-            legend.innerHTML = `<div class="space-y-2 w-full min-w-0">` +
+            legend.innerHTML = `<div class="space-y-2 w-full">` +
                 allLabels.map((label, i) => {
                     const hidden = _plannedHidden.has(i);
                     const pct = visTotal > 0 && !hidden ? Math.round(allData[i] / visTotal * 100) : 0;
                     return `
                     <button onclick="window.togglePlannedChartSlice(${i})" class="w-full flex justify-between items-center text-[11px] py-0.5 rounded-lg transition-all ${hidden ? 'opacity-35' : ''}">
-                        <div class="flex items-center gap-2 min-w-0 flex-1">
+                        <div class="flex items-center gap-2">
                             <div class="w-2.5 h-2.5 rounded-full flex-shrink-0 transition-all" style="background:${hidden ? '#cbd5e1' : allColors[i]}"></div>
-                            <span class="font-semibold ${hidden ? 'text-slate-400 line-through' : 'text-slate-600'} truncate">${label}</span>
+                            <span class="font-semibold ${hidden ? 'text-slate-400 line-through' : 'text-slate-600'}">${label}</span>
                         </div>
-                        <div class="flex items-center gap-2 flex-shrink-0 mr-2">
+                        <div class="flex items-center gap-2">
                             <span class="${hidden ? 'text-slate-300' : 'text-slate-400'} font-bold ltr-num">${hidden ? '—' : pct + '%'}</span>
                             <span class="font-bold ${hidden ? 'text-slate-300' : 'text-slate-700'} ltr-num">₪${allData[i].toLocaleString()}</span>
                         </div>
@@ -7022,17 +7022,17 @@
 
         function renderLegend() {
             const visTotal = allData.reduce((s, v, i) => _catHidden.has(i) ? s : s + v, 0);
-            document.getElementById('catChartLegend').innerHTML = `<div class="space-y-2 w-full min-w-0">` +
+            document.getElementById('catChartLegend').innerHTML = `<div class="space-y-2 w-full">` +
                 allLabels.map((label, i) => {
                     const hidden = _catHidden.has(i);
                     const pct = visTotal > 0 && !hidden ? Math.round(allData[i] / visTotal * 100) : 0;
                     return `
                     <button onclick="window.toggleCatChartSlice(${i})" class="w-full flex justify-between items-center text-[11px] py-0.5 rounded-lg transition-all ${hidden ? 'opacity-35' : ''}">
-                        <div class="flex items-center gap-2 min-w-0 flex-1">
+                        <div class="flex items-center gap-2">
                             <div class="w-2.5 h-2.5 rounded-full flex-shrink-0 transition-all" style="background:${hidden ? '#cbd5e1' : allColors[i]}"></div>
-                            <span class="font-semibold ${hidden ? 'text-slate-400 line-through' : 'text-slate-600'} truncate">${label}</span>
+                            <span class="font-semibold ${hidden ? 'text-slate-400 line-through' : 'text-slate-600'}">${label}</span>
                         </div>
-                        <div class="flex items-center gap-2 flex-shrink-0 mr-2">
+                        <div class="flex items-center gap-2">
                             <span class="${hidden ? 'text-slate-300' : 'text-slate-400'} font-bold ltr-num">${hidden ? '—' : pct + '%'}</span>
                             <span class="font-bold ${hidden ? 'text-slate-300' : 'text-slate-700'} ltr-num">₪${allData[i].toLocaleString()}</span>
                         </div>
