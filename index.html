@@ -874,7 +874,7 @@
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 mr-1">סכום</label>
-                        <input type="text" id="editRowAmount" step="any" inputmode="decimal" pattern="-?[0-9]*" class="input-field w-full px-4 py-2.5 rounded-xl font-bold text-lg h-[48px]">
+                        <input type="text" id="editRowAmount" step="any" inputmode="decimal" pattern="-?[0-9]*" class="input-field w-full px-4 py-0 rounded-xl font-bold text-lg h-[48px] flex items-center">
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 mr-1">סוג</label>
@@ -885,14 +885,14 @@
                         <input type="hidden" id="editTxTypeInput" value="expense">
                     </div>
                 </div>
-                <div class="grid grid-cols-[1fr_110px] gap-3">
+                <div class="grid grid-cols-[1fr_115px] gap-3">
                     <div>
                         <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 mr-1">תיאור</label>
-                        <input type="text" id="editRowName" class="input-field w-full px-4 py-3 rounded-xl h-[48px]">
+                        <input type="text" id="editRowName" class="input-field w-full px-4 py-0 rounded-xl h-[48px] flex items-center">
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 mr-1">תאריך</label>
-                        <input type="date" id="editRowDate" class="input-field w-full px-2 py-3 rounded-xl text-sm font-bold text-slate-700 h-[48px] [&::-webkit-calendar-picker-indicator]:hidden">
+                        <input type="date" id="editRowDate" class="appearance-none bg-white border border-slate-200 w-full px-2 py-0 rounded-xl text-[11px] font-bold text-slate-700 h-[48px] leading-[48px] [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-date-and-time-value]:m-0 [&::-webkit-date-and-time-value]:p-0">
                     </div>
                 </div>
                 <div>
@@ -3420,7 +3420,7 @@
             });
         } else {
             const visibleCats = catsShown.filter(cat => {
-                if (filter === 'planned') return true;
+                if (filter === 'planned' || cat.$type === 'current') return true;
                 const catId = cat.id || cat.category_name;
                 const spent = Math.round(totals[cat.$type + ':' + catId] || 0);
                 return spent > 0;
@@ -3652,8 +3652,8 @@
                 const key = type + ':' + catId;
                 const spent = Math.round(totals[key] || 0);
 
-                // Hide 0-spent categories (Planned should always show, Fixed and Current hide if 0)
-                if ((type === 'current' || type === 'fixed') && spent === 0) return;
+                // Hide 0-spent categories (Planned and Current should always show, Fixed hide if 0)
+                if (type === 'fixed' && spent === 0) return;
 
                 let color, icon;
                 if (type === 'current') {
@@ -4996,6 +4996,47 @@
             grouped[tx.date].items.push(tx);
             grouped[tx.date].total += safeParseFloat(tx.amount);
         });
+
+        const dailyBalanceMap = {};
+        if (state.mainViewFilter === 'current') {
+            const allTxsSorted = [...state.transactions].sort((a, b) => {
+                const da = parseLocalDate(a.date);
+                const db = parseLocalDate(b.date);
+                if (da.getTime() !== db.getTime()) {
+                    return db - da;
+                }
+                return (b.row || 0) - (a.row || 0);
+            });
+            const dailyVal = (safeParseFloat(state.budget.g4) || 0) / 30;
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            
+            let currentDateLocal = new Date(today);
+            if (allTxsSorted.length > 0) {
+                const newestTxDate = parseLocalDate(allTxsSorted[0].date);
+                if (newestTxDate > currentDateLocal) {
+                    currentDateLocal = new Date(newestTxDate);
+                }
+            }
+            
+            let running = state.balance;
+            allTxsSorted.forEach(tx => {
+                const txDate = parseLocalDate(tx.date);
+                const diffMs = currentDateLocal - txDate;
+                const daysDiff = Math.floor(diffMs / (1000 * 3600 * 24));
+                
+                if (daysDiff > 0) {
+                    running -= daysDiff * dailyVal;
+                    currentDateLocal = new Date(txDate);
+                }
+                
+                if (dailyBalanceMap[tx.date] === undefined) {
+                    dailyBalanceMap[tx.date] = running;
+                }
+                running += safeParseFloat(tx.amount);
+            });
+        }
+
         const listEl = document.getElementById('transactionList');
         if (listEl) {
             const fragment = document.createDocumentFragment();
@@ -5003,7 +5044,14 @@
                 const g = grouped[date];
                 const h = document.createElement('div');
                 h.className = 'sticky-header py-0.5 px-1 text-[9px] font-bold text-slate-400 flex justify-between tracking-wider border-b border-slate-100';
-                h.innerHTML = `<span>${date}</span><span>₪${Math.round(formatDisplayAmount(g.total)).toLocaleString()}</span>`;
+                
+                let textContent = `₪${Math.round(formatDisplayAmount(g.total)).toLocaleString()}`;
+                if (state.mainViewFilter === 'current') {
+                    const dailyBal = dailyBalanceMap[date] !== undefined ? dailyBalanceMap[date] : state.balance;
+                    textContent = `₪${Math.round(formatDisplayAmount(g.total)).toLocaleString()} | ₪${Math.round(formatDisplayAmount(dailyBal)).toLocaleString()}`;
+                }
+                
+                h.innerHTML = `<span>${date}</span><span class="ltr-num">${textContent}</span>`;
                 fragment.appendChild(h);
                 g.items.forEach((tx, idx) => {
                     const el = createTransactionEl(tx);
