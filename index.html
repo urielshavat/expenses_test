@@ -5041,14 +5041,20 @@
 
         const dailyBalanceMap = {};
         if (state.mainViewFilter === 'current') {
-            const allTxsSorted = [...state.transactions].sort((a, b) => {
-                const da = parseLocalDate(a.date);
-                const db = parseLocalDate(b.date);
-                if (da.getTime() !== db.getTime()) {
-                    return db - da;
-                }
-                return (b.row || 0) - (a.row || 0);
-            });
+            const allTxsSorted = [...state.transactions]
+                .filter(tx => {
+                    const isPlanned = !!tx.tag && state.budget.annual.some(a => tagMatchesCat(tx.tag, a));
+                    const isFixed   = !!tx.tag && state.budget.fixed.some(f => tagMatchesCat(tx.tag, f));
+                    return !isPlanned && !isFixed;
+                })
+                .sort((a, b) => {
+                    const da = parseLocalDate(a.date);
+                    const db = parseLocalDate(b.date);
+                    if (da.getTime() !== db.getTime()) {
+                        return db - da;
+                    }
+                    return (b.row || 0) - (a.row || 0);
+                });
             const dailyVal = (safeParseFloat(state.budget.g4) || 0) / 30;
             const today = new Date();
             today.setHours(0,0,0,0);
