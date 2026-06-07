@@ -10,6 +10,9 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/he.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700&display=swap');
         body { font-family: 'Assistant', sans-serif; background-color: #f3f4f6; -webkit-tap-highlight-color: transparent; position: relative; min-height: 100vh; overflow-x: hidden; transition: font-size 0.2s; }
@@ -892,7 +895,7 @@
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 mr-1">תאריך</label>
-                        <input type="date" id="editRowDate" class="appearance-none bg-white border border-slate-200 w-full px-2 py-0 rounded-xl text-[11px] font-bold text-slate-700 h-[48px] leading-[48px] [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-date-and-time-value]:m-0 [&::-webkit-date-and-time-value]:p-0">
+                        <input type="text" id="editRowDate" placeholder="dd/mm/yyyy" class="appearance-none bg-white border border-slate-200 w-full px-2 py-0 rounded-xl text-[11px] font-bold text-slate-700 h-[48px] leading-[48px] text-center">
                     </div>
                 </div>
                 <div>
@@ -2522,7 +2525,16 @@
         setLoading(true, true);
         try {
             const updateData = { name, amount, category, expense_category_id };
+            let isoDateVal = '';
             if (dateVal) {
+                const parts = dateVal.split('/');
+                if (parts.length === 3) {
+                    isoDateVal = `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
+                } else {
+                    isoDateVal = dateVal;
+                }
+            }
+            if (isoDateVal) {
                 const origTx = state.transactions.find(t => t.row === state.pendingActionRow.row);
                 let timeStr = '12:00:00';
                 if (origTx) {
@@ -2534,7 +2546,7 @@
                         timeStr = `${String(h).padStart(2,'0')}:${timeParts[2]}:00`;
                     }
                 }
-                updateData.created_at = `${dateVal}T${timeStr}`;
+                updateData.created_at = `${isoDateVal}T${timeStr}`;
             }
 
             const { error } = await sbClient
@@ -5630,6 +5642,22 @@
         const typeInp = document.getElementById(config.typeInputId);
         const type = typeInp ? typeInp.value : 'current';
         
+        if (config.currentTag) {
+            if (eCat) eCat.value = config.currentTag;
+            if (expInp) expInp.value = '';
+        } else if (config.currentCatId) {
+            if (eCat) eCat.value = 'שוטף';
+            if (expInp) expInp.value = config.currentCatId;
+        } else {
+            if (type === 'current') {
+                if (eCat) eCat.value = 'שוטף';
+                if (expInp) expInp.value = '';
+            } else {
+                if (eCat) eCat.value = '';
+                if (expInp) expInp.value = '';
+            }
+        }
+        
         if (!picker) return;
 
         const activeAnnuals = state.budget.annual.filter(a => safeParseFloat(a.budget_amount) > 0);
@@ -5999,8 +6027,11 @@
         }
         window.setEditTxType(safeParseFloat(tx.amount) < 0 ? 'income' : 'expense');
         if (eDateInp && tx.date) {
-            const parts = tx.date.split('/');
-            if (parts.length === 3) eDateInp.value = `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
+            if (eDateInp._flatpickr) {
+                eDateInp._flatpickr.setDate(tx.date, true, "d/m/Y");
+            } else {
+                eDateInp.value = tx.date;
+            }
         }
 
         if (expInpEdit) expInpEdit.value = tx.expense_category_id || '';
@@ -8357,6 +8388,15 @@
     // INIT
     // =====================================================
     document.addEventListener('DOMContentLoaded', () => {
+        // Initialize flatpickr on transaction edit date input
+        if (typeof flatpickr !== 'undefined') {
+            flatpickr("#editRowDate", {
+                dateFormat: "d/m/Y",
+                locale: "he",
+                disableMobile: true
+            });
+        }
+
         // Populate month start day select
         const msdSelect = document.getElementById('monthStartDay');
         if (msdSelect) {
