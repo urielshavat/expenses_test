@@ -4887,8 +4887,38 @@
                 const spending = currentSpent;
                 const budget = monthlyBudget;
                 const remaining = budget - spending;
-                const barPct = budget > 0 ? Math.min(100, (spending / budget) * 100) : 0;
                 const over = spending > budget;
+
+                // Dynamic daily budget and pacing calculation
+                const totalDaysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+                const currentDayOfMonth = now.getDate();
+                const dynamicDailyBudget = budget / totalDaysInMonth;
+                const currentBudget = dynamicDailyBudget * currentDayOfMonth;
+
+                const spendingPct = budget > 0 ? (spending / budget) * 100 : 0;
+                const currentBudgetPct = budget > 0 ? (currentBudget / budget) * 100 : 0;
+
+                const safeSpendingPct = Math.min(100, Math.max(0, spendingPct));
+                const safeCurrentBudgetPct = Math.min(100, Math.max(0, currentBudgetPct));
+
+                let innerBarHtml = '';
+                if (spending <= currentBudget) {
+                    // Under budget pace: Blue up to spending, Green up to currentBudget pace
+                    const blueWidth = safeSpendingPct;
+                    const greenWidth = Math.max(0, safeCurrentBudgetPct - safeSpendingPct);
+                    innerBarHtml = `
+                        <div class="h-full bg-blue-500 transition-all duration-500" style="width: ${blueWidth}%" title="הוצאה בפועל"></div>
+                        <div class="h-full bg-green-500 transition-all duration-500" style="width: ${greenWidth}%" title="תקציב יחסי להיום"></div>
+                    `;
+                } else {
+                    // Over budget pace: Blue up to currentBudget pace, Red up to current spending
+                    const blueWidth = safeCurrentBudgetPct;
+                    const redWidth = Math.min(100 - safeCurrentBudgetPct, Math.max(0, safeSpendingPct - safeCurrentBudgetPct));
+                    innerBarHtml = `
+                        <div class="h-full bg-blue-500 transition-all duration-500" style="width: ${blueWidth}%" title="תקציב יחסי להיום"></div>
+                        <div class="h-full bg-red-500 transition-all duration-500" style="width: ${redWidth}%" title="חריגה מהקצב"></div>
+                    `;
+                }
 
                 headerRow.innerHTML = `
                     <!-- Daily Budget (Left in Current) -->
@@ -4915,8 +4945,8 @@
                                 <span class="text-[12px] font-black text-slate-900 ltr-num">₪${Math.round(spending).toLocaleString()}</span>
                                 <span class="text-[12px] font-bold text-slate-400">/ ₪${Math.round(budget).toLocaleString()}</span>
                             </div>
-                            <div class="w-full h-1 bg-slate-100 rounded-full overflow-hidden mb-1">
-                                <div class="h-full rounded-full transition-all duration-500" style="width:${barPct}%; background:${over ? '#ef4444' : '#3b82f6'}"></div>
+                            <div class="w-full h-1.5 bg-slate-100 rounded-full flex overflow-hidden mb-1">
+                                ${innerBarHtml}
                             </div>
                             <span class="text-[12px] font-bold ${over ? 'text-red-500' : 'text-slate-500'} whitespace-nowrap">
                                 ${over ? 'חריגה ₪' + Math.abs(Math.round(remaining)).toLocaleString() : 'נותר ₪' + Math.round(remaining).toLocaleString()}
