@@ -805,7 +805,7 @@
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 mr-1">כמה?</label>
-                        <input type="text" id="amountInput" step="any" inputmode="decimal" pattern="-?[0-9]*" placeholder="0" required class="input-field w-full px-4 py-3 rounded-xl font-bold text-lg">
+                        <input type="text" id="amountInput" step="any" inputmode="decimal" pattern="-?[0-9]*([.,][0-9]*)?" placeholder="0" required class="input-field w-full px-4 py-3 rounded-xl font-bold text-lg">
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 mr-1">סוג</label>
@@ -877,7 +877,7 @@
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 mr-1">סכום</label>
-                        <input type="text" id="editRowAmount" step="any" inputmode="decimal" pattern="-?[0-9]*" class="input-field w-full px-4 py-0 rounded-xl font-bold text-lg h-[48px] flex items-center">
+                        <input type="text" id="editRowAmount" step="any" inputmode="decimal" pattern="-?[0-9]*([.,][0-9]*)?" class="input-field w-full px-4 py-0 rounded-xl font-bold text-lg h-[48px] flex items-center">
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 mr-1">סוג</label>
@@ -1826,7 +1826,18 @@
     // =====================================================
     // HELPERS
     // =====================================================
-    function safeParseFloat(val) { if (!val) return 0; const c = val.toString().replace(/[^\d.-]/g, ''); return parseFloat(c) || 0; }
+    function safeParseFloat(val) {
+        if (!val) return 0;
+        let s = val.toString().trim();
+        if (s.indexOf('.') === -1 && s.indexOf(',') !== -1) {
+            const commaIdx = s.lastIndexOf(',');
+            if (s.length - commaIdx <= 3) {
+                s = s.replace(/,/g, '.');
+            }
+        }
+        const c = s.replace(/[^\d.-]/g, '');
+        return parseFloat(c) || 0;
+    }
     function parseLocalDate(s) { if (!s) return new Date(); const p = s.split('/'); return new Date(p[2], p[1]-1, p[0]); }
     function getBudgetStartDate() {
         let displayStartDate = state.budget.startDate || '';
