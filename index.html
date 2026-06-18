@@ -440,9 +440,6 @@
                                         <option value="26">26</option>
                                         <option value="27">27</option>
                                         <option value="28">28</option>
-                                        <option value="29">29</option>
-                                        <option value="30">30</option>
-                                        <option value="31">31</option>
                                     </select>
                                 </div>
                                 <button id="cycleStartDayUpdateBtn" onclick="window.updateCycleStartDay()" disabled class="bg-blue-600 px-3 py-1.5 rounded-lg text-[10px] font-bold text-white disabled:opacity-50 disabled:cursor-not-allowed">עדכן</button>
@@ -4984,7 +4981,7 @@
         const cycleTotalDays = Math.round((cycleEnd - cycleStart) / (1000 * 3600 * 24)) + 1;
 
         const balVal = formatDisplayAmount(state.balance);
-        const dailyVal = (safeParseFloat(state.budget.g4) || 0) / cycleTotalDays;
+        const dailyVal = (safeParseFloat(state.budget.g4) || 0) / 30;
         
         // Month total for current (flexible) spending
         const currentSpent = state.transactions.reduce((acc, tx) => {
@@ -4997,7 +4994,7 @@
             return acc;
         }, 0);
         
-        const monthlyBudget = safeParseFloat(state.budget.g4) || 0;
+        const monthlyBudget = dailyVal * cycleTotalDays;
         const monthlyUtil = monthlyBudget > 0 ? (currentSpent / monthlyBudget) * 100 : 0;
         
         // Annual reservation details
@@ -8624,7 +8621,7 @@
         // Populate month start day select
         const msdSelect = document.getElementById('monthStartDay');
         if (msdSelect) {
-            msdSelect.innerHTML = Array.from({length: 31}, (_, i) =>
+            msdSelect.innerHTML = Array.from({length: 28}, (_, i) =>
                 `<option value="${i+1}" ${state.stats.startDay === i+1 ? 'selected' : ''}>${i+1}</option>`
             ).join('');
         }
