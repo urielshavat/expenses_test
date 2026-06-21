@@ -1922,7 +1922,7 @@
             savings: [],
             g4: safeParseFloat(localStorage.getItem('cached_g4')),
             startDate: localStorage.getItem('cached_start_date') || '',
-            cycleStartDay: parseInt(localStorage.getItem('cycle_start_day')) || 1
+            cycleStartDay: 1
         },
         currentView: 'main',
         isLoading: false,
@@ -1943,7 +1943,7 @@
         editingParentName: null,
         pendingG4: null,
         stats: {
-            startDay: parseInt(localStorage.getItem('cycle_start_day')) || parseInt(localStorage.getItem('stats_start_day')) || 1,
+            startDay: 1,
             specificMonth: ''
         },
         expenseCategories: JSON.parse(localStorage.getItem('expense_categories') || '[]'),
@@ -2147,12 +2147,11 @@
 
             // __month_start_day__ stored as a special budget_setting row
             const cycleStartRow = rows.find(r => r.category_name === '__month_start_day__' || r.category_name.endsWith('__month_start_day__'));
-            state.budget.cycleStartDay = cycleStartRow ? parseInt(cycleStartRow.budget_amount) : (parseInt(localStorage.getItem('cycle_start_day')) || 1);
+            state.budget.cycleStartDay = cycleStartRow ? parseInt(cycleStartRow.budget_amount) : 1;
             state.stats.startDay = state.budget.cycleStartDay;
 
             localStorage.setItem('cached_g4', state.budget.g4.toString());
             localStorage.setItem('cached_start_date', state.budget.startDate);
-            localStorage.setItem('cycle_start_day', state.budget.cycleStartDay.toString());
 
             // Keep user_tokens.daily_budget in sync so get_balance is accurate
             if (state.budget.g4 > 0) {
@@ -4916,7 +4915,7 @@
         updateNavigationUI();
         if (view === 'annual') window.fetchAnnualData();
         else if (view === 'budget') { if (state.isDirty || state.budget.incomes.length === 0) window.fetchBudgetData(); else renderBudget(); }
-        else if (view === 'stats') window.updateStats();
+        else if (view === 'stats') window.updateStats(true);
         else render();
     };
 
@@ -6446,7 +6445,6 @@
             await sbClient.from('budget_settings').insert({ category_name: '__month_start_day__', budget_amount: val, type: 'system', user_token: USER_TOKEN });
             
             state.budget.cycleStartDay = val;
-            localStorage.setItem('cycle_start_day', val.toString());
             
             // Re-sync stats starting day as well
             state.stats.startDay = val;
@@ -6517,14 +6515,18 @@
     // =====================================================
     let statsChartInstance = null;
 
-    window.updateStats = function() {
+    window.updateStats = function(forceSyncWithStateByOpening = false) {
         if (state.currentView !== 'stats') return;
-        const startDay = parseInt(document.getElementById('monthStartDay').value);
+        const selectEl = document.getElementById('monthStartDay');
+        if (selectEl) {
+            if (forceSyncWithStateByOpening || selectEl.value === "") {
+                selectEl.value = (state.stats.startDay || 1).toString();
+            }
+        }
+        const startDay = selectEl ? (parseInt(selectEl.value) || 1) : (state.stats.startDay || 1);
         if (state.stats.startDay !== startDay) {
             state.stats.startDay = startDay;
             state.budget.cycleStartDay = startDay;
-            localStorage.setItem('stats_start_day', startDay.toString());
-            localStorage.setItem('cycle_start_day', startDay.toString());
             if (sbClient) {
                 sbClient.from('budget_settings').delete().eq('user_token', USER_TOKEN).eq('category_name', '__month_start_day__')
                     .then(() => {
