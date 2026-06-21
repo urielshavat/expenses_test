@@ -248,15 +248,9 @@
 
         <div id="statsView" class="view-content hidden">
             <div class="card p-3 mb-4 border border-slate-200 bg-white shadow-sm">
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-[9px] text-slate-400 mb-1 font-bold">יום תחילת חודש</label>
-                        <select id="monthStartDay" onchange="window.updateStats()" class="input-field w-full px-3 py-2 rounded-xl text-xs"></select>
-                    </div>
-                    <div>
-                        <label class="block text-[9px] text-slate-400 mb-1 font-bold">חודש להצגה</label>
-                        <select id="specificMonthSelect" onchange="window.updateStats()" class="input-field w-full px-3 py-2 rounded-xl text-xs"></select>
-                    </div>
+                <div>
+                    <label class="block text-[9px] text-slate-400 mb-1 font-bold">חודש להצגה</label>
+                    <select id="specificMonthSelect" onchange="window.updateStats()" class="input-field w-full px-3 py-2 rounded-xl text-xs"></select>
                 </div>
             </div>
             
@@ -6517,23 +6511,8 @@
 
     window.updateStats = function(forceSyncWithStateByOpening = false) {
         if (state.currentView !== 'stats') return;
-        const selectEl = document.getElementById('monthStartDay');
-        if (selectEl) {
-            if (forceSyncWithStateByOpening || selectEl.value === "") {
-                selectEl.value = (state.stats.startDay || 1).toString();
-            }
-        }
-        const startDay = selectEl ? (parseInt(selectEl.value) || 1) : (state.stats.startDay || 1);
-        if (state.stats.startDay !== startDay) {
-            state.stats.startDay = startDay;
-            state.budget.cycleStartDay = startDay;
-            if (sbClient) {
-                sbClient.from('budget_settings').delete().eq('user_token', USER_TOKEN).eq('category_name', '__month_start_day__')
-                    .then(() => {
-                        sbClient.from('budget_settings').insert({ category_name: '__month_start_day__', budget_amount: startDay, type: 'system', user_token: USER_TOKEN });
-                    });
-            }
-        }
+        const startDay = state.budget.cycleStartDay || 1;
+        state.stats.startDay = startDay;
         let startDate, endDate;
         const monthVal = document.getElementById('specificMonthSelect').value;
         if (!monthVal) {
@@ -8618,14 +8597,6 @@
                 locale: "he",
                 disableMobile: true
             });
-        }
-
-        // Populate month start day select
-        const msdSelect = document.getElementById('monthStartDay');
-        if (msdSelect) {
-            msdSelect.innerHTML = Array.from({length: 28}, (_, i) =>
-                `<option value="${i+1}" ${state.stats.startDay === i+1 ? 'selected' : ''}>${i+1}</option>`
-            ).join('');
         }
 
         // Init Supabase — use stored override or fallback to hardcoded
