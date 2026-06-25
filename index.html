@@ -2139,7 +2139,9 @@
             state.transactions = (txRes.data || []).map(mapSupabaseTx);
             
             // Calculate ground-truth balance client-side using daily budget history
-            const clientSideBalance = window.calculateClientSideBalance ? window.calculateClientSideBalance() : balance;
+            // Only use client-side calculation if history is loaded; otherwise fall back to server balance
+            const hasHistory = (state.budget.dailyBudgetHistory || []).length > 0;
+            const clientSideBalance = (window.calculateClientSideBalance && hasHistory) ? window.calculateClientSideBalance() : balance;
             state.balance = clientSideBalance;
             
             localStorage.setItem('expense_history', JSON.stringify(state.transactions));
@@ -2462,7 +2464,10 @@
         setLoading(true);
         state.displayedTransactionsCount = 30;
         try {
-            await Promise.all([window.fetchTransactionsOnly(), window.fetchBudgetData(), window.fetchExpenseCategories()]);
+            // fetchBudgetData must complete first so dailyBudgetHistory is available
+            // before fetchTransactionsOnly calls calculateClientSideBalance
+            await window.fetchBudgetData();
+            await Promise.all([window.fetchTransactionsOnly(), window.fetchExpenseCategories()]);
             state.isDirty = false;
             render();
         } catch (e) {
