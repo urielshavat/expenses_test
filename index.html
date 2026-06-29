@@ -1826,7 +1826,7 @@
 
     window.copyTokenUrl = function() {
         const tok = document.getElementById('newTokenDisplay').textContent;
-        const url = `https://urielshavat.github.io/MoneyBoss/?token=${tok}`;
+        const url = `https://moneyboss.netlify.app/?token=${tok}`;
         const btn = document.getElementById('copyNewUrlBtn');
         navigator.clipboard.writeText(url).then(() => {
             if (btn) {
@@ -1845,7 +1845,7 @@
     window.copyExistingTokenUrl = function() {
         const tok = (document.getElementById('existingTokenInput').value || '').trim().toUpperCase();
         if (!tok) { window.showToast('הזן טוקן תחילה', 'circle-xmark'); return; }
-        const url = `https://urielshavat.github.io/MoneyBoss/?token=${tok}`;
+        const url = `https://moneyboss.netlify.app/?token=${tok}`;
         const btn = document.getElementById('copyExistUrlBtn');
         navigator.clipboard.writeText(url).then(() => {
             if (btn) {
@@ -8876,7 +8876,7 @@
 
     window.copyAndroidSiteUrl = function() {
         var tok = USER_TOKEN || '';
-        var url = 'https://urielshavat.github.io/MoneyBoss/' + (tok ? '?token=' + tok : '');
+        var url = 'https://moneyboss.netlify.app/' + (tok ? '?token=' + tok : '');
         var btn = document.getElementById('copyAndroidSiteBtn');
         navigator.clipboard.writeText(url).then(function() {
             if (btn) { btn.textContent = '✓ הועתק'; btn.classList.add('bg-green-50','border-green-200','text-green-600'); btn.classList.remove('bg-blue-50','border-blue-200','text-blue-600'); }
