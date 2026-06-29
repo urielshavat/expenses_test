@@ -2138,9 +2138,7 @@
             if (txRes.error) throw txRes.error;
             state.transactions = (txRes.data || []).map(mapSupabaseTx);
             
-            // Calculate ground-truth balance client-side using daily budget history
-            const clientSideBalance = window.calculateClientSideBalance ? window.calculateClientSideBalance() : balance;
-            state.balance = clientSideBalance;
+            state.balance = balance;
             
             localStorage.setItem('expense_history', JSON.stringify(state.transactions));
             localStorage.setItem('cached_balance', state.balance.toString());
@@ -2164,7 +2162,7 @@
                             p_start_date:   startDateISO
                         }).then(async ({ error }) => {
                             if (!error) {
-                                state.balance = window.calculateClientSideBalance ? window.calculateClientSideBalance() : (await fetchBalance());
+                                state.balance = await fetchBalance();
                                 localStorage.setItem('cached_balance', state.balance.toString());
                                 render();
                             }
@@ -2243,18 +2241,24 @@
 
     // Returns the daily budget for a specific date (yyyy-mm-dd or Date)
     window.getDailyBudgetForDate = function(dateStr) {
+        const history = state.budget.dailyBudgetHistory || [];
+        const fallback = (safeParseFloat(state.budget.g4) || 0) / 30;
+
+        if (history.length === 0) return fallback;
+
         let targetStr = dateStr;
         if (dateStr instanceof Date) {
-            targetStr = dateStr.toISOString().split('T')[0];
+            // Use local date string to avoid UTC offset issues
+            const d = dateStr;
+            targetStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
         } else if (dateStr.includes('/')) {
             const parts = dateStr.split('/');
             targetStr = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
         }
-        
-        const history = state.budget.dailyBudgetHistory || [];
+
         const sortedHistory = [...history].sort((a,b) => a.startDate.localeCompare(b.startDate));
-        
-        let activeBudget = 0;
+
+        let activeBudget = fallback;
         for (const record of sortedHistory) {
             if (targetStr >= record.startDate) {
                 activeBudget = record.dailyBudget;
@@ -2462,7 +2466,10 @@
         setLoading(true);
         state.displayedTransactionsCount = 30;
         try {
-            await Promise.all([window.fetchTransactionsOnly(), window.fetchBudgetData(), window.fetchExpenseCategories()]);
+            // fetchBudgetData must complete first so dailyBudgetHistory is available
+            // before fetchTransactionsOnly calls calculateClientSideBalance
+            await window.fetchBudgetData();
+            await Promise.all([window.fetchTransactionsOnly(), window.fetchExpenseCategories()]);
             state.isDirty = false;
             render();
         } catch (e) {
@@ -5808,13 +5815,7 @@
                 const daysDiff = Math.floor(diffMs / (1000 * 3600 * 24));
                 
                 if (daysDiff > 0) {
-                    let rangeAccumulated = 0;
-                    for (let dOff = 0; dOff < daysDiff; dOff++) {
-                        const d = new Date(currentDateLocal.getTime() - dOff * 24 * 3600 * 1000);
-                        const bVal = window.getDailyBudgetForDate ? window.getDailyBudgetForDate(d) : ((safeParseFloat(state.budget.g4) || 0) / 30);
-                        rangeAccumulated += bVal;
-                    }
-                    running -= rangeAccumulated;
+                    running -= daysDiff * dailyVal;
                     currentDateLocal = new Date(txDate);
                 }
                 
