@@ -9540,12 +9540,15 @@
             <input type="text" value="${(item.name || '').replace(/"/g,'&quot;')}" placeholder="שם החיסכון"
                 class="flex-1 bg-transparent text-xs font-bold text-slate-700 border-b border-transparent focus:border-purple-300 outline-none min-w-0 py-0.5"
                 oninput="window._wizSetName('savings',${idx},this.value)">
-            <div class="flex items-center gap-0.5 flex-shrink-0">
-                <span class="text-[9px] text-slate-400 font-bold">₪/חודש</span>
-                <input type="number" inputmode="decimal" id="wiz_amt_savings_${idx}" value="${item.amount || ''}" placeholder="0"
-                    class="no-spin w-16 text-xs font-bold text-slate-700 text-left bg-white rounded-lg px-2 py-1 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                    oninput="window._wizSetAmount('savings',${idx},this.value)"
-                    ${!item.checked ? 'disabled' : ''}>
+            <div class="flex flex-col items-end flex-shrink-0">
+                <span class="text-[9px] text-slate-400 font-bold leading-none mb-0.5">הפקדה חודשית</span>
+                <div class="flex items-center gap-0.5">
+                    <span class="text-[9px] text-slate-400 font-bold">₪</span>
+                    <input type="number" inputmode="decimal" id="wiz_amt_savings_${idx}" value="${item.amount || ''}" placeholder="0"
+                        class="no-spin w-16 text-xs font-bold text-slate-700 text-left bg-white rounded-lg px-2 py-1 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        oninput="window._wizSetAmount('savings',${idx},this.value)"
+                        ${!item.checked ? 'disabled' : ''}>
+                </div>
             </div>`;
 
         const subRow = document.createElement('div');
@@ -9602,35 +9605,45 @@
             <input type="text" value="${(item.name || '').replace(/"/g,'&quot;')}" placeholder="שם ההלוואה"
                 class="flex-1 bg-transparent text-xs font-bold text-slate-700 border-b border-transparent focus:border-slate-400 outline-none min-w-0 py-0.5"
                 oninput="window._wizSetName('loans',${idx},this.value)">
-            <div class="flex items-center gap-0.5 flex-shrink-0">
-                <span class="text-[9px] text-slate-400 font-bold">₪/חודש</span>
-                <input type="number" inputmode="decimal" value="${item.amount || ''}" placeholder="0"
-                    class="no-spin w-16 text-xs font-bold text-slate-700 text-left bg-white rounded-lg px-2 py-1 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                    oninput="window._wizSetAmount('loans',${idx},this.value)"
-                    ${!item.checked ? 'disabled' : ''}>
+            <div class="flex flex-col items-end flex-shrink-0">
+                <span class="text-[9px] text-slate-400 font-bold leading-none mb-0.5">החזר חודשי</span>
+                <div class="flex items-center gap-0.5">
+                    <span class="text-[9px] text-slate-400 font-bold">₪</span>
+                    <input type="number" inputmode="decimal" value="${item.amount || ''}" placeholder="0"
+                        class="no-spin w-16 text-xs font-bold text-slate-700 text-left bg-white rounded-lg px-2 py-1 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        oninput="window._wizSetAmount('loans',${idx},this.value)"
+                        ${!item.checked ? 'disabled' : ''}>
+                </div>
             </div>`;
 
         const subRow = document.createElement('div');
-        subRow.className = `flex gap-2 px-2 pb-2 flex-wrap ${item.checked ? '' : 'hidden'}`;
+        subRow.className = `space-y-1.5 px-2 pb-2 ${item.checked ? '' : 'hidden'}`;
         subRow.id = `wiz_loans_sub_${idx}`;
         subRow.innerHTML = `
-            <div class="flex-1 flex items-center gap-1 bg-white rounded-lg border border-slate-200 px-2 py-1 min-w-[80px]">
-                <span class="text-[9px] text-slate-400 font-bold whitespace-nowrap">יתרה ₪</span>
+            <div class="flex items-center gap-1 bg-white rounded-lg border border-slate-200 px-2 py-1.5 w-full">
+                <span class="text-[9px] text-slate-400 font-bold whitespace-nowrap flex-shrink-0">יתרה ₪</span>
                 <input type="number" inputmode="decimal" value="${item.balance || ''}" placeholder="0"
-                    class="no-spin flex-1 text-xs font-bold text-slate-700 text-left bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    class="no-spin flex-1 min-w-0 text-xs font-bold text-slate-700 text-right bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     oninput="window._wizSetMeta('loans',${idx},'balance',this.value)">
             </div>
-            <div class="flex items-center gap-1 bg-white rounded-lg border border-slate-200 px-2 py-1">
-                <input type="number" inputmode="decimal" value="${item.rate || ''}" placeholder="0"
-                    class="no-spin w-10 text-xs font-bold text-slate-700 text-left bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                    oninput="window._wizSetMeta('loans',${idx},'rate',this.value)">
-                <span class="text-[9px] text-slate-400 font-bold whitespace-nowrap">% ריבית</span>
-            </div>
-            <div class="flex items-center gap-1 bg-white rounded-lg border border-slate-200 px-2 py-1">
-                <input type="number" inputmode="numeric" value="${item.months || ''}" placeholder="0"
-                    class="no-spin w-10 text-xs font-bold text-slate-700 text-left bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                    oninput="window._wizSetMeta('loans',${idx},'months',this.value)">
-                <span class="text-[9px] text-slate-400 font-bold whitespace-nowrap">חודשים</span>
+            <div class="flex gap-1.5">
+                <div class="flex-1 flex flex-col">
+                    <span class="text-[9px] text-slate-400 font-bold mb-0.5 px-1">ריבית שנתית</span>
+                    <div class="flex items-center gap-1 bg-white rounded-lg border border-slate-200 px-2 py-1.5">
+                        <input type="number" inputmode="decimal" value="${item.rate || ''}" placeholder="0"
+                            class="no-spin flex-1 min-w-0 w-0 text-xs font-bold text-slate-700 text-right bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            oninput="window._wizSetMeta('loans',${idx},'rate',this.value)">
+                        <span class="text-[9px] text-slate-400 font-bold flex-shrink-0">%</span>
+                    </div>
+                </div>
+                <div class="flex-1 flex flex-col">
+                    <span class="text-[9px] text-slate-400 font-bold mb-0.5 px-1">חודשים שנותרו</span>
+                    <div class="flex items-center bg-white rounded-lg border border-slate-200 px-2 py-1.5">
+                        <input type="number" inputmode="numeric" value="${item.months || ''}" placeholder="0"
+                            class="no-spin flex-1 min-w-0 w-0 text-xs font-bold text-slate-700 text-right bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            oninput="window._wizSetMeta('loans',${idx},'months',this.value)">
+                    </div>
+                </div>
             </div>`;
 
         wrap.appendChild(mainRow);
