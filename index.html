@@ -535,7 +535,7 @@
             </div>
             <div class="mb-8">
                 <div class="flex justify-between items-center py-2">
-                    <h3 class="text-slate-800 font-bold text-xs flex items-center gap-1.5"><i class="fa-solid fa-piggy-bank text-purple-500"></i>חסכונות<span id="sectionTotal_savings"></span></h3>
+                    <h3 class="text-slate-800 font-bold text-xs flex items-center gap-1.5"><i class="fa-solid fa-piggy-bank text-purple-500"></i>חסכונות<span id="sectionTotal_savings"></span><span id="sectionBalance_savings"></span></h3>
                     <div class="flex">
                         <button onclick="window.initParentGroupModal('savings')" class="btn-group-cat btn-group-cat-savings"><i class="fa-regular fa-folder-open"></i></button>
                         <button onclick="window.initNewCategory('savings')" class="btn-add-cat btn-add-cat-savings"><i class="fa-solid fa-plus"></i></button>
@@ -546,7 +546,7 @@
             </div>
             <div class="mb-8">
                 <div class="flex justify-between items-center py-2">
-                    <h3 class="text-slate-800 font-bold text-xs flex items-center gap-1.5"><i class="fa-solid fa-hand-holding-dollar text-slate-500"></i>הלוואות<span id="sectionTotal_loan"></span></h3>
+                    <h3 class="text-slate-800 font-bold text-xs flex items-center gap-1.5"><i class="fa-solid fa-hand-holding-dollar text-slate-500"></i>הלוואות<span id="sectionTotal_loan"></span><span id="sectionBalance_loan"></span></h3>
                     <div class="flex">
                         <button onclick="window.initParentGroupModal('loan')" class="btn-group-cat btn-group-cat-loan"><i class="fa-regular fa-folder-open"></i></button>
                         <button onclick="window.initNewCategory('loan')" class="btn-add-cat btn-add-cat-loan"><i class="fa-solid fa-plus"></i></button>
@@ -812,6 +812,7 @@
                     <div id="wizProg1" class="flex-1 h-1 rounded-full bg-slate-200"></div>
                     <div id="wizProg2" class="flex-1 h-1 rounded-full bg-slate-200"></div>
                     <div id="wizProg3" class="flex-1 h-1 rounded-full bg-slate-200"></div>
+                    <div id="wizProg4" class="flex-1 h-1 rounded-full bg-slate-200"></div>
                 </div>
             </div>
             <!-- Content -->
@@ -3252,7 +3253,7 @@
         const titles = { income: 'עריכת הכנסה', fixed: 'עריכת הוצאה קבועה', annual: 'עריכת הוצאה מתוכננת', savings: 'עריכת חיסכון', loan: 'עריכת הלוואה' };
         const titleEl = document.getElementById('budgetItemEditTitle');
         if (titleEl) titleEl.textContent = titles[item.type] || 'עריכה';
-        const amtLabels = { income: 'סכום חודשי', fixed: 'סכום חודשי', annual: 'סכום שנתי', savings: 'סכום הפקדה חודשי (0 להפקדה חד פעמית)', loan: 'החזר חודשי' };
+        const amtLabels = { income: 'סכום חודשי', fixed: 'סכום חודשי', annual: 'סכום שנתי', savings: 'סכום הפקדה חודשי', loan: 'החזר חודשי (0 ללא החזר קבוע)' };
         const amtLabelEl = document.getElementById('budgetItemEditAmountLabel');
         if (amtLabelEl) amtLabelEl.textContent = amtLabels[item.type] || 'סכום';
         document.getElementById('budgetItemEditName').value = item.category_name;
@@ -6284,6 +6285,18 @@
         setEl('sectionTotal_annual', annMTotal > 0 ? ` — ₪${Math.round(formatDisplayAmount(annMTotal)).toLocaleString()}/חודש` : '');
         setEl('sectionTotal_savings', fmt(formatDisplayAmount(savTotal)));
         setEl('sectionTotal_loan', fmt(formatDisplayAmount(loanTotal)));
+
+        // Section balance totals (sum of current balances from meta)
+        const savingsBalanceTotal = (b.savings || []).reduce((sum, item) => {
+            const meta = (state.budget.savingsMeta || {})[item.id] || {};
+            return sum + (meta.balance || 0);
+        }, 0);
+        const loanBalanceTotal = (b.loans || []).reduce((sum, item) => {
+            const meta = (state.budget.loanMeta || {})[item.id] || {};
+            return sum + (meta.balance || 0);
+        }, 0);
+        setEl('sectionBalance_savings', savingsBalanceTotal > 0 ? ` (סה"כ יתרה ₪${Math.round(savingsBalanceTotal).toLocaleString()})` : '');
+        setEl('sectionBalance_loan', loanBalanceTotal > 0 ? ` (סה"כ יתרה ₪${Math.round(loanBalanceTotal).toLocaleString()})` : '');
         const rem = state.isPrivacyMode ? (20000 - formatDisplayAmount(fixTotal) - formatDisplayAmount(annMTotal) - formatDisplayAmount(savTotal) - formatDisplayAmount(loanTotal)) : (incTotal - fixTotal - annMTotal - savTotal - loanTotal);
         setEl('summaryRemaining', Math.round(rem).toLocaleString());
         const g4El = document.getElementById('g4Input');
@@ -6334,8 +6347,8 @@
 
             const renderItem = (item, isChild = false) => {
                 const val = safeParseFloat(item.budget_amount), isZero = val === 0;
-                // Savings items with 0 monthly deposit are still meaningful (lump sum) — always show
-                const treatAsZero = isZero && type !== 'savings';
+                // Savings and loan items with 0 amount are still meaningful — always show
+                const treatAsZero = isZero && type !== 'savings' && type !== 'loan';
                 if (treatAsZero) hasZeroItems = true;
                 if (!treatAsZero || isShowingZeros) {
                     const div = document.createElement('div');
@@ -6369,8 +6382,8 @@
                                 </div>
                                 <div class="flex items-center gap-1.5 flex-shrink-0 mr-2">
                                     <div class="text-left">
-                                        <span class="text-xs font-bold ltr-num" style="color:${amtColor}">${val > 0 ? '₪' + numericVal.toLocaleString() : ''}</span>
-                                        ${val > 0 ? '<span class="text-[9px] text-slate-400 block">/חודש</span>' : '<span class="text-[9px] text-slate-400 block">חד פעמי</span>'}
+                                        <span class="text-xs font-bold ltr-num" style="color:${amtColor}">₪${numericVal.toLocaleString()}</span>
+                                        <span class="text-[9px] text-slate-400 block">/חודש</span>
                                     </div>
                                     <button onclick="window.initBudgetItemEdit('${safeDbName}')" class="p-1"><i class="fa-solid fa-ellipsis-vertical text-[10px] text-slate-300"></i></button>
                                 </div>
@@ -7564,8 +7577,8 @@
     window.initNewCategory = (type) => {
         state.pendingAddType = type;
         const titles = { income: 'הוספת הכנסה', fixed: 'הוספת הוצאה קבועה', annual: 'הוספת הוצאה מתוכננת', savings: 'הוספת חיסכון', loan: 'הוספת הלוואה' };
-        const placeholders = { income: 'משכורת, קצבת ילדים, נכס מניב', fixed: 'שכר דירה, ביטוחים, חשמל, מים, ארנונה', annual: 'חופשה, אחזקת רכב, קייטנות', savings: 'קרן חירום, פנסיה, חיסכון לילדים', loan: 'משכנתא, הלוואת רכב, הלוואה בנקאית' };
-        const amtLabels = { income: 'סכום חודשי', fixed: 'סכום חודשי', annual: 'סכום שנתי', savings: 'סכום הפקדה חודשי (0 להפקדה חד פעמית)', loan: 'החזר חודשי' };
+        const placeholders = { income: 'משכורת, קצבת ילדים, נכס מניב', fixed: 'שכר דירה, ביטוחים, חשמל, מים, ארנונה', annual: 'חופשה, אחזקת רכב, קייטנות', savings: 'קרן חירום, חיסכון לילדים, חיסכון לדירה', loan: 'הלוואת רכב, הלוואה בנקאית, הלוואה מחבר' };
+        const amtLabels = { income: 'סכום חודשי', fixed: 'סכום חודשי', annual: 'סכום שנתי', savings: 'סכום הפקדה חודשי', loan: 'החזר חודשי (0 ללא החזר קבוע)' };
         const titleEl = document.getElementById('newCategoryTitle');
         if (titleEl) titleEl.textContent = titles[type] || 'הוספת קטגוריה';
         const nameInp = document.getElementById('newCategoryName');
@@ -9424,7 +9437,7 @@
     // BUDGET WIZARD
     // =====================================================
     let _wizStep = 0;
-    const _wizData = { incomes: [], fixed: [], annual: [], savings: [] };
+    const _wizData = { incomes: [], fixed: [], annual: [], savings: [], loans: [] };
 
     const WIZARD_STEPS = [
         {
@@ -9462,11 +9475,20 @@
         },
         {
             title: 'חסכונות',
-            subtitle: 'סכום הפקדה חודשי לכל חיסכון — ניתן להפעיל תזכורת חודשית',
+            subtitle: 'הפקדה חודשית, יתרה נוכחית ותשואה שנתית לכל חיסכון',
             type: 'savings',
             items: [
                 { name: 'החלפת רכב', checked: false },
                 { name: 'ילדים', checked: false }
+            ]
+        },
+        {
+            title: 'הלוואות',
+            subtitle: 'הלוואות פעילות — החזר חודשי, יתרה, ריבית וחודשים שנותרו',
+            type: 'loans',
+            items: [
+                { name: 'הלוואת רכב', checked: false },
+                { name: 'הלוואה בנקאית', checked: false },
             ]
         },
         {
@@ -9496,7 +9518,9 @@
                     _wizData.annual.push({ parent: '', name, checked: false, amount: '' })
                 );
             } else if (step.type === 'savings') {
-                _wizData.savings = step.items.map(i => ({ ...i, amount: '' }));
+                _wizData.savings = step.items.map(i => ({ ...i, amount: '', balance: '', yield: '' }));
+            } else if (step.type === 'loans') {
+                _wizData.loans = step.items.map(i => ({ ...i, amount: '', balance: '', rate: '', months: '' }));
             }
         });
         renderWizardStep();
@@ -9504,14 +9528,134 @@
         if (o) { o.classList.remove('hidden'); setTimeout(() => o.classList.add('opacity-100'), 10); }
     };
 
+    function makeWizardSavingsRow(item, idx) {
+        const wrap = document.createElement('div');
+        wrap.className = `rounded-xl border transition-all ${item.checked ? 'bg-purple-50 border-purple-100' : 'border-transparent'}`;
+
+        const mainRow = document.createElement('div');
+        mainRow.className = 'flex items-center gap-2 py-1.5 px-2';
+        const cbId = `wiz_savings_${idx}`;
+        mainRow.innerHTML = `
+            <input type="checkbox" id="${cbId}" class="w-4 h-4 rounded accent-purple-600 flex-shrink-0 cursor-pointer" ${item.checked ? 'checked' : ''}>
+            <input type="text" value="${(item.name || '').replace(/"/g,'&quot;')}" placeholder="שם החיסכון"
+                class="flex-1 bg-transparent text-xs font-bold text-slate-700 border-b border-transparent focus:border-purple-300 outline-none min-w-0 py-0.5"
+                oninput="window._wizSetName('savings',${idx},this.value)">
+            <div class="flex items-center gap-0.5 flex-shrink-0">
+                <span class="text-[9px] text-slate-400 font-bold">₪/חודש</span>
+                <input type="number" inputmode="decimal" id="wiz_amt_savings_${idx}" value="${item.amount || ''}" placeholder="0"
+                    class="no-spin w-16 text-xs font-bold text-slate-700 text-left bg-white rounded-lg px-2 py-1 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    oninput="window._wizSetAmount('savings',${idx},this.value)"
+                    ${!item.checked ? 'disabled' : ''}>
+            </div>`;
+
+        const subRow = document.createElement('div');
+        subRow.className = `flex gap-2 px-2 pb-2 ${item.checked ? '' : 'hidden'}`;
+        subRow.id = `wiz_savings_sub_${idx}`;
+        subRow.innerHTML = `
+            <div class="flex-1 flex items-center gap-1 bg-white rounded-lg border border-purple-100 px-2 py-1">
+                <span class="text-[9px] text-slate-400 font-bold whitespace-nowrap">יתרה ₪</span>
+                <input type="number" inputmode="decimal" value="${item.balance || ''}" placeholder="0"
+                    class="no-spin flex-1 text-xs font-bold text-slate-700 text-left bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    oninput="window._wizSetMeta('savings',${idx},'balance',this.value)">
+            </div>
+            <div class="flex items-center gap-1 bg-white rounded-lg border border-purple-100 px-2 py-1">
+                <input type="number" inputmode="decimal" value="${item.yield || ''}" placeholder="0"
+                    class="no-spin w-10 text-xs font-bold text-slate-700 text-left bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    oninput="window._wizSetMeta('savings',${idx},'yield',this.value)">
+                <span class="text-[9px] text-slate-400 font-bold whitespace-nowrap">% שנתי</span>
+            </div>`;
+
+        wrap.appendChild(mainRow);
+        wrap.appendChild(subRow);
+
+        const cb = mainRow.querySelector(`#${cbId}`);
+        cb.addEventListener('change', () => {
+            window._wizToggle('savings', idx, cb.checked);
+            wrap.classList.toggle('bg-purple-50', cb.checked);
+            wrap.classList.toggle('border-purple-100', cb.checked);
+            wrap.classList.toggle('border-transparent', !cb.checked);
+            mainRow.querySelector('input[type=number]').disabled = !cb.checked;
+            subRow.classList.toggle('hidden', !cb.checked);
+        });
+        return wrap;
+    }
+
     function renderWizardSavings(container) {
         _wizData.savings.forEach((item, idx) => {
-            container.appendChild(makeWizardRow(item, idx, 'savings'));
+            container.appendChild(makeWizardSavingsRow(item, idx));
         });
         container.appendChild(makeAddMoreBtn(() => {
-            _wizData.savings.push({ name: 'חיסכון נוסף', checked: true, amount: '' });
+            _wizData.savings.push({ name: '', checked: true, amount: '', balance: '', yield: '' });
             renderWizardStep();
         }, 'הוסף חיסכון'));
+    }
+
+    function makeWizardLoanRow(item, idx) {
+        const wrap = document.createElement('div');
+        wrap.className = `rounded-xl border transition-all ${item.checked ? 'bg-slate-50 border-slate-200' : 'border-transparent'}`;
+
+        const mainRow = document.createElement('div');
+        mainRow.className = 'flex items-center gap-2 py-1.5 px-2';
+        const cbId = `wiz_loans_${idx}`;
+        mainRow.innerHTML = `
+            <input type="checkbox" id="${cbId}" class="w-4 h-4 rounded accent-slate-600 flex-shrink-0 cursor-pointer" ${item.checked ? 'checked' : ''}>
+            <input type="text" value="${(item.name || '').replace(/"/g,'&quot;')}" placeholder="שם ההלוואה"
+                class="flex-1 bg-transparent text-xs font-bold text-slate-700 border-b border-transparent focus:border-slate-400 outline-none min-w-0 py-0.5"
+                oninput="window._wizSetName('loans',${idx},this.value)">
+            <div class="flex items-center gap-0.5 flex-shrink-0">
+                <span class="text-[9px] text-slate-400 font-bold">₪/חודש</span>
+                <input type="number" inputmode="decimal" value="${item.amount || ''}" placeholder="0"
+                    class="no-spin w-16 text-xs font-bold text-slate-700 text-left bg-white rounded-lg px-2 py-1 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    oninput="window._wizSetAmount('loans',${idx},this.value)"
+                    ${!item.checked ? 'disabled' : ''}>
+            </div>`;
+
+        const subRow = document.createElement('div');
+        subRow.className = `flex gap-2 px-2 pb-2 flex-wrap ${item.checked ? '' : 'hidden'}`;
+        subRow.id = `wiz_loans_sub_${idx}`;
+        subRow.innerHTML = `
+            <div class="flex-1 flex items-center gap-1 bg-white rounded-lg border border-slate-200 px-2 py-1 min-w-[80px]">
+                <span class="text-[9px] text-slate-400 font-bold whitespace-nowrap">יתרה ₪</span>
+                <input type="number" inputmode="decimal" value="${item.balance || ''}" placeholder="0"
+                    class="no-spin flex-1 text-xs font-bold text-slate-700 text-left bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    oninput="window._wizSetMeta('loans',${idx},'balance',this.value)">
+            </div>
+            <div class="flex items-center gap-1 bg-white rounded-lg border border-slate-200 px-2 py-1">
+                <input type="number" inputmode="decimal" value="${item.rate || ''}" placeholder="0"
+                    class="no-spin w-10 text-xs font-bold text-slate-700 text-left bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    oninput="window._wizSetMeta('loans',${idx},'rate',this.value)">
+                <span class="text-[9px] text-slate-400 font-bold whitespace-nowrap">% ריבית</span>
+            </div>
+            <div class="flex items-center gap-1 bg-white rounded-lg border border-slate-200 px-2 py-1">
+                <input type="number" inputmode="numeric" value="${item.months || ''}" placeholder="0"
+                    class="no-spin w-10 text-xs font-bold text-slate-700 text-left bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    oninput="window._wizSetMeta('loans',${idx},'months',this.value)">
+                <span class="text-[9px] text-slate-400 font-bold whitespace-nowrap">חודשים</span>
+            </div>`;
+
+        wrap.appendChild(mainRow);
+        wrap.appendChild(subRow);
+
+        const cb = mainRow.querySelector(`#${cbId}`);
+        cb.addEventListener('change', () => {
+            window._wizToggle('loans', idx, cb.checked);
+            wrap.classList.toggle('bg-slate-50', cb.checked);
+            wrap.classList.toggle('border-slate-200', cb.checked);
+            wrap.classList.toggle('border-transparent', !cb.checked);
+            mainRow.querySelector('input[type=number]').disabled = !cb.checked;
+            subRow.classList.toggle('hidden', !cb.checked);
+        });
+        return wrap;
+    }
+
+    function renderWizardLoans(container) {
+        _wizData.loans.forEach((item, idx) => {
+            container.appendChild(makeWizardLoanRow(item, idx));
+        });
+        container.appendChild(makeAddMoreBtn(() => {
+            _wizData.loans.push({ name: '', checked: true, amount: '', balance: '', rate: '', months: '' });
+            renderWizardStep();
+        }, 'הוסף הלוואה'));
     }
 
     window.closeWizard = function() {
@@ -9523,13 +9667,14 @@
         const step = WIZARD_STEPS[_wizStep];
         document.getElementById('wizardTitle').textContent = `שלב ${_wizStep + 1} — ${step.title}`;
         document.getElementById('wizardSubtitle').textContent = step.subtitle;
-        // Progress bars
+        // Progress bars (5 bars for 6 steps, summary shares the last bar)
         [0,1,2,3,4].forEach(i => {
             const el = document.getElementById(`wizProg${i}`);
             if (el) {
                 const isActive = i <= _wizStep;
                 let color = 'bg-blue-500';
                 if (WIZARD_STEPS[i]?.type === 'savings') color = 'bg-purple-500';
+                if (WIZARD_STEPS[i]?.type === 'loans') color = 'bg-slate-500';
                 if (WIZARD_STEPS[i]?.type === 'summary') color = 'bg-green-500';
                 el.className = `flex-1 h-1 rounded-full ${isActive ? color : 'bg-slate-200'}`;
             }
@@ -9545,7 +9690,8 @@
         } else {
             nextBtn.textContent = _wizStep === WIZARD_STEPS.length - 2 ? 'צור תקציב ✓' : 'המשך';
             const isSavings = step.type === 'savings';
-            nextBtn.className = `flex-1 font-bold py-3 rounded-2xl text-sm ${_wizStep === WIZARD_STEPS.length - 2 ? 'bg-green-600 text-white shadow-md shadow-green-200' : (isSavings ? 'bg-purple-600 text-white shadow-md shadow-purple-200' : 'bg-blue-600 text-white shadow-md shadow-blue-200')}`;
+            const isLoans = step.type === 'loans';
+            nextBtn.className = `flex-1 font-bold py-3 rounded-2xl text-sm ${_wizStep === WIZARD_STEPS.length - 2 ? 'bg-green-600 text-white shadow-md shadow-green-200' : (isSavings ? 'bg-purple-600 text-white shadow-md shadow-purple-200' : (isLoans ? 'bg-slate-600 text-white shadow-md shadow-slate-200' : 'bg-blue-600 text-white shadow-md shadow-blue-200'))}`;
         }
 
         const content = document.getElementById('wizardContent');
@@ -9555,6 +9701,7 @@
         else if (step.type === 'fixed') renderWizardGrouped(content, _wizData.fixed, step.groups);
         else if (step.type === 'annual') renderWizardGrouped(content, _wizData.annual, step.groups, step.standalone);
         else if (step.type === 'savings') renderWizardSavings(content);
+        else if (step.type === 'loans') renderWizardLoans(content);
         else if (step.type === 'summary') renderWizardSummary(content);
     }
 
@@ -9677,15 +9824,22 @@
 
     window._wizToggle = (type, idx, checked) => {
         if (type === 'savings') _wizData.savings[idx].checked = checked;
+        else if (type === 'loans') _wizData.loans[idx].checked = checked;
         else _wizData[type][idx].checked = checked;
     };
     window._wizSetName = (type, idx, val) => {
         if (type === 'savings') _wizData.savings[idx].name = val;
+        else if (type === 'loans') _wizData.loans[idx].name = val;
         else _wizData[type][idx].name = val;
     };
     window._wizSetAmount = (type, idx, val) => {
         if (type === 'savings') _wizData.savings[idx].amount = val;
+        else if (type === 'loans') _wizData.loans[idx].amount = val;
         else _wizData[type][idx].amount = val;
+    };
+    window._wizSetMeta = (type, idx, field, val) => {
+        if (type === 'savings') _wizData.savings[idx][field] = val;
+        else if (type === 'loans') _wizData.loans[idx][field] = val;
     };
 
     window.wizardNav = function(dir) {
@@ -9728,21 +9882,52 @@
         (_wizData.savings || []).filter(i => i.checked && i.name.trim()).forEach(i => {
             rows.push({ category_name: i.name.trim(), budget_amount: safeParseFloat(i.amount) || 0, type: 'savings', parent_group: null, user_token: USER_TOKEN });
         });
+        // Loans
+        (_wizData.loans || []).filter(i => i.checked && i.name.trim()).forEach(i => {
+            rows.push({ category_name: i.name.trim(), budget_amount: safeParseFloat(i.amount) || 0, type: 'loan', parent_group: null, user_token: USER_TOKEN });
+        });
 
         if (rows.length === 0) return;
 
         try {
             setLoading(true, true);
-            // Delete existing and insert fresh
+            // Delete existing and insert fresh, get back IDs for meta saving
             await sbClient.from('budget_settings').delete().eq('user_token', USER_TOKEN);
-            await sbClient.from('budget_settings').insert(rows);
+            const { data: insertedRows } = await sbClient.from('budget_settings').insert(rows).select('id, category_name, type');
+
+            // Save savings meta (balance, yield) for each savings item that has them
+            const now = new Date();
+            const currentMonth = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+            for (const wizItem of (_wizData.savings || []).filter(i => i.checked && i.name.trim())) {
+                const dbRow = (insertedRows || []).find(r => r.type === 'savings' && r.category_name === wizItem.name.trim());
+                if (dbRow && (parseFloat(wizItem.balance) > 0 || parseFloat(wizItem.yield) > 0)) {
+                    await window.saveSavingsMetaToDB(dbRow.id, {
+                        balance: parseFloat(wizItem.balance) || 0,
+                        yield: parseFloat(wizItem.yield) || 0,
+                        last_update: currentMonth
+                    });
+                }
+            }
+            // Save loan meta (balance, rate, months) for each loan item that has them
+            for (const wizItem of (_wizData.loans || []).filter(i => i.checked && i.name.trim())) {
+                const dbRow = (insertedRows || []).find(r => r.type === 'loan' && r.category_name === wizItem.name.trim());
+                if (dbRow && (parseFloat(wizItem.balance) > 0 || parseFloat(wizItem.rate) > 0 || parseInt(wizItem.months) > 0)) {
+                    await window.saveLoanMetaToDB(dbRow.id, {
+                        balance: parseFloat(wizItem.balance) || 0,
+                        rate: parseFloat(wizItem.rate) || 0,
+                        months: parseInt(wizItem.months) || 0,
+                        last_update: currentMonth
+                    });
+                }
+            }
 
             // Calculate summary
             const totalIncome = rows.filter(r => r.type === 'income').reduce((s, r) => s + r.budget_amount, 0);
             const totalFixed  = rows.filter(r => r.type === 'fixed').reduce((s, r) => s + r.budget_amount, 0);
             const totalAnnualMonthly = rows.filter(r => r.type === 'annual').reduce((s, r) => s + r.budget_amount / 12, 0);
             const totalSavings = rows.filter(r => r.type === 'savings').reduce((s, r) => s + r.budget_amount, 0);
-            const remaining = totalIncome - totalFixed - totalAnnualMonthly - totalSavings;
+            const totalLoans = rows.filter(r => r.type === 'loan').reduce((s, r) => s + r.budget_amount, 0);
+            const remaining = totalIncome - totalFixed - totalAnnualMonthly - totalSavings - totalLoans;
 
             // Find largest multiple of 150 (=5×30) ≤ remaining
             const g4 = Math.max(0, Math.floor(remaining / 150) * 150);
@@ -9758,6 +9943,7 @@
                 totalFixed,
                 totalAnnualMonthly,
                 totalSavings,
+                totalLoans,
                 monthlyBudget: g4,
                 dailyBudget: g4 / 30
             };
@@ -9797,6 +9983,10 @@
                         <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">חסכונות</span>
                         <span class="text-sm font-bold text-purple-600 ltr-num">- ₪${s.totalSavings.toLocaleString()}</span>
                     </div>
+                    ${s.totalLoans > 0 ? `<div class="flex justify-between items-center px-1">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">הלוואות</span>
+                        <span class="text-sm font-bold text-slate-600 ltr-num">- ₪${s.totalLoans.toLocaleString()}</span>
+                    </div>` : ''}
                 </div>
 
                 <div class="bg-blue-600 rounded-3xl p-4 text-center shadow-xl shadow-blue-100">
