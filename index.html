@@ -1219,9 +1219,16 @@
                 <div id="newCategorySavingsSection" class="hidden space-y-2 bg-purple-50 border border-purple-100 rounded-xl p-3">
                     <p class="text-[10px] font-bold text-purple-600 uppercase tracking-wider">פרטי חיסכון</p>
                     <div>
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 mr-1">יתרה נוכחית בחיסכון</label>
+                        <div class="flex items-center justify-between mb-1 mr-1">
+                            <label id="newCategorySavingsBalanceLabel" class="block text-[10px] font-bold text-slate-400 uppercase">יתרה נוכחית בחיסכון</label>
+                            <div class="flex bg-slate-100 p-0.5 rounded-lg">
+                                <button type="button" id="newCategoryCurrencyIlsBtn" onclick="window.setNewCategorySavingsCurrency('ILS')" class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-white text-slate-700 shadow-sm">₪</button>
+                                <button type="button" id="newCategoryCurrencyUsdBtn" onclick="window.setNewCategorySavingsCurrency('USD')" class="px-2 py-0.5 text-[10px] font-bold rounded-md text-slate-400">$</button>
+                            </div>
+                            <input type="hidden" id="newCategorySavingsCurrency" value="ILS">
+                        </div>
                         <div class="bg-white border border-slate-200 rounded-lg px-3 py-2 flex items-center gap-1">
-                            <span class="text-slate-400 font-bold text-sm">₪</span>
+                            <span id="newCategorySavingsCurrencySymbol" class="text-slate-400 font-bold text-sm">₪</span>
                             <input type="text" inputmode="decimal" id="newCategorySavingsBalance" class="flex-1 bg-transparent border-none outline-none font-bold text-slate-800 text-sm" placeholder="0">
                         </div>
                     </div>
@@ -1458,9 +1465,16 @@
                 <div id="budgetItemSavingsSection" class="hidden space-y-2 bg-purple-50 border border-purple-100 rounded-xl p-3">
                     <p class="text-[10px] font-bold text-purple-600 uppercase tracking-wider">פרטי חיסכון</p>
                     <div>
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 mr-1">יתרה נוכחית בחיסכון</label>
+                        <div class="flex items-center justify-between mb-1 mr-1">
+                            <label id="budgetItemSavingsBalanceLabel" class="block text-[10px] font-bold text-slate-400 uppercase">יתרה נוכחית בחיסכון</label>
+                            <div class="flex bg-slate-100 p-0.5 rounded-lg">
+                                <button type="button" id="budgetItemCurrencyIlsBtn" onclick="window.setBudgetItemSavingsCurrency('ILS')" class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-white text-slate-700 shadow-sm">₪</button>
+                                <button type="button" id="budgetItemCurrencyUsdBtn" onclick="window.setBudgetItemSavingsCurrency('USD')" class="px-2 py-0.5 text-[10px] font-bold rounded-md text-slate-400">$</button>
+                            </div>
+                            <input type="hidden" id="budgetItemSavingsCurrency" value="ILS">
+                        </div>
                         <div class="bg-white border border-slate-200 rounded-lg px-3 py-2 flex items-center gap-1">
-                            <span class="text-slate-400 font-bold text-sm">₪</span>
+                            <span id="budgetItemSavingsCurrencySymbol" class="text-slate-400 font-bold text-sm">₪</span>
                             <input type="text" inputmode="decimal" id="budgetItemSavingsBalance" class="flex-1 bg-transparent border-none outline-none font-bold text-slate-800 text-sm" placeholder="0">
                         </div>
                     </div>
@@ -2518,7 +2532,7 @@
                 const id = parts[1];
                 const field = parts[2];
                 if (!state.budget.savingsMeta[id]) state.budget.savingsMeta[id] = {};
-                state.budget.savingsMeta[id][field] = (field === 'last_update' || field === 'initial_date')
+                state.budget.savingsMeta[id][field] = (field === 'last_update' || field === 'initial_date' || field === 'currency')
                     ? (r.parent_group || '')
                     : safeParseFloat(r.budget_amount);
             });
@@ -3242,10 +3256,12 @@
             const now = new Date();
             const currentMonth = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
             const bal = parseFloat((document.getElementById('newCategorySavingsBalance')?.value || '').replace(/,/g, '')) || 0;
+            const currency = (document.getElementById('newCategorySavingsCurrency')?.value === 'USD') ? 'USD' : 'ILS';
             newSavingsMeta = {
                 balance: bal,
                 yield: parseFloat((document.getElementById('newCategorySavingsYield')?.value || '').replace(/,/g, '')) || 0,
-                last_update: currentMonth
+                last_update: currentMonth,
+                currency
             };
             if (remEnabled) {
                 newSavingsMeta.initial_balance = bal;
@@ -3394,8 +3410,9 @@
                 const displayBal = remOn && meta.initial_balance != null ? meta.initial_balance : meta.balance;
                 if (balInp) balInp.value = displayBal ? Math.round(displayBal).toString() : '';
                 if (yldInp) yldInp.value = meta.yield ? meta.yield.toString() : '';
-                const balLabel = savSection.querySelector('label');
+                const balLabel = document.getElementById('budgetItemSavingsBalanceLabel') || savSection.querySelector('label');
                 if (balLabel) balLabel.textContent = remOn ? 'יתרה התחלתית בחיסכון' : 'יתרה נוכחית בחיסכון';
+                window.setBudgetItemSavingsCurrency(meta.currency === 'USD' ? 'USD' : 'ILS');
             }
         }
 
@@ -3447,8 +3464,8 @@
             if (!state.budget.savingsMeta) state.budget.savingsMeta = {};
             state.budget.savingsMeta[item.id] = meta;
             window.saveSavingsMetaToDB(item.id, meta).catch(e => console.error(e));
-            const balLabel = document.querySelector('#budgetItemSavingsSection label');
-            if (balLabel && balLabel.textContent.includes('יתרה')) balLabel.textContent = 'יתרה התחלתית בחיסכון';
+            const balLabel = document.getElementById('budgetItemSavingsBalanceLabel');
+            if (balLabel) balLabel.textContent = 'יתרה התחלתית בחיסכון';
         }
         renderSavingsReminders();
     };
@@ -3524,6 +3541,7 @@
             const yldInp = document.getElementById('budgetItemSavingsYield');
             const newBal = parseFloat((balInp?.value || '').replace(/,/g, '')) || 0;
             const newYld = parseFloat((yldInp?.value || '').replace(/,/g, '')) || 0;
+            const currency = (document.getElementById('budgetItemSavingsCurrency')?.value === 'USD') ? 'USD' : 'ILS';
             const now = new Date();
             const currentMonth = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
             const existing = (state.budget.savingsMeta || {})[itemKey] || {};
@@ -3536,6 +3554,7 @@
                 pendingSavingsMeta = {
                     ...existing,
                     yield: newYld,
+                    currency,
                     last_update: currentMonth
                 };
                 if (initialChanged) {
@@ -3551,7 +3570,7 @@
                 pendingSavingsMeta.balance = pendingSavingsMeta.initial_balance;
                 pendingSavingsMeta._recalcDepositBalance = true;
             } else {
-                pendingSavingsMeta = { ...existing, balance: newBal, yield: newYld, last_update: currentMonth };
+                pendingSavingsMeta = { ...existing, balance: newBal, yield: newYld, currency, last_update: currentMonth };
             }
         }
         if (baseType === 'loan') {
@@ -3593,7 +3612,7 @@
                         if (item.type && item.type.startsWith('future_')) qLegacy = '__future__:' + qLegacy;
                         await sbClient.from('budget_settings').update(updates).eq('user_token', USER_TOKEN).eq('category_name', qLegacy);
                     }
-                    if (renamed) {
+                    if (renamed && state.budgetMode !== 'future') {
                         const parentFromDbName = dbName.includes(' > ') ? dbName.split(' > ')[0].trim() : null;
                         await renameCategoryInTransactions(oldName, newName, item.parent_group || parentFromDbName);
                     }
@@ -3609,7 +3628,7 @@
                         state.budget.loanMeta[itemKey] = pendingLoanMeta;
                     }
                     await window.fetchBudgetData();
-                    if (renamed) await window.fetchTransactionsOnly();
+                    if (renamed && state.budgetMode !== 'future') await window.fetchTransactionsOnly();
                     window.showToast('עודכן', 'check');
                     return;
                 }
@@ -3618,8 +3637,8 @@
             const { error } = await query;
             if (error) throw error;
 
-            // If renamed, update all related transactions to the new category name
-            if (renamed) {
+            // If renamed in current budget, update related transactions — never for future budget
+            if (renamed && state.budgetMode !== 'future') {
                 const parentFromDbName = dbName.includes(' > ') ? dbName.split(' > ')[0].trim() : null;
                 await renameCategoryInTransactions(oldName, newName, item.parent_group || parentFromDbName);
             }
@@ -3637,7 +3656,7 @@
             }
 
             await window.fetchBudgetData();
-            if (renamed) await window.fetchTransactionsOnly();
+            if (renamed && state.budgetMode !== 'future') await window.fetchTransactionsOnly();
             window.showToast('עודכן', 'check');
         } catch (e) {
             console.error(e);
@@ -3652,18 +3671,21 @@
         const now = new Date();
         const currentMonth = meta.last_update || `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
         const initialDate = meta.initial_date || '';
+        const currency = (meta.currency === 'USD') ? 'USD' : 'ILS';
         const rowsToDelete = [
             `__savings_meta__:${id}:balance`,
             `__savings_meta__:${id}:yield`,
             `__savings_meta__:${id}:last_update`,
             `__savings_meta__:${id}:initial_balance`,
-            `__savings_meta__:${id}:initial_date`
+            `__savings_meta__:${id}:initial_date`,
+            `__savings_meta__:${id}:currency`
         ];
         await sbClient.from('budget_settings').delete().eq('user_token', USER_TOKEN).in('category_name', rowsToDelete);
         const rows = [
             { category_name: `__savings_meta__:${id}:balance`, budget_amount: meta.balance || 0, type: 'system', user_token: USER_TOKEN },
             { category_name: `__savings_meta__:${id}:yield`, budget_amount: meta.yield || 0, type: 'system', user_token: USER_TOKEN },
-            { category_name: `__savings_meta__:${id}:last_update`, budget_amount: 0, parent_group: currentMonth, type: 'system', user_token: USER_TOKEN }
+            { category_name: `__savings_meta__:${id}:last_update`, budget_amount: 0, parent_group: currentMonth, type: 'system', user_token: USER_TOKEN },
+            { category_name: `__savings_meta__:${id}:currency`, budget_amount: 0, parent_group: currency, type: 'system', user_token: USER_TOKEN }
         ];
         if (meta.initial_balance != null) {
             rows.push({ category_name: `__savings_meta__:${id}:initial_balance`, budget_amount: meta.initial_balance || 0, type: 'system', user_token: USER_TOKEN });
@@ -6637,10 +6659,10 @@
         setEl('sectionTotal_savings', fmt(formatDisplayAmount(savTotal)));
         setEl('sectionTotal_loan', fmt(formatDisplayAmount(loanTotal)));
 
-        // Section balance totals (sum of current balances from meta)
+        // Section balance totals (sum of current balances from meta, USD converted to ILS)
         const savingsBalanceTotal = (b.savings || []).reduce((sum, item) => {
             const meta = (state.budget.savingsMeta || {})[item.id] || {};
-            return sum + (meta.balance || 0);
+            return sum + savingsBalanceInIls(meta);
         }, 0);
         const loanBalanceTotal = (b.loans || []).reduce((sum, item) => {
             const meta = (state.budget.loanMeta || {})[item.id] || {};
@@ -6648,6 +6670,20 @@
         }, 0);
         setEl('sectionBalance_savings', savingsBalanceTotal > 0 ? ` (סה"כ יתרה ₪${Math.round(savingsBalanceTotal).toLocaleString()})` : '');
         setEl('sectionBalance_loan', loanBalanceTotal > 0 ? ` (סה"כ יתרה ₪${Math.round(loanBalanceTotal).toLocaleString()})` : '');
+
+        // Refresh USD rate in background if any savings are in USD
+        const hasUsdSavings = (b.savings || []).some(item => {
+            const meta = (state.budget.savingsMeta || {})[item.id] || {};
+            return meta.currency === 'USD';
+        });
+        if (hasUsdSavings) {
+            const prevRate = getUsdIlsRateSync();
+            ensureUsdIlsRate(true).then(rate => {
+                if (rate && Math.abs(rate - prevRate) > 0.001 && state.currentView === 'budget') {
+                    renderBudget();
+                }
+            }).catch(() => {});
+        }
         const rem = state.isPrivacyMode ? (20000 - formatDisplayAmount(fixTotal) - formatDisplayAmount(annMTotal) - formatDisplayAmount(savTotal) - formatDisplayAmount(loanTotal)) : (incTotal - fixTotal - annMTotal - savTotal - loanTotal);
         setEl('summaryRemaining', Math.round(rem).toLocaleString());
         const g4El = document.getElementById('g4Input');
@@ -6720,14 +6756,18 @@
                         const meta = (state.budget.savingsMeta || {})[id] || {};
                         const balance = meta.balance || 0;
                         const yieldPct = meta.yield || 0;
+                        const currency = meta.currency === 'USD' ? 'USD' : 'ILS';
                         const hasDetails = balance > 0 || yieldPct > 0;
+                        const balanceHtml = balance > 0
+                            ? `<span class="text-[10px] font-bold text-purple-600 ltr-num">${formatSavingsBalanceDisplay(balance, currency)}</span>`
+                            : '';
                         div.className = `bg-white px-3 py-2.5 rounded-xl shadow-sm gap-2 ${isChild ? 'ml-4 border-r-2 border-slate-100 rounded-r-none' : ''}`;
                         div.innerHTML = `
                             <div class="flex justify-between items-start">
                                 <div class="flex-1 min-w-0">
                                     <span class="text-xs font-semibold text-slate-700 block leading-tight">${item.category_name || ''}</span>
                                     ${hasDetails ? `<div class="flex items-center gap-2 mt-1 flex-wrap">
-                                        ${balance > 0 ? `<span class="text-[10px] font-bold text-purple-600 ltr-num">יתרה ₪${Math.round(balance).toLocaleString()}</span>` : ''}
+                                        ${balanceHtml}
                                         ${yieldPct > 0 ? `<span class="text-[10px] text-slate-400 font-semibold">${yieldPct}% שנתי</span>` : ''}
                                     </div>` : ''}
                                 </div>
@@ -6806,7 +6846,7 @@
                     const metaMap = type === 'savings' ? (state.budget.savingsMeta || {}) : (state.budget.loanMeta || {});
                     const totalBalance = group.items.reduce((sum, item) => {
                         const meta = metaMap[item.id || item.category_name] || {};
-                        return sum + (meta.balance || 0);
+                        return sum + (type === 'savings' ? savingsBalanceInIls(meta) : (meta.balance || 0));
                     }, 0);
                     if (totalBalance > 0) {
                         const balColor = type === 'savings' ? '#7c3aed' : '#475569';
@@ -6895,6 +6935,133 @@
         return (state.budget.savings || []).find(s => tagMatchesCat(tag, s)) || null;
     }
 
+    // ---- USD/ILS rate for savings display ----
+    // Bank of Israel has no CORS headers in browsers, so we use a CORS-friendly
+    // live feed and keep BOI as a best-effort primary when available.
+    let _usdIlsRate = null;
+    let _usdIlsRateFetchedAt = 0;
+    const USD_RATE_FALLBACK = 3.0; // only if all live sources fail
+    const USD_RATE_CACHE_MS = 60 * 60 * 1000; // 1 hour
+
+    function _saveUsdRate(rate, src) {
+        const now = Date.now();
+        _usdIlsRate = rate;
+        _usdIlsRateFetchedAt = now;
+        localStorage.setItem('usd_ils_rate', String(rate));
+        localStorage.setItem('usd_ils_rate_at', String(now));
+        localStorage.setItem('usd_ils_rate_src', src);
+        return rate;
+    }
+
+    async function _fetchUsdIlsFromBoi() {
+        const res = await fetch('https://www.boi.org.il/PublicApi/GetExchangeRates');
+        if (!res.ok) return null;
+        const data = await res.json();
+        const usd = (data.exchangeRates || []).find(r => r.key === 'USD');
+        const rate = usd ? safeParseFloat(usd.currentExchangeRate) : 0;
+        return rate > 0 ? rate : null;
+    }
+
+    async function _fetchUsdIlsFromFloatrates() {
+        // Mid-market daily rates, CORS-enabled — close to Google / BOI
+        const res = await fetch('https://www.floatrates.com/daily/usd.json');
+        if (!res.ok) return null;
+        const data = await res.json();
+        const rate = safeParseFloat(data?.ils?.rate);
+        return rate > 0 ? rate : null;
+    }
+
+    async function _fetchUsdIlsFromCdn() {
+        // fawazahmed0 currency-api via jsDelivr — CORS * (backup)
+        const res = await fetch('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json');
+        if (!res.ok) return null;
+        const data = await res.json();
+        const rate = safeParseFloat(data?.usd?.ils);
+        return rate > 0 ? rate : null;
+    }
+
+    async function ensureUsdIlsRate(force = false) {
+        const now = Date.now();
+        if (!force && _usdIlsRate && (now - _usdIlsRateFetchedAt) < USD_RATE_CACHE_MS) return _usdIlsRate;
+        try {
+            const cached = localStorage.getItem('usd_ils_rate');
+            const cachedAt = parseInt(localStorage.getItem('usd_ils_rate_at') || '0', 10);
+            const cachedSrc = localStorage.getItem('usd_ils_rate_src') || '';
+            const trustedSrc = cachedSrc === 'boi' || cachedSrc === 'floatrates';
+            if (!force && cached && trustedSrc && (now - cachedAt) < USD_RATE_CACHE_MS) {
+                _usdIlsRate = parseFloat(cached);
+                _usdIlsRateFetchedAt = cachedAt;
+                return _usdIlsRate;
+            }
+
+            // Prefer BOI → FloatRates (Google-like) → CDN backup
+            let rate = null;
+            try { rate = await _fetchUsdIlsFromBoi(); } catch (_) { /* CORS expected in browsers */ }
+            if (rate) return _saveUsdRate(rate, 'boi');
+
+            try { rate = await _fetchUsdIlsFromFloatrates(); } catch (_) {}
+            if (rate) return _saveUsdRate(rate, 'floatrates');
+
+            rate = await _fetchUsdIlsFromCdn();
+            if (rate) return _saveUsdRate(rate, 'cdn');
+        } catch (e) {
+            console.warn('USD/ILS rate fetch failed:', e);
+        }
+        if (!_usdIlsRate) {
+            const cached = parseFloat(localStorage.getItem('usd_ils_rate') || '');
+            const cachedSrc = localStorage.getItem('usd_ils_rate_src') || '';
+            const trustedSrc = cachedSrc === 'boi' || cachedSrc === 'floatrates' || cachedSrc === 'cdn';
+            _usdIlsRate = (cached > 0 && trustedSrc) ? cached : USD_RATE_FALLBACK;
+            _usdIlsRateFetchedAt = now;
+        }
+        return _usdIlsRate;
+    }
+
+    function getUsdIlsRateSync() {
+        if (_usdIlsRate) return _usdIlsRate;
+        const cached = parseFloat(localStorage.getItem('usd_ils_rate') || '');
+        const cachedSrc = localStorage.getItem('usd_ils_rate_src') || '';
+        const trustedSrc = cachedSrc === 'boi' || cachedSrc === 'floatrates' || cachedSrc === 'cdn';
+        return (cached > 0 && trustedSrc) ? cached : USD_RATE_FALLBACK;
+    }
+
+    function formatSavingsBalanceDisplay(balance, currency) {
+        const bal = Math.round(balance || 0);
+        if (!bal) return '';
+        if (currency === 'USD') {
+            const ils = Math.round(bal * getUsdIlsRateSync());
+            return `יתרה $${bal.toLocaleString()} <span class="text-purple-600 font-bold">(₪${ils.toLocaleString()})</span>`;
+        }
+        return `יתרה ₪${bal.toLocaleString()}`;
+    }
+
+    function savingsBalanceInIls(meta) {
+        const bal = meta.balance || 0;
+        if ((meta.currency || 'ILS') === 'USD') return bal * getUsdIlsRateSync();
+        return bal;
+    }
+
+    function applySavingsCurrencyToggle(prefix, currency) {
+        const cur = currency === 'USD' ? 'USD' : 'ILS';
+        const hidden = document.getElementById(prefix + 'SavingsCurrency');
+        if (hidden) hidden.value = cur;
+        const sym = document.getElementById(prefix + 'SavingsCurrencySymbol');
+        if (sym) sym.textContent = cur === 'USD' ? '$' : '₪';
+        const ilsBtn = document.getElementById(prefix + 'CurrencyIlsBtn');
+        const usdBtn = document.getElementById(prefix + 'CurrencyUsdBtn');
+        if (ilsBtn && usdBtn) {
+            ilsBtn.className = `px-2 py-0.5 text-[10px] font-bold rounded-md ${cur === 'ILS' ? 'bg-white text-slate-700 shadow-sm' : 'text-slate-400'}`;
+            usdBtn.className = `px-2 py-0.5 text-[10px] font-bold rounded-md ${cur === 'USD' ? 'bg-white text-slate-700 shadow-sm' : 'text-slate-400'}`;
+        }
+    }
+
+    window.setNewCategorySavingsCurrency = function(currency) {
+        applySavingsCurrencyToggle('newCategory', currency);
+    };
+    window.setBudgetItemSavingsCurrency = function(currency) {
+        applySavingsCurrencyToggle('budgetItem', currency);
+    };
+
     function parseMetaDate(val) {
         if (!val) return null;
         if (val.includes('/')) return parseLocalDate(val);
@@ -6934,11 +7101,15 @@
             initialDate = parseMetaDate(meta.last_update) || today;
         }
         let total = growWithYield(initialBalance, annualYield, initialDate, today);
+        const isUsd = (meta.currency || 'ILS') === 'USD';
+        const usdRate = isUsd ? getUsdIlsRateSync() : 1;
 
         (state.transactions || []).forEach(tx => {
             if (tx.isAdjustment || !tx.tag || !tagMatchesCat(tx.tag, item)) return;
-            const amt = safeParseFloat(tx.amount);
+            let amt = safeParseFloat(tx.amount);
             if (amt <= 0) return; // only deposits (expenses) add to savings
+            // Deposits are recorded in ILS — convert to USD if savings currency is USD
+            if (isUsd && usdRate > 0) amt = amt / usdRate;
             const d = parseLocalDate(tx.date);
             if (!d) return;
             d.setHours(0,0,0,0);
@@ -8191,8 +8362,9 @@
                 const y = document.getElementById('newCategorySavingsYield');
                 if (b) b.value = '';
                 if (y) y.value = '';
-                const balLabel = savingsSection.querySelector('label');
+                const balLabel = document.getElementById('newCategorySavingsBalanceLabel');
                 if (balLabel) balLabel.textContent = 'יתרה נוכחית בחיסכון';
+                window.setNewCategorySavingsCurrency('ILS');
             }
         }
 
@@ -8224,8 +8396,7 @@
         const dateWrap = document.getElementById('newCategoryReminderDateWrap');
         if (dateWrap) dateWrap.classList.toggle('hidden', !chk?.checked);
         if (state.pendingAddType === 'savings') {
-            const savingsSection = document.getElementById('newCategorySavingsSection');
-            const balLabel = savingsSection?.querySelector('label');
+            const balLabel = document.getElementById('newCategorySavingsBalanceLabel');
             if (balLabel) {
                 balLabel.textContent = chk?.checked ? 'יתרה התחלתית בחיסכון' : 'יתרה נוכחית בחיסכון';
             }
@@ -10997,6 +11168,9 @@
     // INIT
     // =====================================================
     document.addEventListener('DOMContentLoaded', () => {
+        // Prefetch USD/ILS rate early (for USD savings display)
+        ensureUsdIlsRate(true).catch(() => {});
+
         // Initialize flatpickr on transaction edit date input
         if (typeof flatpickr !== 'undefined') {
             flatpickr("#editRowDate", {
