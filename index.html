@@ -9477,7 +9477,7 @@
                         const bh = 40;
                         let bx = x + 10;
                         if (bx + bw > chartArea.right - 4) bx = x - bw - 10;
-                        const by = Math.max(chartArea.top + 4, Math.min(y - bh / 2, chartArea.bottom - bh - 4));
+                        const by = chartArea.top + 4;
                         const r = 5;
 
                         c.fillStyle = 'rgba(15,23,42,0.88)';
