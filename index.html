@@ -9335,20 +9335,41 @@
         // Reset crosshair index on fresh render
         _mainChartHitIdx = null;
 
-        // Attach click handler (remove previous to avoid duplicates)
+        // Attach pointer/touch handlers (remove previous to avoid duplicates)
         if (_mainChartClickHandler) {
-            ctx.removeEventListener('click', _mainChartClickHandler);
+            ctx.removeEventListener('click',     _mainChartClickHandler);
+            ctx.removeEventListener('touchstart', _mainChartClickHandler);
+            ctx.removeEventListener('touchmove',  _mainChartClickHandler);
             _mainChartClickHandler = null;
         }
-        _mainChartClickHandler = function(event) {
+
+        function hitFromEvent(event) {
             if (!mainBalanceChartInstance) return;
-            const pts = mainBalanceChartInstance.getElementsAtEventForMode(event, 'index', { intersect: false }, true);
+            // Normalise touch vs mouse into a synthetic event Chart.js can use
+            const nativeEvent = event.touches ? event.touches[0] : event;
+            const pts = mainBalanceChartInstance.getElementsAtEventForMode(nativeEvent, 'index', { intersect: false }, true);
             if (pts.length > 0) {
                 _mainChartHitIdx = pts[0].index;
                 mainBalanceChartInstance.update('none');
             }
-        };
-        ctx.addEventListener('click', _mainChartClickHandler);
+        }
+
+        function onTouch(event) {
+            event.preventDefault(); // stop page scroll while dragging on chart
+            hitFromEvent(event);
+        }
+
+        function onMouseLeave() {
+            _mainChartHitIdx = null;
+            if (mainBalanceChartInstance) mainBalanceChartInstance.update('none');
+        }
+
+        _mainChartClickHandler = hitFromEvent;
+        ctx.addEventListener('click',      _mainChartClickHandler);
+        ctx.addEventListener('mousemove',  _mainChartClickHandler);
+        ctx.addEventListener('mouseleave', onMouseLeave);
+        ctx.addEventListener('touchstart', onTouch, { passive: false });
+        ctx.addEventListener('touchmove',  onTouch, { passive: false });
 
         const minY = Math.min(0, ...values);
         const maxY = Math.max(0, ...values);
@@ -9373,6 +9394,7 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                layout: { padding: { left: 0, right: 0, top: 4, bottom: 0 } },
                 plugins: {
                     legend: { display: false },
                     tooltip: { enabled: false }
@@ -9383,6 +9405,7 @@
                         grid: { display: false }
                     },
                     y: {
+                        position: 'right',
                         min: minY - pad,
                         max: maxY + pad,
                         ticks: { font: { size: 9 }, color: '#94a3b8', callback: v => { const n = Math.round(v); return n < 0 ? `${Math.abs(n).toLocaleString()}-₪` : `₪${n.toLocaleString()}`; } },
