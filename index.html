@@ -2525,6 +2525,7 @@
         });
         const expenseDatesISO = [...expenseDateSet].sort(); // ascending
 
+
         const today = new Date();
         today.setHours(0,0,0,0);
         const todayISO = dateToISO(today);
@@ -2567,17 +2568,28 @@
             }
         }
 
-        // For each date that has expenses: accumulate budget from (prevDate+1) to (thisDate)
+        // Helper: find the start date of the budget segment active on a given ISO date
+        function getActiveSegmentStart(isoDate) {
+            let segStart = sortedHistory[0].startDate;
+            for (const seg of sortedHistory) {
+                if (seg.startDate <= isoDate) segStart = seg.startDate;
+                else break;
+            }
+            return segStart;
+        }
+
+        // For each date that has expenses: accumulate budget from (prevDate+1) to (thisDate).
+        // The first expense date is the anchor — no budget accumulates before it.
         let isFirst = true;
         for (const expISO of expenseDatesISO) {
             let effectiveFrom;
+
             if (isFirst) {
-                // First expense: accumulate from the budget start date so days before
-                // the first שוטף expense (e.g. מתוכנן-only days) are counted here.
-                effectiveFrom = actualBudgetStart <= expISO ? actualBudgetStart : expISO;
+                // First expense sets the start: only count budget for that day itself.
+                effectiveFrom = expISO;
                 isFirst = false;
             } else {
-                const fromISO = (() => {
+                let fromISO = (() => {
                     const d = new Date(prevDateISO);
                     d.setDate(d.getDate() + 1);
                     return dateToISO(d);
@@ -2602,7 +2614,7 @@
         // Handle today: if today has no expenses, accumulate from (lastExpenseDate+1) to today
         const lastExpISO = expenseDatesISO[expenseDatesISO.length - 1];
         if (lastExpISO < todayISO) {
-            const fromISO = (() => {
+            let fromISO = (() => {
                 const d = new Date(lastExpISO);
                 d.setDate(d.getDate() + 1);
                 return dateToISO(d);
