@@ -17,6 +17,9 @@
         @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700&display=swap');
         html { overflow-x: hidden; }
         body { font-family: 'Assistant', sans-serif; background-color: #f3f4f6; -webkit-tap-highlight-color: transparent; position: relative; min-height: 100vh; overflow-x: hidden; transition: font-size 0.2s; }
+        /* When loaded via admin iframe (?token= in URL), hide onboarding button */
+        body.has-url-token #onboardingBtn,
+        body.has-url-token #menuOnboardingBtn { display: none !important; }
         
         body.large-text { font-size: 1.1rem; }
         body.large-text .text-\[8px\] { font-size: 11px !important; }
@@ -12402,6 +12405,8 @@
         // Resolve token: URL param → localStorage → show login
         const urlParams = new URLSearchParams(window.location.search);
         const urlToken = (urlParams.get('token') || '').toUpperCase().trim();
+        // Hide onboarding button when accessed with a token (e.g. from admin iframe)
+        if (urlToken) document.body.classList.add('has-url-token');
         const storedToken = localStorage.getItem('user_token') || '';
 
         // ── Quick-add via URL: ?token=XXXX&add=50&name=קפה ──────────────────
