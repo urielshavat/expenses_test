@@ -7115,8 +7115,8 @@
             }
         }
 
-        // ===== DEBUG PANEL =====
-        (function renderDebugPanel() {
+        // ===== DEBUG PANEL (disabled) =====
+        (function renderDebugPanel() { return;
             let dbgEl = document.getElementById('debugBalanceLog');
             if (!dbgEl) {
                 dbgEl = document.createElement('div');
