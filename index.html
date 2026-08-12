@@ -175,7 +175,7 @@
     </div>
     <!-- ====================================================== -->
 
-    <div class="w-full max-w-md landscape:max-w-4xl lg:max-w-5xl xl:max-w-7xl bg-transparent flex flex-col min-h-screen pb-32" id="appRoot">
+    <div class="w-full max-w-md landscape:max-w-4xl lg:max-w-5xl xl:max-w-7xl bg-transparent flex flex-col min-h-screen pb-32 overflow-x-hidden" id="appRoot">
         <div class="flex justify-between items-center mb-4 px-1">
             <div class="flex items-center gap-2">
                 <button onclick="window.toggleHamburgerMenu()" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors">
@@ -5254,7 +5254,7 @@
             });
 
             // Clean, tightly fitting width
-            labelsWidth = Math.ceil(maxCalcWidth);
+            labelsWidth = Math.min(Math.ceil(maxCalcWidth), 200);
         } else {
             const visibleCats = catsShown.filter(cat => {
                 if (filter === 'planned' || cat.$type === 'current') return true;
@@ -5337,7 +5337,7 @@
                 pRow.innerHTML = `
                     <div class="flex items-center gap-1 py-1 px-0 w-full cursor-pointer hover:bg-slate-50 transition-all font-hebrew" dir="rtl" onclick="window.toggleCategoryFilter('${filterId}')">
                         <!-- Right Part: Icon/Name (Order: Icon, then Name, then Chevron) -->
-                        <div class="flex items-center gap-1 flex-shrink-0" style="width: ${labelsWidth}px">
+                        <div class="flex items-center gap-1 flex-shrink-0 overflow-hidden" style="width: ${labelsWidth}px">
                             <div class="w-6 h-6 flex items-center justify-center flex-shrink-0">
                                 <i class="fa-solid fa-calendar-check text-[11px]" style="color:${color.hex}"></i>
                             </div>
@@ -5382,7 +5382,7 @@
                         cRow.dir = "rtl";
                         cRow.innerHTML = `
                             <!-- Right Part: Icon/Name/Actions -->
-                            <div class="flex items-center gap-1 flex-shrink-0" style="width: ${labelsWidth}px">
+                            <div class="flex items-center gap-1 flex-shrink-0 overflow-hidden" style="width: ${labelsWidth}px">
                                 <div class="w-6 h-6 flex items-center justify-center flex-shrink-0">
                                     <div class="w-1.5 h-1.5 rounded-full" style="background:${color.hex}"></div>
                                 </div>
@@ -5449,7 +5449,7 @@
                 
                 row.innerHTML = `
                     <!-- Right Part: Icon/Name/Actions -->
-                    <div class="flex items-center gap-1 flex-shrink-0" style="width: ${labelsWidth}px">
+                    <div class="flex items-center gap-1 flex-shrink-0 overflow-hidden" style="width: ${labelsWidth}px">
                         <div class="w-6 h-6 flex items-center justify-center flex-shrink-0">
                             <i class="fa-solid fa-calendar-check text-[11px]" style="color:${color.hex}"></i>
                         </div>
@@ -5542,7 +5542,7 @@
 
                 row.innerHTML = `
                     <!-- Right Part: Icon/Name -->
-                    <div class="flex items-center gap-1 flex-shrink-0" style="width: ${labelsWidth}px">
+                    <div class="flex items-center gap-1 flex-shrink-0 overflow-hidden" style="width: ${labelsWidth}px">
                         ${iconHtml}
                         <span class="text-[10px] sm:text-xs text-slate-700 whitespace-nowrap">${displayName}${hasBudget ? ` (₪${Math.round(budget).toLocaleString()})` : ''}</span>
                     </div>
@@ -5579,7 +5579,7 @@
             
             noneRow.innerHTML = `
                 <!-- Right: Icon/Name -->
-                <div class="flex items-center gap-1 flex-shrink-0 cursor-pointer" onclick="window.toggleCategoryFilter('__none__')" style="width: ${labelsWidth}px">
+                <div class="flex items-center gap-1 flex-shrink-0 overflow-hidden cursor-pointer" onclick="window.toggleCategoryFilter('__none__')" style="width: ${labelsWidth}px">
                     <div class="w-6 h-6 flex items-center justify-center flex-shrink-0">
                         <i class="fa-solid fa-tag text-[11px] text-slate-400"></i>
                     </div>
