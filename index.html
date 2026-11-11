@@ -1462,7 +1462,7 @@
                         <input type="text" inputmode="decimal" id="newCategoryAmount" placeholder="0" class="flex-1 bg-transparent border-none outline-none font-bold text-slate-800">
                     </div>
                 </div>
-                <!-- Savings-only: reminder settings -->
+                <!-- Fixed-only: reminder settings -->
                 <div id="newCategoryReminderSection" class="hidden bg-slate-50 border border-slate-200 rounded-xl p-3">
                     <p class="text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-2">תזכורת חודשית</p>
                     <div class="flex items-center justify-between gap-2">
@@ -1472,7 +1472,7 @@
                         </label>
                         <div id="newCategoryReminderDateWrap" class="hidden flex items-center gap-1.5">
                             <span class="text-[10px] text-slate-500">ב-</span>
-                            <input type="number" id="newCategoryReminderDate" min="1" max="28" value="11" class="w-14 text-sm font-bold text-slate-800 bg-white border border-slate-300 rounded-lg px-2 py-1 text-center outline-none">
+                            <input type="number" id="newCategoryReminderDate" min="1" max="28" value="1" class="w-14 text-sm font-bold text-slate-800 bg-white border border-slate-300 rounded-lg px-2 py-1 text-center outline-none">
                             <span class="text-[10px] text-slate-500">לחודש</span>
                         </div>
                     </div>
@@ -1480,6 +1480,21 @@
                 <!-- Savings-only: balance and yield -->
                 <div id="newCategorySavingsSection" class="hidden space-y-2 bg-purple-50 border border-purple-100 rounded-xl p-3">
                     <p class="text-[10px] font-bold text-purple-600 uppercase tracking-wider">פרטי חיסכון</p>
+                    <div class="flex items-center justify-between gap-2">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase">עדכון יתרה</span>
+                        <div class="flex bg-white border border-purple-100 p-0.5 rounded-lg">
+                            <button type="button" id="newCategorySavingsModeAutoBtn" onclick="window.setNewCategorySavingsMode('auto')" class="px-2.5 py-1 text-[10px] font-bold rounded-md bg-purple-600 text-white shadow-sm">אוטומטי</button>
+                            <button type="button" id="newCategorySavingsModeManualBtn" onclick="window.setNewCategorySavingsMode('manual')" class="px-2.5 py-1 text-[10px] font-bold rounded-md text-slate-400">ידני</button>
+                        </div>
+                        <input type="hidden" id="newCategorySavingsMode" value="auto">
+                    </div>
+                    <div id="newCategorySavingsReminderDateWrap" class="hidden flex items-center justify-between gap-2 bg-white border border-purple-100 rounded-lg px-3 py-2">
+                        <span class="text-[10px] font-bold text-slate-500">תזכורת הפקדה ב-</span>
+                        <div class="flex items-center gap-1.5">
+                            <input type="number" id="newCategorySavingsReminderDate" min="1" max="28" value="11" class="w-14 text-sm font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-center outline-none">
+                            <span class="text-[10px] text-slate-500">לחודש</span>
+                        </div>
+                    </div>
                     <div>
                         <div class="flex items-center justify-between mb-1 mr-1">
                             <label id="newCategorySavingsBalanceLabel" class="block text-[10px] font-bold text-slate-400 uppercase">יתרה נוכחית בחיסכון</label>
@@ -1521,7 +1536,7 @@
                         </div>
                     </div>
                     <div>
-                        <label id="newCategoryLoanBalanceLabel" class="block text-[10px] font-bold text-slate-400 uppercase mb-1 mr-1">יתרת ההלוואה הנוכחית</label>
+                        <label id="newCategoryLoanBalanceLabel" class="block text-[10px] font-bold text-slate-400 uppercase mb-1 mr-1">יתרה נוכחית של ההלוואה</label>
                         <div class="bg-white border border-slate-200 rounded-lg px-3 py-2 flex items-center gap-1">
                             <span class="text-slate-400 font-bold text-sm">₪</span>
                             <input type="text" inputmode="decimal" id="newCategoryLoanBalance" class="flex-1 bg-transparent border-none outline-none font-bold text-slate-800 text-sm" placeholder="0">
@@ -1535,7 +1550,7 @@
                         </div>
                     </div>
                     <div>
-                        <label id="newCategoryLoanMonthsLabel" class="block text-[10px] font-bold text-slate-400 uppercase mb-1 mr-1">מספר חודשים שנותרו</label>
+                        <label id="newCategoryLoanMonthsLabel" class="block text-[10px] font-bold text-slate-400 uppercase mb-1 mr-1">חודשים שנותרו</label>
                         <input type="number" inputmode="numeric" id="newCategoryLoanMonths" min="0" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 font-bold text-slate-800 text-sm outline-none" placeholder="0">
                     </div>
                 </div>
@@ -1765,7 +1780,7 @@
                         <input type="text" inputmode="decimal" id="budgetItemEditAmount" class="flex-1 bg-transparent border-none outline-none font-bold text-slate-800">
                     </div>
                 </div>
-                <!-- Savings-only: reminder settings -->
+                <!-- Fixed-only: reminder settings -->
                 <div id="budgetItemReminderSection" class="hidden bg-slate-50 border border-slate-200 rounded-xl p-3">
                     <p class="text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-2">תזכורת חודשית</p>
                     <div class="flex items-center justify-between gap-2">
@@ -1775,7 +1790,7 @@
                         </label>
                         <div id="budgetItemReminderDateWrap" class="hidden flex items-center gap-1.5">
                             <span class="text-[10px] text-slate-500">ב-</span>
-                            <input type="number" id="budgetItemReminderDate" min="1" max="28" value="11" class="w-14 text-sm font-bold text-slate-800 bg-white border border-slate-300 rounded-lg px-2 py-1 text-center outline-none" onchange="window.saveBudgetItemReminderDate()">
+                            <input type="number" id="budgetItemReminderDate" min="1" max="28" value="1" class="w-14 text-sm font-bold text-slate-800 bg-white border border-slate-300 rounded-lg px-2 py-1 text-center outline-none" onchange="window.saveBudgetItemReminderDate()">
                             <span class="text-[10px] text-slate-500">לחודש</span>
                         </div>
                     </div>
@@ -1783,6 +1798,21 @@
                 <!-- Savings-only: current balance and annual yield -->
                 <div id="budgetItemSavingsSection" class="hidden space-y-2 bg-purple-50 border border-purple-100 rounded-xl p-3">
                     <p class="text-[10px] font-bold text-purple-600 uppercase tracking-wider">פרטי חיסכון</p>
+                    <div class="flex items-center justify-between gap-2">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase">עדכון יתרה</span>
+                        <div class="flex bg-white border border-purple-100 p-0.5 rounded-lg">
+                            <button type="button" id="budgetItemSavingsModeAutoBtn" onclick="window.setBudgetItemSavingsMode('auto')" class="px-2.5 py-1 text-[10px] font-bold rounded-md bg-purple-600 text-white shadow-sm">אוטומטי</button>
+                            <button type="button" id="budgetItemSavingsModeManualBtn" onclick="window.setBudgetItemSavingsMode('manual')" class="px-2.5 py-1 text-[10px] font-bold rounded-md text-slate-400">ידני</button>
+                        </div>
+                        <input type="hidden" id="budgetItemSavingsMode" value="auto">
+                    </div>
+                    <div id="budgetItemSavingsReminderDateWrap" class="hidden flex items-center justify-between gap-2 bg-white border border-purple-100 rounded-lg px-3 py-2">
+                        <span class="text-[10px] font-bold text-slate-500">תזכורת הפקדה ב-</span>
+                        <div class="flex items-center gap-1.5">
+                            <input type="number" id="budgetItemSavingsReminderDate" min="1" max="28" value="11" class="w-14 text-sm font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-center outline-none" onchange="window.saveBudgetItemSavingsReminderDate()">
+                            <span class="text-[10px] text-slate-500">לחודש</span>
+                        </div>
+                    </div>
                     <div>
                         <div class="flex items-center justify-between mb-1 mr-1">
                             <label id="budgetItemSavingsBalanceLabel" class="block text-[10px] font-bold text-slate-400 uppercase">יתרה נוכחית בחיסכון</label>
@@ -1824,7 +1854,7 @@
                         </div>
                     </div>
                     <div>
-                        <label id="budgetItemLoanBalanceLabel" class="block text-[10px] font-bold text-slate-400 uppercase mb-1 mr-1">יתרת ההלוואה הנוכחית</label>
+                        <label id="budgetItemLoanBalanceLabel" class="block text-[10px] font-bold text-slate-400 uppercase mb-1 mr-1">יתרה נוכחית של ההלוואה</label>
                         <div class="bg-white border border-slate-200 rounded-lg px-3 py-2 flex items-center gap-1">
                             <span class="text-slate-400 font-bold text-sm">₪</span>
                             <input type="text" inputmode="decimal" id="budgetItemLoanBalance" class="flex-1 bg-transparent border-none outline-none font-bold text-slate-800 text-sm" placeholder="0">
@@ -5642,10 +5672,12 @@
         if (!nameInp || !nameInp.value.trim()) return;
 
         // Capture reminder settings before closing modal
-        const hasReminder = state.pendingAddType === 'savings' || state.pendingAddType === 'fixed';
         const isSavings = state.pendingAddType === 'savings';
         const isLoan = state.pendingAddType === 'loan';
-        const remEnabled = hasReminder && (document.getElementById('newCategoryReminderEnabled')?.checked || false);
+        const isFixed = state.pendingAddType === 'fixed';
+        const savingsManual = isSavings && (document.getElementById('newCategorySavingsMode')?.value === 'manual');
+        const savingsRemDate = parseInt(document.getElementById('newCategorySavingsReminderDate')?.value || '11');
+        const remEnabled = isFixed && (document.getElementById('newCategoryReminderEnabled')?.checked || false);
         const remDate = parseInt(document.getElementById('newCategoryReminderDate')?.value || '1');
         const newName = nameInp.value.trim();
 
@@ -5662,7 +5694,7 @@
                 last_update: currentMonth,
                 currency
             };
-            if (remEnabled) {
+            if (savingsManual) {
                 newSavingsMeta.initial_balance = bal;
                 newSavingsMeta.initial_date = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
             }
@@ -5708,11 +5740,17 @@
             const newId = data?.id;
 
             // Save reminder settings to localStorage
-            if (isSavings || state.pendingAddType === 'fixed') {
+            if (isFixed) {
                 const remId = newId || newName;
-                const remKey = `budget_reminder_${state.pendingAddType}_${remId}`;
+                const remKey = `budget_reminder_fixed_${remId}`;
                 localStorage.setItem(remKey + '_enabled', remEnabled ? 'true' : 'false');
                 localStorage.setItem(remKey + '_date', remDate);
+            }
+            if (isSavings) {
+                const remId = newId || newName;
+                const remKey = `budget_reminder_savings_${remId}`;
+                localStorage.setItem(remKey + '_enabled', savingsManual ? 'true' : 'false');
+                localStorage.setItem(remKey + '_date', Math.max(1, Math.min(28, savingsRemDate || 11)));
             }
             if (isLoan) {
                 const remId = newId || newName;
@@ -5781,19 +5819,15 @@
         document.getElementById('budgetItemEditName').value = item.category_name;
         document.getElementById('budgetItemEditAmount').value = Math.round(formatDisplayAmount(safeParseFloat(item.budget_amount))).toLocaleString();
 
-        // Show reminder section for savings and fixed
+        // Show reminder section for fixed only (savings/loans use mode toggle inside details)
         const remSection = document.getElementById('budgetItemReminderSection');
         if (remSection) {
-            const hasReminder = baseType === 'savings' || baseType === 'fixed';
+            const hasReminder = baseType === 'fixed';
             remSection.classList.toggle('hidden', !hasReminder);
             const remLabel = document.getElementById('budgetItemReminderLabel');
-            if (remLabel) {
-                remLabel.textContent = baseType === 'savings'
-                    ? 'הפעל תזכורת (אם ההפקדה לא אוטומטית)'
-                    : 'הפעל תזכורת';
-            }
+            if (remLabel) remLabel.textContent = 'הפעל תזכורת';
             if (hasReminder) {
-                const remKey = `budget_reminder_${baseType}_${item.id || item.category_name}`;
+                const remKey = `budget_reminder_fixed_${item.id || item.category_name}`;
                 const remEnabled = localStorage.getItem(remKey + '_enabled') === 'true';
                 const remDate = parseInt(localStorage.getItem(remKey + '_date') || '1');
                 const chk = document.getElementById('budgetItemReminderEnabled');
@@ -5819,9 +5853,12 @@
                 const displayBal = remOn && meta.initial_balance != null ? meta.initial_balance : meta.balance;
                 if (balInp) balInp.value = displayBal ? Math.round(displayBal).toString() : '';
                 if (yldInp) yldInp.value = meta.yield ? meta.yield.toString() : '';
-                const balLabel = document.getElementById('budgetItemSavingsBalanceLabel') || savSection.querySelector('label');
-                if (balLabel) balLabel.textContent = remOn ? 'יתרה התחלתית בחיסכון' : 'יתרה נוכחית בחיסכון';
+                const remKey = `budget_reminder_savings_${id}`;
+                const remDate = parseInt(localStorage.getItem(remKey + '_date') || localStorage.getItem(`savings_reminder_${id}_date`) || '11');
+                const dateInp = document.getElementById('budgetItemSavingsReminderDate');
+                if (dateInp) dateInp.value = remDate;
                 window.setBudgetItemSavingsCurrency(meta.currency === 'USD' ? 'USD' : 'ILS');
+                window.setBudgetItemSavingsMode(remOn ? 'manual' : 'auto', { skipPersist: true });
             }
         }
 
@@ -5866,23 +5903,6 @@
         localStorage.setItem(remKey + '_enabled', enabled ? 'true' : 'false');
         if (enabled && !localStorage.getItem(remKey + '_date')) {
             localStorage.setItem(remKey + '_date', '1');
-        }
-        // When enabling reminder on savings — snapshot current balance as initial
-        if (enabled && baseType === 'savings' && item.id) {
-            const now = new Date();
-            const meta = { ...((state.budget.savingsMeta || {})[item.id] || {}) };
-            const balInp = document.getElementById('budgetItemSavingsBalance');
-            const balFromInput = balInp ? (parseFloat((balInp.value || '').replace(/,/g, '')) || 0) : null;
-            const bal = balFromInput != null ? balFromInput : (meta.balance || 0);
-            meta.balance = bal;
-            meta.initial_balance = bal;
-            meta.initial_date = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
-            meta.last_update = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-            if (!state.budget.savingsMeta) state.budget.savingsMeta = {};
-            state.budget.savingsMeta[item.id] = meta;
-            window.saveSavingsMetaToDB(item.id, meta).catch(e => console.error(e));
-            const balLabel = document.getElementById('budgetItemSavingsBalanceLabel');
-            if (balLabel) balLabel.textContent = 'יתרה התחלתית בחיסכון';
         }
         renderSavingsReminders();
     };
@@ -12766,24 +12786,20 @@
         const amtLabel = document.getElementById('newCategoryAmountLabel');
         if (amtLabel) amtLabel.textContent = amtLabels[type] || 'סכום';
 
-        // Show/hide reminder section for savings and fixed
+        // Show/hide reminder section for fixed only
         const remSection = document.getElementById('newCategoryReminderSection');
         if (remSection) {
-            const hasReminder = type === 'savings' || type === 'fixed';
+            const hasReminder = type === 'fixed';
             remSection.classList.toggle('hidden', !hasReminder);
             const remLabel = document.getElementById('newCategoryReminderLabel');
-            if (remLabel) {
-                remLabel.textContent = type === 'savings'
-                    ? 'הפעל תזכורת (אם ההפקדה לא אוטומטית)'
-                    : 'הפעל תזכורת';
-            }
+            if (remLabel) remLabel.textContent = 'הפעל תזכורת';
             if (hasReminder) {
                 const chk = document.getElementById('newCategoryReminderEnabled');
                 if (chk) chk.checked = false;
                 const dateWrap = document.getElementById('newCategoryReminderDateWrap');
                 if (dateWrap) dateWrap.classList.add('hidden');
                 const dateInp = document.getElementById('newCategoryReminderDate');
-                if (dateInp) dateInp.value = type === 'savings' ? 11 : 1;
+                if (dateInp) dateInp.value = 1;
             }
         }
 
@@ -12796,9 +12812,10 @@
                 const y = document.getElementById('newCategorySavingsYield');
                 if (b) b.value = '';
                 if (y) y.value = '';
-                const balLabel = document.getElementById('newCategorySavingsBalanceLabel');
-                if (balLabel) balLabel.textContent = 'יתרה נוכחית בחיסכון';
+                const remDate = document.getElementById('newCategorySavingsReminderDate');
+                if (remDate) remDate.value = 11;
                 window.setNewCategorySavingsCurrency('ILS');
+                window.setNewCategorySavingsMode('auto');
             }
         }
 
@@ -12832,12 +12849,73 @@
         const chk = document.getElementById('newCategoryReminderEnabled');
         const dateWrap = document.getElementById('newCategoryReminderDateWrap');
         if (dateWrap) dateWrap.classList.toggle('hidden', !chk?.checked);
-        if (state.pendingAddType === 'savings') {
-            const balLabel = document.getElementById('newCategorySavingsBalanceLabel');
-            if (balLabel) {
-                balLabel.textContent = chk?.checked ? 'יתרה התחלתית בחיסכון' : 'יתרה נוכחית בחיסכון';
-            }
+    };
+
+    function applySavingsModeUi(prefix, mode) {
+        const isManual = mode === 'manual';
+        const modeInp = document.getElementById(`${prefix}SavingsMode`);
+        if (modeInp) modeInp.value = isManual ? 'manual' : 'auto';
+        const autoBtn = document.getElementById(`${prefix}SavingsModeAutoBtn`);
+        const manualBtn = document.getElementById(`${prefix}SavingsModeManualBtn`);
+        if (autoBtn) {
+            autoBtn.className = `px-2.5 py-1 text-[10px] font-bold rounded-md ${isManual ? 'text-slate-400' : 'bg-purple-600 text-white shadow-sm'}`;
         }
+        if (manualBtn) {
+            manualBtn.className = `px-2.5 py-1 text-[10px] font-bold rounded-md ${isManual ? 'bg-purple-600 text-white shadow-sm' : 'text-slate-400'}`;
+        }
+        const remWrap = document.getElementById(`${prefix}SavingsReminderDateWrap`);
+        if (remWrap) remWrap.classList.toggle('hidden', !isManual);
+        const balLabel = document.getElementById(`${prefix}SavingsBalanceLabel`);
+        if (balLabel) balLabel.textContent = isManual ? 'יתרה התחלתית בחיסכון' : 'יתרה נוכחית בחיסכון';
+    }
+
+    window.setNewCategorySavingsMode = function(mode) {
+        applySavingsModeUi('newCategory', mode === 'manual' ? 'manual' : 'auto');
+    };
+
+    window.setBudgetItemSavingsMode = function(mode, opts = {}) {
+        const item = state.pendingBudgetItem?.item;
+        const isManual = mode === 'manual';
+        applySavingsModeUi('budgetItem', isManual ? 'manual' : 'auto');
+        if (!item || opts.skipPersist) return;
+        const id = item.id || item.category_name;
+        const remKey = `budget_reminder_savings_${id}`;
+        localStorage.setItem(remKey + '_enabled', isManual ? 'true' : 'false');
+        // Keep legacy key in sync for older reminder lookups
+        localStorage.setItem(`savings_reminder_${id}_enabled`, isManual ? 'true' : 'false');
+        if (isManual && !localStorage.getItem(remKey + '_date')) {
+            localStorage.setItem(remKey + '_date', '11');
+        }
+        const balInp = document.getElementById('budgetItemSavingsBalance');
+        if (isManual && item.id) {
+            const now = new Date();
+            const meta = { ...((state.budget.savingsMeta || {})[item.id] || {}) };
+            const balFromInput = balInp ? (parseFloat((balInp.value || '').replace(/,/g, '')) || 0) : null;
+            const bal = balFromInput != null ? balFromInput : (meta.balance || 0);
+            meta.balance = bal;
+            meta.initial_balance = bal;
+            meta.initial_date = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+            meta.last_update = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+            if (!state.budget.savingsMeta) state.budget.savingsMeta = {};
+            state.budget.savingsMeta[item.id] = meta;
+            window.saveSavingsMetaToDB(item.id, meta).catch(e => console.error(e));
+        } else if (!isManual && item.id) {
+            const meta = (state.budget.savingsMeta || {})[item.id] || {};
+            if (balInp) balInp.value = meta.balance ? Math.round(meta.balance).toString() : (balInp.value || '');
+        }
+        renderSavingsReminders();
+    };
+
+    window.saveBudgetItemSavingsReminderDate = function() {
+        const item = state.pendingBudgetItem?.item;
+        if (!item) return;
+        const dateInp = document.getElementById('budgetItemSavingsReminderDate');
+        const d = Math.max(1, Math.min(28, parseInt(dateInp?.value || '11')));
+        if (dateInp) dateInp.value = d;
+        const id = item.id || item.category_name;
+        localStorage.setItem(`budget_reminder_savings_${id}_date`, d);
+        localStorage.setItem(`savings_reminder_${id}_date`, d);
+        renderSavingsReminders();
     };
 
     function applyLoanModeUi(prefix, mode) {
@@ -12855,11 +12933,9 @@
         const remWrap = document.getElementById(`${prefix}LoanReminderDateWrap`);
         if (remWrap) remWrap.classList.toggle('hidden', !isManual);
         const balLabel = document.getElementById(`${prefix}LoanBalanceLabel`);
-        if (balLabel) balLabel.textContent = isManual ? 'יתרה התחלתית של ההלוואה' : 'יתרת ההלוואה הנוכחית';
+        if (balLabel) balLabel.textContent = 'יתרה נוכחית של ההלוואה';
         const monthsLabel = document.getElementById(`${prefix}LoanMonthsLabel`);
-        if (monthsLabel) {
-            monthsLabel.textContent = isManual ? 'חודשים התחלתיים שנותרו' : (prefix === 'newCategory' ? 'מספר חודשים שנותרו' : 'חודשים שנותרו');
-        }
+        if (monthsLabel) monthsLabel.textContent = 'חודשים שנותרו';
     }
 
     window.setNewCategoryLoanMode = function(mode) {
